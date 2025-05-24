@@ -1,0 +1,42 @@
+{
+	"schemaVersion": 1,
+	"id": "rallyguard",
+	"version": "${version}",
+	"name": "Rally of the Guard",
+	"description": "In developement",
+	"authors": [
+		"Hyan Ferreira!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "MIT",
+	"icon": "assets/rallyguard/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"net.hfstack.rallyguard.RallyOfTheGuard"
+		],
+		"client": [
+			"net.hfstack.rallyguard.RallyOfTheGuardClient"
+		]
+	},
+	"mixins": [
+		"rallyguard.mixins.json",
+		{
+			"config": "rallyguard.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.16.14",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*",
+		"guardvillagers": ">=2.1.0"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}

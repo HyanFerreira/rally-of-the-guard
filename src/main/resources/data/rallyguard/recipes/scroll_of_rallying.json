@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "_O_",
+    "YIY",
+    " _ "
+  ],
+  "key": {
+    "_": {
+      "item": "minecraft:oak_slab"
+    },
+    "O": {
+      "item": "minecraft:oak_planks"
+    },
+    "Y": {
+      "item": "minecraft:yellow_wool"
+    },
+    "I": {
+      "item": "minecraft:iron_sword"
+    }
+  },
+  "result": {
+    "id": "rallyguard:scroll_of_rallying",
+    "count": 1
+  }
+}

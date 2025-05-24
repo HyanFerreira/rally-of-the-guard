@@ -1,0 +1,12 @@
+{
+  "item.rallyguard.scroll_of_rallying": "Pergaminho do Rali",
+
+  "alert.rallyguard.scroll_of_rallying.strength_gained": "Você iniciou um Rali! Guardas em um raio de 50 blocos foram teleportados até você",
+  "alert.rallyguard.scroll_of_rallying.strength_lost": "Você encerrou o Rali! Os Guardas voltarão a vagar por aí",
+
+  "tooltip.rallyguard.scroll_of_rallying.tooltip_desc": "SHIFT + botão direito do mouse para ativar/desativar",
+  "tooltip.rallyguard.scroll_of_rallying.tooltip_shift": "Segure SHIFT para mais informações",
+  "tooltip.rallyguard.scroll_of_rallying.tooltip_hold": "SHIFT + botão direito do mouse para ativar/desativar",
+
+  "effect.rallyguard.rally_commander": "Comandante do Rali"
+}
