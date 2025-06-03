@@ -1,12 +1,12 @@
 {
   "item.rallyguard.scroll_of_rallying": "Scroll of Rallying",
 
-  "alert.rallyguard.scroll_of_rallying.strength_gained": "You've started a Rally! Guards within a radius of 50 blocks have been teleported to you",
-  "alert.rallyguard.scroll_of_rallying.strength_lost": "You've ended the Rally! The Guards will be wandering around again",
+  "alert.rallyguard.scroll_of_rallying.strength_gained": "You've started a Rally! Your Guards within a radius of 50 blocks have been teleported to you",
+  "alert.rallyguard.scroll_of_rallying.strength_lost": "You've finished the Rally! Your Guards will be wandering around again",
 
-  "tooltip.rallyguard.scroll_of_rallying.tooltip_desc": "SHIFT + right mouse button to activate/deactivate",
+  "tooltip.rallyguard.scroll_of_rallying.tooltip_desc": "SHIFT + right button to activate/deactivate",
   "tooltip.rallyguard.scroll_of_rallying.tooltip_shift": "Hold SHIFT for more information",
-  "tooltip.rallyguard.scroll_of_rallying.tooltip_hold": "SHIFT + right mouse button to activate/deactivate",
+  "tooltip.rallyguard.scroll_of_rallying.tooltip_hold": "SHIFT + right button to activate/deactivate",
 
   "effect.rallyguard.rally_commander": "Rally Commander"
 }
