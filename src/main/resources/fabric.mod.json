@@ -2,8 +2,8 @@
 	"schemaVersion": 1,
 	"id": "rallyguard",
 	"version": "${version}",
-	"name": "Rally of the Guard",
-	"description": "In developement",
+	"name": "Rally of the Guard - Summon your Guards and battle it out\nBy Hyan Ferreira",
+	"description": "",
 	"authors": [
 		"Hyan Ferreira!"
 	],
