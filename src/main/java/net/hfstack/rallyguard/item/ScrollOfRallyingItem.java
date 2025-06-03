@@ -63,12 +63,12 @@ public class ScrollOfRallyingItem extends Item {
                     // Executa comando para aplicar uma ação
                     try {
                         String spreadCommand = String.format(Locale.US,
-                                "spreadplayers %.1f %.1f 3 5 false @e[type=guardvillagers:guard,tag=contratado,distance=..50]",
+                                "spreadplayers %.1f %.1f 3 5 false @e[type=guardvillagers:guard,tag=contratado,distance=..100]",
                                 user.getX(), user.getZ()
                         );
                         source.getServer().getCommandManager().executeWithPrefix(source, spreadCommand);
                         source.getServer().getCommandManager().executeWithPrefix(source,
-                                "execute as @e[type=guardvillagers:guard,tag=contratado,distance=..50] at @s run data merge entity @s {Patrolling:0b,Following:1b}");
+                                "execute as @e[type=guardvillagers:guard,tag=contratado,distance=..100] at @s run data merge entity @s {Patrolling:0b,Following:1b}");
                     } catch (Exception e) {
                         user.sendMessage(Text.literal("Erro ao executar comandos para aplicar ação."), false);
                         e.printStackTrace();
