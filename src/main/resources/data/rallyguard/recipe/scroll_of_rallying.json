@@ -8,13 +8,13 @@
   ],
   "key": {
     "_": {
-      "item": "minecraft:oak_slab"
+      "item": "minecraft:spruce_slab"
     },
     "O": {
-      "item": "minecraft:oak_planks"
+      "item": "minecraft:spruce_planks"
     },
     "Y": {
-      "item": "minecraft:yellow_wool"
+      "item": "minecraft:black_wool"
     },
     "I": {
       "item": "minecraft:iron_sword"
