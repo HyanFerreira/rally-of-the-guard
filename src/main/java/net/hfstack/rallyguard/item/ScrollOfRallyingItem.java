@@ -1,18 +1,21 @@
 package net.hfstack.rallyguard.item;
 
 import java.util.List;
-import java.util.Locale;
 
 import net.hfstack.rallyguard.effect.ModEffects;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 
@@ -39,20 +42,29 @@ public class ScrollOfRallyingItem extends Item {
                 if (!(user instanceof ServerPlayerEntity serverPlayer)) {
                     return TypedActionResult.pass(user.getStackInHand(hand));
                 }
-                ServerCommandSource source = serverPlayer.getCommandSource().withSilent();
+                // ServerCommandSource source = serverPlayer.getCommandSource().withSilent();
 
                 if (hasRallyCommander) {
                     user.removeStatusEffect(ModEffects.RALLY_COMMANDER);
                     active = false;  // remove brilho
                     user.sendMessage(Text.translatable("alert.rallyguard.scroll_of_rallying.strength_lost").styled(style -> style.withColor(0xFF0000)), false);
 
-                    // Executa comando para remover uma ação
-                    try {
-                        source.getServer().getCommandManager().executeWithPrefix(source,
-                                "execute as @e[type=guardvillagers:guard,tag=contratado,distance=..100] at @s run data merge entity @s {Patrolling:0b,Following:0b}");
-                    } catch (Exception e) {
-                        user.sendMessage(Text.literal("Erro ao executar comandos para remover ação."), false);
-                        e.printStackTrace();
+                    // Para remover ação
+                    ServerWorld serverWorld = serverPlayer.getServerWorld();
+                    List<? extends Entity> nearbyGuards = serverWorld.getEntitiesByType(
+                            Registries.ENTITY_TYPE.get(Identifier.of("guardvillagers", "guard")),
+                            entity -> entity.getCommandTags().contains("contratado")
+                            && entity.squaredDistanceTo(user) <= 100 * 100
+                    );
+
+                    for (Entity guard : nearbyGuards) {
+                        NbtCompound nbt = new NbtCompound();
+                        guard.writeNbt(nbt);
+
+                        nbt.putByte("Patrolling", (byte) 0);
+                        nbt.putByte("Following", (byte) 0);
+
+                        guard.readNbt(nbt);
                     }
 
                 } else {
@@ -60,18 +72,27 @@ public class ScrollOfRallyingItem extends Item {
                     active = true;  // adiciona brilho
                     user.sendMessage(Text.translatable("alert.rallyguard.scroll_of_rallying.strength_gained").styled(style -> style.withColor(0x00FF00)), false);
 
-                    // Executa comando para aplicar uma ação
-                    try {
-                        String spreadCommand = String.format(Locale.US,
-                                "spreadplayers %.1f %.1f 3 5 false @e[type=guardvillagers:guard,tag=contratado,distance=..100]",
-                                user.getX(), user.getZ()
-                        );
-                        source.getServer().getCommandManager().executeWithPrefix(source, spreadCommand);
-                        source.getServer().getCommandManager().executeWithPrefix(source,
-                                "execute as @e[type=guardvillagers:guard,tag=contratado,distance=..100] at @s run data merge entity @s {Patrolling:0b,Following:1b}");
-                    } catch (Exception e) {
-                        user.sendMessage(Text.literal("Erro ao executar comandos para aplicar ação."), false);
-                        e.printStackTrace();
+                    // Para aplicar ação
+                    ServerWorld serverWorld = serverPlayer.getServerWorld();
+                    List<? extends Entity> nearbyGuards = serverWorld.getEntitiesByType(
+                            Registries.ENTITY_TYPE.get(Identifier.of("guardvillagers", "guard")),
+                            entity -> entity.getCommandTags().contains("contratado")
+                            && entity.squaredDistanceTo(user) <= 100 * 100
+                    );
+
+                    for (Entity guard : nearbyGuards) {
+                        // Espalhar levemente para simular "spreadplayers"
+                        double offsetX = (user.getRandom().nextDouble() - 0.5) * 6; // entre -3 e 3
+                        double offsetZ = (user.getRandom().nextDouble() - 0.5) * 6;
+                        guard.refreshPositionAndAngles(user.getX() + offsetX, user.getY(), user.getZ() + offsetZ, guard.getYaw(), guard.getPitch());
+
+                        NbtCompound nbt = new NbtCompound();
+                        guard.writeNbt(nbt);
+
+                        nbt.putByte("Patrolling", (byte) 0);
+                        nbt.putByte("Following", (byte) 1);
+
+                        guard.readNbt(nbt);
                     }
                 }
 
