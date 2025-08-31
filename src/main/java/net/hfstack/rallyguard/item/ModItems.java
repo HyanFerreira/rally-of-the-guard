@@ -13,6 +13,9 @@ public class ModItems {
     public static final Item SCROLL_OF_RALLYING = registerItem("scroll_of_rallying",
             new ScrollOfRallyingItem(new Item.Settings().maxCount(1)));
 
+    public static final Item COMMANDERS_LEDGER = registerItem("commanders_ledger",
+            new CommandersLedgerItem(new Item.Settings().maxCount(1)));
+
     private static Item registerItem(String name, Item item) {
         return Registry.register(Registries.ITEM, Identifier.of(RallyOfTheGuard.MOD_ID, name), item);
     }
@@ -22,6 +25,7 @@ public class ModItems {
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> {
             entries.add(SCROLL_OF_RALLYING);
+            entries.add(COMMANDERS_LEDGER);
         });
     }
 }

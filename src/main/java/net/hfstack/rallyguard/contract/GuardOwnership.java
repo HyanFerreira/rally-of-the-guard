@@ -15,16 +15,17 @@ public final class GuardOwnership {
     }
 
     private static final Identifier GUARD_ID = Identifier.of("guardvillagers", "guard");
+    private static final int GOLD = 0xFFD700;
 
     public static boolean isGuard(Entity e) {
         return e != null && e.getType() == Registries.ENTITY_TYPE.get(GUARD_ID);
     }
 
     public static UUID getOwner(Entity guard) {
-        NbtCompound nbt = new NbtCompound();
-        guard.writeNbt(nbt);
-        if (nbt.containsUuid("Owner")) return nbt.getUuid("Owner");
-        if (nbt.containsUuid("rallyguard:Owner")) return nbt.getUuid("rallyguard:Owner");
+        NbtCompound n = new NbtCompound();
+        guard.writeNbt(n);
+        if (n.containsUuid("Owner")) return n.getUuid("Owner");
+        if (n.containsUuid("rallyguard:Owner")) return n.getUuid("rallyguard:Owner");
         return null;
     }
 
@@ -38,14 +39,28 @@ public final class GuardOwnership {
     }
 
     public static void setOwner(Entity guard, ServerPlayerEntity player) {
-        NbtCompound nbt = new NbtCompound();
-        guard.writeNbt(nbt);
-        nbt.putUuid("Owner", player.getUuid());            // chave reconhecida pelo GuardVillagers
-        nbt.putUuid("rallyguard:Owner", player.getUuid()); // redundância, se quiser consultar
-        guard.readNbt(nbt);
+        // Grava o dono no NBT (chave reconhecida pelo GuardVillagers)
+        NbtCompound n = new NbtCompound();
+        guard.writeNbt(n);
+        n.putUuid("Owner", player.getUuid());
+        n.putUuid("rallyguard:Owner", player.getUuid()); // redundância para nosso mod
+        guard.readNbt(n);
 
-        String name = (guard instanceof LivingEntity le && le.hasCustomName())
-                ? le.getCustomName().getString() : "Guarda";
-        player.sendMessage(Text.literal("O " + name + " agora é seu contratado."), false);
+        // Aplica nome dourado (preserva o texto atual do nome)
+        applyGoldName(guard);
+
+        // Mensagem de apresentação do guarda (em chat, não overlay)
+        String display = guard.getName().getString();
+        player.sendMessage(Text.translatable("message.rallyguard.guard_presenting", display), false);
+    }
+
+    private static void applyGoldName(Entity guard) {
+        if (!(guard instanceof LivingEntity le)) return;
+
+        // Usa o nome atual (customizado ou padrão), só aplicando a cor
+        String base = le.getName().getString();
+        Text golden = Text.literal(base).styled(s -> s.withColor(GOLD));
+        le.setCustomName(golden);
+        le.setCustomNameVisible(true);
     }
 }

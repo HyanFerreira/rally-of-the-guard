@@ -11,9 +11,30 @@
   "effect.rallyguard.rally_commander": "Comandante do Rali",
 
   "gui.rallyguard.hire.title": "Contratar Guarda",
-  "gui.rallyguard.hire.body": "Pague 3 esmeraldas para contratar este Guarda.",
+  "gui.rallyguard.hire.body": "Contratar guarda para se juntar ao seu exército.\n(custo: 3 esmeraldas).",
   "gui.rallyguard.hire.button": "Contratar",
   "gui.rallyguard.hire.not_enough": "Você não tem esmeraldas suficientes.",
-  "gui.rallyguard.hire.success": "Contrato fechado! O guarda agora é seu.",
-  "gui.rallyguard.hire.already_owned": "Este guarda já é seu."
+  "gui.rallyguard.hire.success": "Contrato aceito!",
+  "gui.rallyguard.hire.already_owned": "Este guarda já faz parte do seu exército.",
+
+  "message.rallyguard.guard_presenting": "Guarda %s se apresentando para serviço.",
+
+  "item.rallyguard.commanders_ledger": "Livro de Comando",
+  "item.rallyguard.commanders_ledger.tooltip": "Abra o painel para comandar seus guardas.",
+
+  "gui.rallyguard.command.title": "Painel de Comando",
+  "gui.rallyguard.command.empty": "Nenhum guarda disponível neste mundo.",
+  "gui.rallyguard.command.name": "Guarda",
+  "gui.rallyguard.command.actions": "Ações",
+  "gui.rallyguard.command.summon": "Convocar",
+  "gui.rallyguard.command.dismiss": "Dispensar",
+  "gui.rallyguard.command.patrol": "Patrulhar",
+  "gui.rallyguard.command.stop": "Parar",
+  "gui.rallyguard.command.status.patrolling": "Em patrulha",
+  "gui.rallyguard.command.status.idle": "Ocioso",
+  "gui.rallyguard.command.not_found": "Guarda indisponível ou distante.",
+  "gui.rallyguard.command.not_owner": "Você não é o comandante deste guarda.",
+  "gui.rallyguard.command.summoned": "Guarda convocado.",
+  "gui.rallyguard.command.patrol_on": "Patrulha iniciada no local.",
+  "gui.rallyguard.command.patrol_off": "Patrulha encerrada."
 }

@@ -4,7 +4,10 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
+
+import java.util.List;
 
 public class HireGuardScreen extends HandledScreen<HireGuardScreenHandler> {
 
@@ -20,7 +23,7 @@ public class HireGuardScreen extends HandledScreen<HireGuardScreenHandler> {
     protected void init() {
         super.init();
 
-        // esconde “Inventário” e o título padrão (vamos desenhar o nosso)
+        // esconde labels padrão
         this.playerInventoryTitleX = Integer.MAX_VALUE / 2;
         this.playerInventoryTitleY = -1000;
         this.titleX = Integer.MAX_VALUE / 2;
@@ -50,7 +53,7 @@ public class HireGuardScreen extends HandledScreen<HireGuardScreenHandler> {
     }
 
     /**
-     * Painel estilo vanilla simples (retângulo + borda)
+     * Painel estilo vanilla simples (retângulo + borda) + texto com wrap/linhas múltiplas centralizadas.
      */
     @Override
     protected void drawBackground(DrawContext ctx, float delta, int mouseX, int mouseY) {
@@ -63,29 +66,32 @@ public class HireGuardScreen extends HandledScreen<HireGuardScreenHandler> {
 
         // Borda
         int border = 0xFFFFFFFF;
-        // topo
-        ctx.fill(x, y, x + this.backgroundWidth, y + 1, border);
-        // base
-        ctx.fill(x, y + this.backgroundHeight - 1, x + this.backgroundWidth, y + this.backgroundHeight, border);
-        // esquerda
-        ctx.fill(x, y, x + 1, y + this.backgroundHeight, border);
-        // direita
-        ctx.fill(x + this.backgroundWidth - 1, y, x + this.backgroundWidth, y + this.backgroundHeight, border);
+        ctx.fill(x, y, x + this.backgroundWidth, y + 1, border);                                       // topo
+        ctx.fill(x, y + this.backgroundHeight - 1, x + this.backgroundWidth, y + this.backgroundHeight, border); // base
+        ctx.fill(x, y, x + 1, y + this.backgroundHeight, border);                                      // esquerda
+        ctx.fill(x + this.backgroundWidth - 1, y, x + this.backgroundWidth, y + this.backgroundHeight, border);  // direita
 
         // Título central
         ctx.drawCenteredTextWithShadow(this.textRenderer,
                 Text.translatable("gui.rallyguard.hire.title"),
                 this.width / 2, y + 10, 0xFFFFFF);
 
-        // Mensagem
-        ctx.drawCenteredTextWithShadow(this.textRenderer,
-                Text.translatable("gui.rallyguard.hire.body"),
-                this.width / 2, y + 40, 0xFFFFFF);
+        // Mensagem com suporte a \n e wrap
+        Text body = Text.translatable("gui.rallyguard.hire.body");
+
+        int maxTextWidth = this.backgroundWidth - 24; // margem interna
+        // wrap automático (respeita quebras explícitas \n também)
+        List<OrderedText> lines = this.textRenderer.wrapLines(body, maxTextWidth);
+
+        int lineY = y + 36;
+        for (OrderedText ot : lines) {
+            int w = this.textRenderer.getWidth(ot);
+            int lineX = this.width / 2 - (w / 2); // centraliza cada linha
+            ctx.drawTextWithShadow(this.textRenderer, ot, lineX, lineY, 0xFFFFFF);
+            lineY += this.textRenderer.fontHeight + 2;
+        }
     }
 
-    /**
-     * Não queremos título/labels padrão do HandledScreen.
-     */
     @Override
     protected void drawForeground(DrawContext ctx, int mouseX, int mouseY) {
         // intencionalmente vazio

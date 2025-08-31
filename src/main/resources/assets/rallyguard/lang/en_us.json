@@ -1,12 +1,40 @@
 {
   "item.rallyguard.scroll_of_rallying": "Scroll of Rallying",
 
-  "alert.rallyguard.scroll_of_rallying.strength_gained": "You've started a Rally! Your Guards within a radius of 50 blocks have been teleported to you",
-  "alert.rallyguard.scroll_of_rallying.strength_lost": "You've finished the Rally! Your Guards will be wandering around again",
+  "alert.rallyguard.scroll_of_rallying.strength_gained": "You started a Rally! Your guards within 50 blocks were teleported to you.",
+  "alert.rallyguard.scroll_of_rallying.strength_lost": "You ended the Rally! Your guards will wander around again.",
 
-  "tooltip.rallyguard.scroll_of_rallying.tooltip_desc": "SHIFT + right button to activate/deactivate",
+  "tooltip.rallyguard.scroll_of_rallying.tooltip_desc": "SHIFT + right-click to toggle",
   "tooltip.rallyguard.scroll_of_rallying.tooltip_shift": "Hold SHIFT for more information",
-  "tooltip.rallyguard.scroll_of_rallying.tooltip_hold": "SHIFT + right button to activate/deactivate",
+  "tooltip.rallyguard.scroll_of_rallying.tooltip_hold": "SHIFT + right-click to toggle",
 
-  "effect.rallyguard.rally_commander": "Rally Commander"
+  "effect.rallyguard.rally_commander": "Rally Commander",
+
+  "gui.rallyguard.hire.title": "Hire Guard",
+  "gui.rallyguard.hire.body": "Hire guards to join your army.\n(cost: 3 emeralds).",
+  "gui.rallyguard.hire.button": "Hire",
+  "gui.rallyguard.hire.not_enough": "You don't have enough emeralds.",
+  "gui.rallyguard.hire.success": "Contract accepted!",
+  "gui.rallyguard.hire.already_owned": "This guard is already part of your army.",
+
+  "message.rallyguard.guard_presenting": "Guard %s reporting for duty.",
+
+  "item.rallyguard.commanders_ledger": "Commander's Ledger",
+  "item.rallyguard.commanders_ledger.tooltip": "Open the panel to command your guards.",
+
+  "gui.rallyguard.command.title": "Command Panel",
+  "gui.rallyguard.command.empty": "No hired guards loaded in this world.",
+  "gui.rallyguard.command.name": "Guard",
+  "gui.rallyguard.command.actions": "Actions",
+  "gui.rallyguard.command.summon": "Summon",
+  "gui.rallyguard.command.dismiss": "Dismiss",
+  "gui.rallyguard.command.patrol": "Patrol",
+  "gui.rallyguard.command.stop": "Stop",
+  "gui.rallyguard.command.status.patrolling": "On patrol",
+  "gui.rallyguard.command.status.idle": "Idle",
+  "gui.rallyguard.command.not_found": "Guard unavailable or too far.",
+  "gui.rallyguard.command.not_owner": "You are not this guard’s commander.",
+  "gui.rallyguard.command.summoned": "Guard summoned.",
+  "gui.rallyguard.command.patrol_on": "Patrol started at your position.",
+  "gui.rallyguard.command.patrol_off": "Patrol stopped."
 }
