@@ -8,5 +8,12 @@
   "tooltip.rallyguard.scroll_of_rallying.tooltip_shift": "Segure SHIFT para mais informações",
   "tooltip.rallyguard.scroll_of_rallying.tooltip_hold": "SHIFT + botão direito para ativar/desativar",
 
-  "effect.rallyguard.rally_commander": "Comandante do Rali"
+  "effect.rallyguard.rally_commander": "Comandante do Rali",
+
+  "gui.rallyguard.hire.title": "Contratar Guarda",
+  "gui.rallyguard.hire.body": "Pague 3 esmeraldas para contratar este Guarda.",
+  "gui.rallyguard.hire.button": "Contratar",
+  "gui.rallyguard.hire.not_enough": "Você não tem esmeraldas suficientes.",
+  "gui.rallyguard.hire.success": "Contrato fechado! O guarda agora é seu.",
+  "gui.rallyguard.hire.already_owned": "Este guarda já é seu."
 }

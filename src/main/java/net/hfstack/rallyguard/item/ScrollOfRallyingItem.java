@@ -1,9 +1,13 @@
 package net.hfstack.rallyguard.item;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import net.hfstack.rallyguard.component.ModComponents;
+import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.effect.ModEffects;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -21,102 +25,108 @@ import net.minecraft.world.World;
 
 public class ScrollOfRallyingItem extends Item {
 
-    private boolean active = false;  // se o item está brilhando
-
     public ScrollOfRallyingItem(Settings settings) {
         super(settings);
     }
 
+    private static boolean isActive(ItemStack stack) {
+        return stack.getOrDefault(ModComponents.ACTIVE, false);
+    }
+
+    private static void setActive(ItemStack stack, boolean v) {
+        stack.set(ModComponents.ACTIVE, v);
+    }
+
+    private static NbtCompound read(Entity e) {
+        NbtCompound n = new NbtCompound();
+        e.writeNbt(n);
+        return n;
+    }
+
+    private static boolean isPatrolling(Entity e) {
+        return read(e).getBoolean("Patrolling");
+    }
+
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-        if (!world.isClient) {
-            if (user.isSneaking()) { // segurando SHIFT
-                // Verifica cooldown
-                if (user.getItemCooldownManager().isCoolingDown(this)) {
-                    user.sendMessage(Text.literal("Aguarde antes de usar novamente!"), true);
-                    return TypedActionResult.fail(user.getStackInHand(hand));
-                }
+        ItemStack stack = user.getStackInHand(hand);
+        if (world.isClient) return TypedActionResult.success(stack, true);
+        if (!user.isSneaking()) return TypedActionResult.pass(stack);
+        if (!(user instanceof ServerPlayerEntity sp)) return TypedActionResult.pass(stack);
 
-                boolean hasRallyCommander = user.hasStatusEffect(ModEffects.RALLY_COMMANDER);
+        boolean rallyOn = user.hasStatusEffect(ModEffects.RALLY_COMMANDER);
+        EntityType<?> guardType = Registries.ENTITY_TYPE.get(Identifier.of("guardvillagers", "guard"));
+        ServerWorld sw = sp.getServerWorld();
 
-                if (!(user instanceof ServerPlayerEntity serverPlayer)) {
-                    return TypedActionResult.pass(user.getStackInHand(hand));
-                }
-                // ServerCommandSource source = serverPlayer.getCommandSource().withSilent();
+        if (rallyOn) {
+            // === DESATIVAR RALI === (estilo antigo: aplica a TODOS os seus guardas no raio)
+            user.removeStatusEffect(ModEffects.RALLY_COMMANDER);
+            setActive(stack, false);
+            user.sendMessage(Text.translatable("alert.rallyguard.scroll_of_rallying.strength_lost")
+                    .styled(s -> s.withColor(0xFF0000)), false);
 
-                if (hasRallyCommander) {
-                    user.removeStatusEffect(ModEffects.RALLY_COMMANDER);
-                    active = false;  // remove brilho
-                    user.sendMessage(Text.translatable("alert.rallyguard.scroll_of_rallying.strength_lost").styled(style -> style.withColor(0xFF0000)), false);
+            List<? extends Entity> myGuards = sw.getEntitiesByType(
+                    guardType,
+                    e -> GuardOwnership.isOwnedBy(e, user.getUuid()) && e.squaredDistanceTo(user) <= 100 * 100
+            );
 
-                    // Para remover ação
-                    ServerWorld serverWorld = serverPlayer.getServerWorld();
-                    List<? extends Entity> nearbyGuards = serverWorld.getEntitiesByType(
-                            Registries.ENTITY_TYPE.get(Identifier.of("guardvillagers", "guard")),
-                            entity -> entity.getCommandTags().contains("contratado")
-                            && entity.squaredDistanceTo(user) <= 100 * 100
-                    );
+            for (Entity g : myGuards) {
+                NbtCompound nbt = new NbtCompound();
+                g.writeNbt(nbt);
+                nbt.putBoolean("rallyguard:in_rally", false);
+                nbt.putBoolean("Following", false); // <- só boolean, como no seu código antigo
+                g.readNbt(nbt);
+            }
 
-                    for (Entity guard : nearbyGuards) {
-                        NbtCompound nbt = new NbtCompound();
-                        guard.writeNbt(nbt);
+        } else {
+            // === ATIVAR RALI === (apenas guardas seus que NÃO estão patrulhando)
+            user.addStatusEffect(new StatusEffectInstance(
+                    ModEffects.RALLY_COMMANDER, Integer.MAX_VALUE, 0, false, false, true));
+            setActive(stack, true);
+            user.sendMessage(Text.translatable("alert.rallyguard.scroll_of_rallying.strength_gained")
+                    .styled(s -> s.withColor(0x00FF00)), false);
 
-                        nbt.putByte("Patrolling", (byte) 0);
-                        nbt.putByte("Following", (byte) 0);
+            List<? extends Entity> candidates = sw.getEntitiesByType(
+                    guardType,
+                    e -> GuardOwnership.isOwnedBy(e, user.getUuid()) && e.squaredDistanceTo(user) <= 100 * 100
+            );
 
-                        guard.readNbt(nbt);
-                    }
+            List<Entity> joiners = new ArrayList<>();
+            for (Entity g : candidates) {
+                if (isPatrolling(g)) continue; // não puxa sentinelas
+                joiners.add(g);
+            }
 
-                } else {
-                    user.addStatusEffect(new StatusEffectInstance(ModEffects.RALLY_COMMANDER, Integer.MAX_VALUE, 0, false, false, true));
-                    active = true;  // adiciona brilho
-                    user.sendMessage(Text.translatable("alert.rallyguard.scroll_of_rallying.strength_gained").styled(style -> style.withColor(0x00FF00)), false);
+            int total = joiners.size();
+            int i = 0;
+            for (Entity g : joiners) {
+                double angle = (Math.PI / (total + 1)) * (++i);
+                double radius = 3.5;
+                double gx = user.getX() + Math.cos(angle) * radius;
+                double gz = user.getZ() + Math.sin(angle) * radius;
 
-                    // Para aplicar ação
-                    ServerWorld serverWorld = serverPlayer.getServerWorld();
-                    List<? extends Entity> nearbyGuards = serverWorld.getEntitiesByType(
-                            Registries.ENTITY_TYPE.get(Identifier.of("guardvillagers", "guard")),
-                            entity -> entity.getCommandTags().contains("contratado")
-                            && entity.squaredDistanceTo(user) <= 100 * 100
-                    );
+                g.refreshPositionAndAngles(gx, user.getY(), gz, g.getYaw(), g.getPitch());
 
-                    for (Entity guard : nearbyGuards) {
-                        // Espalhar levemente para simular "spreadplayers"
-                        double offsetX = (user.getRandom().nextDouble() - 0.5) * 6; // entre -3 e 3
-                        double offsetZ = (user.getRandom().nextDouble() - 0.5) * 6;
-                        guard.refreshPositionAndAngles(user.getX() + offsetX, user.getY(), user.getZ() + offsetZ, guard.getYaw(), guard.getPitch());
-
-                        NbtCompound nbt = new NbtCompound();
-                        guard.writeNbt(nbt);
-
-                        nbt.putByte("Patrolling", (byte) 0);
-                        nbt.putByte("Following", (byte) 1);
-
-                        guard.readNbt(nbt);
-                    }
-                }
-
-                // no final da ação aplica cooldown
-                user.getItemCooldownManager().set(this, 60); // 60 ticks = 3s
-
-                return TypedActionResult.success(user.getStackInHand(hand), false);
-            } else {
-                return TypedActionResult.pass(user.getStackInHand(hand));
+                NbtCompound nbt = new NbtCompound();
+                g.writeNbt(nbt);
+                nbt.putBoolean("rallyguard:in_rally", true);
+                nbt.putBoolean("Following", true); // <- só boolean, como no seu código antigo
+                g.readNbt(nbt);
             }
         }
 
-        return TypedActionResult.success(user.getStackInHand(hand), true);
+        user.getItemCooldownManager().set(this, 60);
+        return TypedActionResult.success(stack, false);
     }
 
     @Override
     public boolean hasGlint(ItemStack stack) {
-        return active;
+        return isActive(stack);
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
-        tooltip.add(Text.translatable("tooltip.rallyguard.scroll_of_rallying.tooltip_desc").styled(style -> style.withColor(0xFFFFFF)));
-
-        super.appendTooltip(stack, context, tooltip, type);
+    public void appendTooltip(ItemStack stack, Item.TooltipContext ctx, java.util.List<Text> tip, TooltipType type) {
+        tip.add(Text.translatable("tooltip.rallyguard.scroll_of_rallying.tooltip_desc"));
+        super.appendTooltip(stack, ctx, tip, type);
     }
 }
