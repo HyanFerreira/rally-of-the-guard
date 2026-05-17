@@ -14,7 +14,7 @@ public final class InteractGuardHandler {
 
     public static void register() {
         UseEntityCallback.EVENT.register((player, world, hand, entity, hit) -> {
-            if (world.isClient || hand != Hand.MAIN_HAND) return ActionResult.PASS;
+            if (world.isClient() || hand != Hand.MAIN_HAND) return ActionResult.PASS;
             if (!GuardOwnership.isGuard(entity)) return ActionResult.PASS;
 
             // Se já tem dono, deixa o GuardVillagers tratar (inventário/seguir/patrulhar).

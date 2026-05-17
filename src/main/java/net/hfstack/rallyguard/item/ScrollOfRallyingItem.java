@@ -1,11 +1,10 @@
 package net.hfstack.rallyguard.item;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.hfstack.rallyguard.component.ModComponents;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.effect.ModEffects;
+import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -13,15 +12,18 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class ScrollOfRallyingItem extends Item {
 
@@ -37,29 +39,28 @@ public class ScrollOfRallyingItem extends Item {
         stack.set(ModComponents.ACTIVE, v);
     }
 
-    private static NbtCompound read(Entity e) {
-        NbtCompound n = new NbtCompound();
-        e.writeNbt(n);
-        return n;
+    private static boolean isPatrolling(Entity e) {
+        return e instanceof GuardEntity guard && guard.isPatrolling();
     }
 
-    private static boolean isPatrolling(Entity e) {
-        return read(e).getBoolean("Patrolling");
+    private static void setFollowing(Entity e, boolean following) {
+        if (e instanceof GuardEntity guard) {
+            guard.setFollowing(following);
+        }
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+    public ActionResult use(World world, PlayerEntity user, Hand hand) {
         ItemStack stack = user.getStackInHand(hand);
-        if (world.isClient) return TypedActionResult.success(stack, true);
-        if (!user.isSneaking()) return TypedActionResult.pass(stack);
-        if (!(user instanceof ServerPlayerEntity sp)) return TypedActionResult.pass(stack);
+        if (world.isClient()) return ActionResult.SUCCESS;
+        if (!user.isSneaking()) return ActionResult.PASS;
+        if (!(user instanceof ServerPlayerEntity sp)) return ActionResult.PASS;
 
         boolean rallyOn = user.hasStatusEffect(ModEffects.RALLY_COMMANDER);
         EntityType<?> guardType = Registries.ENTITY_TYPE.get(Identifier.of("guardvillagers", "guard"));
-        ServerWorld sw = sp.getServerWorld();
+        ServerWorld sw = sp.getEntityWorld();
 
         if (rallyOn) {
-            // === DESATIVAR RALI === (estilo antigo: aplica a TODOS os seus guardas no raio)
             user.removeStatusEffect(ModEffects.RALLY_COMMANDER);
             setActive(stack, false);
             user.sendMessage(Text.translatable("alert.rallyguard.scroll_of_rallying.strength_lost")
@@ -71,15 +72,9 @@ public class ScrollOfRallyingItem extends Item {
             );
 
             for (Entity g : myGuards) {
-                NbtCompound nbt = new NbtCompound();
-                g.writeNbt(nbt);
-                nbt.putBoolean("rallyguard:in_rally", false);
-                nbt.putBoolean("Following", false); // <- só boolean, como no seu código antigo
-                g.readNbt(nbt);
+                setFollowing(g, false);
             }
-
         } else {
-            // === ATIVAR RALI === (apenas guardas seus que NÃO estão patrulhando)
             user.addStatusEffect(new StatusEffectInstance(
                     ModEffects.RALLY_COMMANDER, Integer.MAX_VALUE, 0, false, false, true));
             setActive(stack, true);
@@ -93,7 +88,7 @@ public class ScrollOfRallyingItem extends Item {
 
             List<Entity> joiners = new ArrayList<>();
             for (Entity g : candidates) {
-                if (isPatrolling(g)) continue; // não puxa sentinelas
+                if (isPatrolling(g)) continue;
                 joiners.add(g);
             }
 
@@ -106,17 +101,12 @@ public class ScrollOfRallyingItem extends Item {
                 double gz = user.getZ() + Math.sin(angle) * radius;
 
                 g.refreshPositionAndAngles(gx, user.getY(), gz, g.getYaw(), g.getPitch());
-
-                NbtCompound nbt = new NbtCompound();
-                g.writeNbt(nbt);
-                nbt.putBoolean("rallyguard:in_rally", true);
-                nbt.putBoolean("Following", true); // <- só boolean, como no seu código antigo
-                g.readNbt(nbt);
+                setFollowing(g, true);
             }
         }
 
-        user.getItemCooldownManager().set(this, 60);
-        return TypedActionResult.success(stack, false);
+        user.getItemCooldownManager().set(stack, 60);
+        return ActionResult.SUCCESS_SERVER;
     }
 
     @Override
@@ -125,8 +115,9 @@ public class ScrollOfRallyingItem extends Item {
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, Item.TooltipContext ctx, java.util.List<Text> tip, TooltipType type) {
-        tip.add(Text.translatable("tooltip.rallyguard.scroll_of_rallying.tooltip_desc"));
-        super.appendTooltip(stack, ctx, tip, type);
+    public void appendTooltip(ItemStack stack, Item.TooltipContext ctx, TooltipDisplayComponent displayComponent,
+                              Consumer<Text> textConsumer, TooltipType type) {
+        textConsumer.accept(Text.translatable("tooltip.rallyguard.scroll_of_rallying.tooltip_desc"));
+        super.appendTooltip(stack, ctx, displayComponent, textConsumer, type);
     }
 }

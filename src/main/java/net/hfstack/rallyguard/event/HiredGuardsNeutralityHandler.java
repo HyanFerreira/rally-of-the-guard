@@ -33,7 +33,7 @@ public final class HiredGuardsNeutralityHandler {
     public static void register() {
         // Quando você acerta um guarda NÃO-contratado…
         AttackEntityCallback.EVENT.register((player, world, hand, target, hit) -> {
-            if (world.isClient) return net.minecraft.util.ActionResult.PASS;
+            if (world.isClient()) return net.minecraft.util.ActionResult.PASS;
             if (!GuardOwnership.isGuard(target)) return net.minecraft.util.ActionResult.PASS;
 
             // Se o alvo é um guarda seu, não mexe.

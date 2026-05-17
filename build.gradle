@@ -39,6 +39,19 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
+	def guardVillagersJar = file(project.guardvillagers_jar)
+	if (guardVillagersJar.exists()) {
+		modImplementation files(guardVillagersJar)
+	} else {
+		logger.warn("Guard Villagers jar not found at ${guardVillagersJar}. runClient needs this local mod dependency.")
+	}
+
+	def midnightLibJar = file(project.midnightlib_jar)
+	if (midnightLibJar.exists()) {
+		modImplementation files(midnightLibJar)
+	} else {
+		logger.warn("MidnightLib jar not found at ${midnightLibJar}. Guard Villagers needs this local nested dependency.")
+	}
 }
 
 processResources {
