@@ -38,3 +38,6 @@ hs_err_*.log
 replay_*.log
 *.hprof
 *.jfr
+
+guardvillagers-2.1.2-1.21.11/
+guardvillagers-2.1.2-1.21.11.jar
