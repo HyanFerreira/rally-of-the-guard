@@ -10,6 +10,7 @@ import net.minecraft.text.Text;
 import java.util.List;
 
 public class HireGuardScreen extends HandledScreen<HireGuardScreenHandler> {
+    private static final int WHITE = 0xFFFFFFFF;
 
     private ButtonWidget hireButton;
 
@@ -74,7 +75,7 @@ public class HireGuardScreen extends HandledScreen<HireGuardScreenHandler> {
         // Título central
         ctx.drawCenteredTextWithShadow(this.textRenderer,
                 Text.translatable("gui.rallyguard.hire.title"),
-                this.width / 2, y + 10, 0xFFFFFF);
+                this.width / 2, y + 10, WHITE);
 
         // Mensagem com suporte a \n e wrap
         Text body = Text.translatable("gui.rallyguard.hire.body");
@@ -87,7 +88,7 @@ public class HireGuardScreen extends HandledScreen<HireGuardScreenHandler> {
         for (OrderedText ot : lines) {
             int w = this.textRenderer.getWidth(ot);
             int lineX = this.width / 2 - (w / 2); // centraliza cada linha
-            ctx.drawTextWithShadow(this.textRenderer, ot, lineX, lineY, 0xFFFFFF);
+            ctx.drawTextWithShadow(this.textRenderer, ot, lineX, lineY, WHITE);
             lineY += this.textRenderer.fontHeight + 2;
         }
     }

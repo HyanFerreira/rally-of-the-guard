@@ -14,6 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GuardCommandScreen extends Screen {
+    private static final int WHITE = 0xFFFFFFFF;
+    private static final int MUTED = 0xFFCCCCCC;
+    private static final int EMPTY_TEXT = 0xFFAAAAAA;
 
     public static record Entry(int entityId, String name, boolean patrolling) {
     }
@@ -163,12 +166,12 @@ public class GuardCommandScreen extends Screen {
         // título
         ctx.drawCenteredTextWithShadow(this.textRenderer,
                 Text.translatable("gui.rallyguard.command.title"),
-                this.width / 2, y + 8, 0xFFFFFF);
+                this.width / 2, y + 8, WHITE);
 
         // cabeçalhos
         ctx.drawTextWithShadow(this.textRenderer,
                 Text.translatable("gui.rallyguard.command.name"),
-                x + COL_NAME_X, y + HEADER_Y, 0xCCCCCC);
+                x + COL_NAME_X, y + HEADER_Y, MUTED);
 
         // “Ações” centralizado sobre a área dos botões
         int groupWidth = BTN_W1 + BTN_GAP + BTN_W2;
@@ -180,7 +183,7 @@ public class GuardCommandScreen extends Screen {
         ctx.drawTextWithShadow(this.textRenderer,
                 Text.translatable("gui.rallyguard.command.actions"),
                 actionsCenterX - (actionsHeaderW / 2),
-                y + HEADER_Y, 0xCCCCCC);
+                y + HEADER_Y, MUTED);
 
         // linha do cabeçalho
         ctx.fill(x + 6, y + HEADER_LINE_Y, x + PANEL_W - 6, y + HEADER_LINE_Y + 1, 0x33FFFFFF);
@@ -193,7 +196,7 @@ public class GuardCommandScreen extends Screen {
         if (all.isEmpty()) {
             ctx.drawCenteredTextWithShadow(this.textRenderer,
                     Text.translatable("gui.rallyguard.command.empty"),
-                    this.width / 2, y + (PANEL_H / 2), 0xAAAAAA);
+                    this.width / 2, y + (PANEL_H / 2), EMPTY_TEXT);
             drawPageIndicator(ctx, x, y);
             return;
         }
@@ -225,7 +228,7 @@ public class GuardCommandScreen extends Screen {
                 name = this.textRenderer.trimToWidth(name, maxNameW - this.textRenderer.getWidth("...")) + "...";
             }
             int nameY = rowMidY - (fontH / 2);
-            ctx.drawTextWithShadow(this.textRenderer, Text.literal(name), x + COL_NAME_X, nameY, 0xFFFFFF);
+            ctx.drawTextWithShadow(this.textRenderer, Text.literal(name), x + COL_NAME_X, nameY, WHITE);
         }
 
         drawPageIndicator(ctx, x, y);
@@ -236,7 +239,7 @@ public class GuardCommandScreen extends Screen {
         String pg = (page + 1) + " / " + totalPages;
         int w = this.textRenderer.getWidth(pg);
         ctx.drawTextWithShadow(this.textRenderer, Text.literal(pg),
-                x + (PANEL_W - w) / 2, y + PANEL_H - 24, 0xFFFFFF);
+                x + (PANEL_W - w) / 2, y + PANEL_H - 24, WHITE);
     }
 
     @Override
