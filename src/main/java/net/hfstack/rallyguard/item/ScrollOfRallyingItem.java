@@ -49,6 +49,21 @@ public class ScrollOfRallyingItem extends Item {
         }
     }
 
+    private static void rallyGuardToPlayer(Entity e, PlayerEntity user, double x, double y, double z) {
+        if (!(e instanceof GuardEntity guard)) return;
+
+        guard.setTarget(null);
+        guard.setAttacking(false);
+        guard.getNavigation().stop();
+        guard.setVelocity(0.0, 0.0, 0.0);
+
+        guard.refreshPositionAndAngles(x, y, z, guard.getYaw(), guard.getPitch());
+        guard.setFollowing(false);
+        guard.setFollowing(true);
+        guard.setAiDisabled(false);
+        guard.lookAtEntity(user, 30.0F, 30.0F);
+    }
+
     @Override
     public ActionResult use(World world, PlayerEntity user, Hand hand) {
         ItemStack stack = user.getStackInHand(hand);
@@ -100,8 +115,7 @@ public class ScrollOfRallyingItem extends Item {
                 double gx = user.getX() + Math.cos(angle) * radius;
                 double gz = user.getZ() + Math.sin(angle) * radius;
 
-                g.refreshPositionAndAngles(gx, user.getY(), gz, g.getYaw(), g.getPitch());
-                setFollowing(g, true);
+                rallyGuardToPlayer(g, user, gx, user.getY(), gz);
             }
         }
 
