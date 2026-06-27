@@ -37,6 +37,7 @@ Ja implementado:
   - quebra temporaria de formacao quando o guarda tem alvo
   - ordem de ataque ao alvo mirado
   - filtros de ataque: Todos, Infantaria e Arqueiros
+  - keybind padrao `R` para abrir Ordens de Combate
 - `README.md` tecnico em portugues.
 - `CURSEFORGE.md` promocional em ingles.
 

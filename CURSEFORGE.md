@@ -79,6 +79,8 @@ active, they try to keep their formation slots. If combat starts, they are allow
 
 Look at a hostile mob and send your rallied squad after it.
 
+- Press **R** by default to open Combat Orders.
+- The keybind can be changed in Minecraft's Controls screen.
 - **All** sends every matching rallied guard.
 - **Infantry** sends guards without bows or crossbows.
 - **Archers** sends guards carrying bows or crossbows.

@@ -1,4 +1,9 @@
 {
+  "key.category.rallyguard": "Rally of the Guard",
+  "key.category.rallyguard.combat_orders": "Rally of the Guard - Combat Controls",
+  "key.categories.rallyguard.controls": "Rally of the Guard",
+  "key.rallyguard.combat_orders": "Open Combat Orders",
+
   "item.rallyguard.scroll_of_rallying": "Scroll of Rallying",
 
   "alert.rallyguard.scroll_of_rallying.strength_gained": "You started a Rally! Your guards within 50 blocks were teleported to you.",

@@ -91,6 +91,11 @@ O **Pergaminho do Rali** convoca guardas contratados proximos para perto do joga
 
 O painel de combate permite mandar guardas em rali atacarem o alvo mirado pelo jogador.
 
+Atalho padrao:
+
+- `R`: abre a tela de Ordens de Combate.
+- A tecla pode ser alterada na tela de controles do Minecraft.
+
 Modos disponiveis:
 
 - `Todos`

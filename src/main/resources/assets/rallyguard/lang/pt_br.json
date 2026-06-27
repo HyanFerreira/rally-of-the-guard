@@ -1,4 +1,9 @@
 {
+  "key.category.rallyguard": "Rally of the Guard",
+  "key.category.rallyguard.combat_orders": "Rally of the Guard - Controle de Combate",
+  "key.categories.rallyguard.controls": "Rally of the Guard",
+  "key.rallyguard.combat_orders": "Abrir Ordens de Combate",
+
   "item.rallyguard.scroll_of_rallying": "Pergaminho do Rali",
 
   "alert.rallyguard.scroll_of_rallying.strength_gained": "Voc\u00ea iniciou um Rali! Seus Guardas em um raio de 50 blocos foram teleportados at\u00e9 voc\u00ea",
