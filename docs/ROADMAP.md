@@ -30,10 +30,17 @@ Ja implementado:
   - usa o `patrolPos` nativo do Guard Villagers
   - dados persistem no proprio guarda
   - outras ordens pausam a rota sem apagar os pontos
+- Tactical Rally:
+  - formacao Escolta no Rali
+  - slots relativos ao jogador
+  - ticker de formacao sem `patrolling`
+  - quebra temporaria de formacao quando o guarda tem alvo
+  - ordem de ataque ao alvo mirado
+  - filtros de ataque: Todos, Infantaria e Arqueiros
 - `README.md` tecnico em portugues.
 - `CURSEFORGE.md` promocional em ingles.
 
-## Proxima atualizacao combinada: Tactical Rally
+## Tactical Rally implementado
 
 ### 1. Formacao Escolta no Rally
 
@@ -61,9 +68,9 @@ Regras pensadas:
 - Comecar com uma unica formacao: Escolta.
 - Nao tentar formacao perfeita em todo terreno.
 
-Ideia tecnica inicial:
+Implementacao atual:
 
-- Ao ativar o Rally, atribuir slots aos guardas participantes.
+- Ao ativar o Rally, guardas participantes sao posicionados em slots de escolta.
 - A cada alguns ticks, calcular a posicao ideal do slot com base na posicao e direcao horizontal do jogador.
 - Se o guarda estiver longe do slot e sem alvo, usar `guard.getNavigation().startMovingTo(...)`.
 - Se estiver muito longe, usar teleporte corretivo como fallback.
@@ -71,10 +78,10 @@ Ideia tecnica inicial:
 
 ### 2. Ordem de ataque ao alvo mirado
 
-Ideia:
+Implementacao atual:
 
 - O jogador mira em um mob.
-- Abre um comando de combate.
+- Abre a tela de Ordens de Combate no Livro de Comando.
 - Pode mandar atacarem:
   - Todos
   - Infantaria
@@ -85,7 +92,7 @@ Critério provavel:
 - Arqueiro = guarda com `Bow` ou `Crossbow`.
 - Infantaria = guarda sem `Bow`/`Crossbow`, normalmente com arma corpo-a-corpo.
 
-Comportamento esperado:
+Comportamento:
 
 - Servidor valida o alvo mirado.
 - Guardas selecionados recebem o alvo.
@@ -107,6 +114,7 @@ Motivo:
 - Tirar screenshots para os placeholders do `CURSEFORGE.md`:
   - `docs/media/rally-of-the-guard-banner.png`
   - `docs/media/commanders-ledger.png`
+  - `docs/media/combat-orders.png`
   - `docs/media/patrol-route-editor.png`
   - `docs/media/scroll-of-rallying.png`
   - `docs/media/guard-patrol-post.png`

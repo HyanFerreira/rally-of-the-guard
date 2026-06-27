@@ -23,6 +23,8 @@ Principais mudancas:
 - Rotas usam o comportamento nativo de patrulha do Guard Villagers.
 - Dados da rota ficam salvos no proprio guarda e sobrevivem ao reload do mundo.
 - O Pergaminho do Rali respeita guardas em patrulha ou aguardando.
+- O Rali usa formacao Escolta para posicionar guardas em duas colunas atras/laterais do jogador.
+- Adicionada tela de Ordens de Combate para atacar o alvo mirado com todos, infantaria ou arqueiros.
 
 ---
 
@@ -79,10 +81,28 @@ Regras atuais:
 O **Pergaminho do Rali** convoca guardas contratados proximos para perto do jogador.
 
 - `Shift + botao direito` ativa ou encerra o rali.
-- Guardas convocados sao teleportados para perto do jogador e passam a seguir.
+- Guardas convocados sao posicionados em formacao Escolta e passam a seguir.
 - Guardas em patrulha nao sao puxados.
 - Guardas aguardando nao sao puxados.
+- Enquanto o rali esta ativo, guardas tentam manter seus slots de formacao quando nao estao em combate.
 - Durante o rali, guardas contratados ficam protegidos contra dano causado pelo proprio comandante.
+
+### Ordens de Combate
+
+O painel de combate permite mandar guardas em rali atacarem o alvo mirado pelo jogador.
+
+Modos disponiveis:
+
+- `Todos`
+- `Infantaria`
+- `Arqueiros`
+
+Regras atuais:
+
+- A ordem considera guardas contratados que estao seguindo o jogador.
+- Guardas em patrulha, aguardando ou em rota nao recebem a ordem.
+- Arqueiros sao identificados por `Bow` ou `Crossbow` na mao principal ou secundaria.
+- Infantaria corresponde aos guardas sem arco ou besta equipados.
 
 ### Patrulha Fixa
 
@@ -139,6 +159,8 @@ Empty   | Empty              | Empty
 - Guardas em chunks descarregados nao processam rota ate serem carregados novamente.
 - Rotas sao salvas no guarda usando tags persistentes.
 - O sistema de rota atual nao substitui a IA do Guard Villagers; ele apenas atualiza dinamicamente o `patrolPos`.
+- A formacao do rali nao usa `patrolling`; ela usa slots relativos ao jogador e navegacao.
+- Ordens de combate atuam sobre guardas em rali/seguindo no mundo atual.
 - A protecao contra friendly fire se aplica ao contexto de rali.
 
 ---

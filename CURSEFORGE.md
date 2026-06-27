@@ -43,6 +43,7 @@ The Commander's Ledger is your portable command panel.
 - Summon a selected guard to your position.
 - Order guards to follow, wait, patrol, or run a route.
 - Manage your squad without needing a keybind.
+- Open combat orders for the target you are looking at.
 
 Current guard states include:
 
@@ -51,6 +52,39 @@ Current guard states include:
 - **Waiting**
 - **On patrol**
 - **On route**
+
+---
+
+### Escort Formation
+
+![Rally Formation](docs/media/rally-formation.png)
+
+Rallied guards now form an escort around you.
+
+```text
+  P
+x   x
+x   x
+x   x
+```
+
+When the rally starts, guards are placed into two escort columns behind and beside the player. While the rally remains
+active, they try to keep their formation slots. If combat starts, they are allowed to break formation and fight.
+
+---
+
+### Combat Orders
+
+![Combat Orders](docs/media/combat-orders.png)
+
+Look at a hostile mob and send your rallied squad after it.
+
+- **All** sends every matching rallied guard.
+- **Infantry** sends guards without bows or crossbows.
+- **Archers** sends guards carrying bows or crossbows.
+
+Combat orders affect hired guards currently following you. Guards assigned to wait, patrol, or run a route keep their
+orders and are not pulled into the attack.
 
 ---
 
@@ -80,6 +114,7 @@ When danger arrives, rally your squad.
 - Shift + right-click to toggle the rally.
 - Nearby hired guards are pulled into formation around you.
 - Rallied guards follow you without requiring Hero of the Village.
+- Guards try to keep an escort formation while not fighting.
 - Patrolling and waiting guards keep their current orders.
 - Friendly fire protection helps prevent accidental hits during the rally.
 
@@ -113,8 +148,6 @@ where guards should feel like part of the player's story.
 ---
 
 ## Media
-
-![Rally Formation](docs/media/rally-formation.png)
 
 ![Patrol In Action](docs/media/patrol-in-action.png)
 
