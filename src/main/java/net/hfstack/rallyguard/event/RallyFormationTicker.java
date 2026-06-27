@@ -8,6 +8,8 @@ import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRoutes;
 import net.hfstack.rallyguard.order.RallyFormationSlots;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -56,8 +58,23 @@ public final class RallyFormationTicker {
     private static void tickWorld(ServerWorld world) {
         for (ServerPlayerEntity player : world.getPlayers()) {
             if (!player.hasStatusEffect(ModEffects.RALLY_COMMANDER)) continue;
+            refreshRallyCommanderEffect(player);
             tickPlayerFormation(world, player);
         }
+    }
+
+    private static void refreshRallyCommanderEffect(ServerPlayerEntity player) {
+        StatusEffectInstance effect = player.getStatusEffect(ModEffects.RALLY_COMMANDER);
+        if (effect == null || effect.getDuration() > ModEffects.RALLY_COMMANDER_REFRESH_THRESHOLD_TICKS) return;
+
+        player.addStatusEffect(new StatusEffectInstance(
+                ModEffects.RALLY_COMMANDER,
+                ModEffects.RALLY_COMMANDER_DURATION_TICKS,
+                effect.getAmplifier(),
+                false,
+                false,
+                true
+        ));
     }
 
     private static void tickPlayerFormation(ServerWorld world, ServerPlayerEntity player) {
@@ -66,7 +83,7 @@ public final class RallyFormationTicker {
 
         for (int i = 0; i < guards.size(); i++) {
             GuardEntity guard = guards.get(i);
-            if (guard.getTarget() != null) continue;
+            if (isBusyFighting(guard)) continue;
 
             Vec3d slot = RallyFormationSlots.safeEscortSlot(world, player, i, anchor.yaw(), anchor.inFront());
             double distance = guard.squaredDistanceTo(slot.x, slot.y, slot.z);
@@ -92,6 +109,18 @@ public final class RallyFormationTicker {
                 guard.setVelocity(0.0, guard.getVelocity().y, 0.0);
             }
         }
+    }
+
+    private static boolean isBusyFighting(GuardEntity guard) {
+        LivingEntity target = guard.getTarget();
+        if (target != null && target.isAlive()) {
+            return true;
+        }
+
+        guard.setTarget(null);
+        guard.setAttacking(false);
+        guard.clearActiveItem();
+        return false;
     }
 
     private static void holdSlot(GuardEntity guard, ServerPlayerEntity player) {

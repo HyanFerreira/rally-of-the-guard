@@ -102,7 +102,7 @@ public class ScrollOfRallyingItem extends Item {
             }
         } else {
             user.addStatusEffect(new StatusEffectInstance(
-                    ModEffects.RALLY_COMMANDER, Integer.MAX_VALUE, 0, false, false, true));
+                    ModEffects.RALLY_COMMANDER, ModEffects.RALLY_COMMANDER_DURATION_TICKS, 0, false, false, true));
             RallyFormationTicker.startRally(sp);
             setActive(stack, true);
             user.sendMessage(Text.translatable("alert.rallyguard.scroll_of_rallying.strength_gained")
