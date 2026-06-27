@@ -4,6 +4,7 @@ import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.hfstack.rallyguard.component.ModComponents;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.effect.ModEffects;
+import net.hfstack.rallyguard.order.GuardOrders;
 import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -41,6 +42,10 @@ public class ScrollOfRallyingItem extends Item {
 
     private static boolean isPatrolling(Entity e) {
         return e instanceof GuardEntity guard && guard.isPatrolling();
+    }
+
+    private static boolean isWaiting(Entity e) {
+        return GuardOrders.isWaiting(e);
     }
 
     private static void setFollowing(Entity e, boolean following) {
@@ -104,6 +109,7 @@ public class ScrollOfRallyingItem extends Item {
             List<Entity> joiners = new ArrayList<>();
             for (Entity g : candidates) {
                 if (isPatrolling(g)) continue;
+                if (isWaiting(g)) continue;
                 joiners.add(g);
             }
 

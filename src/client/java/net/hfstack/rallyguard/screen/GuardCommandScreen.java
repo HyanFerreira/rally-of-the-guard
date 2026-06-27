@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.hfstack.rallyguard.network.NetworkConstants;
 import net.hfstack.rallyguard.network.payload.GuardActionC2SPayload;
 import net.hfstack.rallyguard.network.payload.GuardListS2CPayload;
+import net.hfstack.rallyguard.order.GuardOrderStatus;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -18,33 +19,33 @@ public class GuardCommandScreen extends Screen {
     private static final int MUTED = 0xFFCCCCCC;
     private static final int EMPTY_TEXT = 0xFFAAAAAA;
 
-    public static record Entry(int entityId, String name, boolean patrolling) {
+    public static record Entry(int entityId, String name, boolean patrolling, int status) {
     }
 
     private final List<Entry> all = new ArrayList<>();
     private int page = 0;
 
-    // ===== Layout =====
-    private static final int PER_PAGE = 4;        // 4 guardas por página
-    private static final int PANEL_W = 440;      // janela mais estreita
+    private static final int PER_PAGE = 4;
+    private static final int MAX_PANEL_W = 540;
     private static final int PANEL_H = 200;
+    private static final int SCREEN_PAD = 12;
 
     private static final int MARGIN_L = 16;
     private static final int MARGIN_R = 16;
 
     private static final int HEADER_Y = 24;
     private static final int HEADER_LINE_Y = 38;
+    private static final int ROW_TOP = 38;
+    private static final int ROW_HEIGHT = 28;
 
-    // primeira linha mais próxima do cabeçalho
-    private static final int ROW_TOP = 38; // topo do bloco de linhas
-    private static final int ROW_HEIGHT = 28; // altura de cada “div” de linha
-
-    // Colunas (relativas ao painel)
     private static final int COL_NAME_X = MARGIN_L;
+    private static final int COL_STATUS_X = 120;
 
-    // Botões (constantes compartilhadas entre header/linhas)
-    private static final int BTN_W1 = 80;   // “Teletransportar”
-    private static final int BTN_W2 = 80;   // “Patrulhar aqui / Parar patrulha”
+    private static final int BTN_SUMMON_W = 54;
+    private static final int BTN_FOLLOW_W = 48;
+    private static final int BTN_WAIT_W = 58;
+    private static final int BTN_PATROL_W = 62;
+    private static final int BTN_ROUTE_W = 42;
     private static final int BTN_H = 18;
     private static final int BTN_GAP = 2;
 
@@ -56,7 +57,7 @@ public class GuardCommandScreen extends Screen {
     public static void openFromPayload(GuardListS2CPayload payload) {
         List<Entry> list = new ArrayList<>(payload.entries().size());
         for (GuardListS2CPayload.Entry e : payload.entries()) {
-            list.add(new Entry(e.entityId(), e.name(), e.patrolling()));
+            list.add(new Entry(e.entityId(), e.name(), e.patrolling(), e.status()));
         }
         MinecraftClient.getInstance().execute(() ->
                 MinecraftClient.getInstance().setScreen(new GuardCommandScreen(list))
@@ -72,15 +73,15 @@ public class GuardCommandScreen extends Screen {
     private void rebuildButtons() {
         this.clearChildren();
 
-        int x = (this.width - PANEL_W) / 2;
+        int panelW = panelWidth();
+        int x = panelX();
         int y = (this.height - PANEL_H) / 2;
 
         int start = page * PER_PAGE;
         int end = Math.min(start + PER_PAGE, all.size());
 
-        // Grupo de botões: ancorado na margem direita do painel
-        int groupWidth = BTN_W1 + BTN_GAP + BTN_W2;
-        int actionsRight = x + PANEL_W - MARGIN_R;
+        int groupWidth = actionGroupWidth();
+        int actionsRight = x + panelW - MARGIN_R;
         int actionsLeft = actionsRight - groupWidth;
 
         for (int i = start; i < end; i++) {
@@ -89,30 +90,69 @@ public class GuardCommandScreen extends Screen {
 
             int rowTop = y + ROW_TOP + (i - start) * ROW_HEIGHT;
             int rowMidY = rowTop + (ROW_HEIGHT / 2);
-            int btnY = rowMidY - (BTN_H / 2); // centraliza na “div”
+            int btnY = rowMidY - (BTN_H / 2);
 
+            int btnX = actionsLeft;
             ButtonWidget summon = ButtonWidget.builder(
                     Text.translatable("gui.rallyguard.command.summon"),
-                    b -> sendAction(e.entityId(), NetworkConstants.ACTION_SUMMON)
-            ).dimensions(actionsLeft, btnY, BTN_W1, BTN_H).build();
+                    b -> {
+                        sendAction(e.entityId(), NetworkConstants.ACTION_SUMMON);
+                        setEntryStatus(idx, GuardOrderStatus.IDLE);
+                    }
+            ).dimensions(btnX, btnY, BTN_SUMMON_W, BTN_H).build();
 
-            Text label = e.patrolling()
+            btnX += BTN_SUMMON_W + BTN_GAP;
+            boolean following = e.status() == GuardOrderStatus.FOLLOWING;
+            Text followLabel = following
+                    ? Text.translatable("gui.rallyguard.command.stop")
+                    : Text.translatable("gui.rallyguard.command.follow");
+            ButtonWidget follow = ButtonWidget.builder(
+                    followLabel,
+                    b -> {
+                        if (following) {
+                            sendAction(e.entityId(), NetworkConstants.ACTION_WAIT);
+                            setEntryStatus(idx, GuardOrderStatus.WAITING);
+                        } else {
+                            sendAction(e.entityId(), NetworkConstants.ACTION_FOLLOW);
+                            setEntryStatus(idx, GuardOrderStatus.FOLLOWING);
+                        }
+                    }
+            ).dimensions(btnX, btnY, BTN_FOLLOW_W, BTN_H).build();
+
+            btnX += BTN_FOLLOW_W + BTN_GAP;
+            ButtonWidget wait = ButtonWidget.builder(
+                    Text.translatable("gui.rallyguard.command.wait"),
+                    b -> {
+                        sendAction(e.entityId(), NetworkConstants.ACTION_WAIT);
+                        setEntryStatus(idx, GuardOrderStatus.WAITING);
+                    }
+            ).dimensions(btnX, btnY, BTN_WAIT_W, BTN_H).build();
+
+            btnX += BTN_WAIT_W + BTN_GAP;
+            Text patrolLabel = e.patrolling()
                     ? Text.translatable("gui.rallyguard.command.stop")
                     : Text.translatable("gui.rallyguard.command.patrol");
-
-            ButtonWidget patrol = ButtonWidget.builder(label, b -> {
+            ButtonWidget patrol = ButtonWidget.builder(patrolLabel, b -> {
                 sendAction(e.entityId(), NetworkConstants.ACTION_TOGGLE_PATROL);
-                // atualização otimista
                 Entry curr = all.get(idx);
-                all.set(idx, new Entry(curr.entityId(), curr.name(), !curr.patrolling()));
+                int status = curr.patrolling() ? GuardOrderStatus.WAITING : GuardOrderStatus.PATROLLING;
+                all.set(idx, new Entry(curr.entityId(), curr.name(), !curr.patrolling(), status));
                 rebuildButtons();
-            }).dimensions(actionsLeft + BTN_W1 + BTN_GAP, btnY, BTN_W2, BTN_H).build();
+            }).dimensions(btnX, btnY, BTN_PATROL_W, BTN_H).build();
+
+            btnX += BTN_PATROL_W + BTN_GAP;
+            ButtonWidget route = ButtonWidget.builder(
+                    Text.translatable("gui.rallyguard.command.route"),
+                    b -> sendAction(e.entityId(), NetworkConstants.ACTION_ROUTE_PLACEHOLDER)
+            ).dimensions(btnX, btnY, BTN_ROUTE_W, BTN_H).build();
 
             this.addDrawableChild(summon);
+            this.addDrawableChild(follow);
+            this.addDrawableChild(wait);
             this.addDrawableChild(patrol);
+            this.addDrawableChild(route);
         }
 
-        // Paginação
         ButtonWidget prev = ButtonWidget.builder(Text.literal("<"), b -> {
             if (page > 0) {
                 page--;
@@ -125,7 +165,7 @@ public class GuardCommandScreen extends Screen {
                 page++;
                 rebuildButtons();
             }
-        }).dimensions(x + PANEL_W - 30, y + PANEL_H - 28, 22, 20).build();
+        }).dimensions(x + panelW - 30, y + PANEL_H - 28, 22, 20).build();
 
         this.addDrawableChild(prev);
         this.addDrawableChild(next);
@@ -135,9 +175,36 @@ public class GuardCommandScreen extends Screen {
         ClientPlayNetworking.send(new GuardActionC2SPayload(entityId, action));
     }
 
-    /**
-     * Sem overlay escuro padrão.
-     */
+    private void setEntryStatus(int idx, int status) {
+        Entry curr = all.get(idx);
+        all.set(idx, new Entry(curr.entityId(), curr.name(), status == GuardOrderStatus.PATROLLING, status));
+        rebuildButtons();
+    }
+
+    private static int actionGroupWidth() {
+        return BTN_SUMMON_W + BTN_GAP + BTN_FOLLOW_W + BTN_GAP + BTN_WAIT_W + BTN_GAP + BTN_PATROL_W + BTN_GAP + BTN_ROUTE_W;
+    }
+
+    private int panelWidth() {
+        return Math.min(MAX_PANEL_W, Math.max(320, this.width - SCREEN_PAD * 2));
+    }
+
+    private int panelX() {
+        return (this.width - panelWidth()) / 2;
+    }
+
+    private String trimToWidth(String text, int maxWidth) {
+        if (maxWidth <= 0) return "";
+        if (this.textRenderer.getWidth(text) <= maxWidth) return text;
+
+        String ellipsis = "...";
+        int ellipsisW = this.textRenderer.getWidth(ellipsis);
+        if (maxWidth <= ellipsisW) {
+            return this.textRenderer.trimToWidth(text, maxWidth);
+        }
+        return this.textRenderer.trimToWidth(text, maxWidth - ellipsisW) + ellipsis;
+    }
+
     @Override
     public void renderBackground(DrawContext ctx, int mouseX, int mouseY, float delta) {
     }
@@ -150,47 +217,44 @@ public class GuardCommandScreen extends Screen {
     }
 
     private void drawPanel(DrawContext ctx) {
-        int x = (this.width - PANEL_W) / 2;
+        int panelW = panelWidth();
+        int x = panelX();
         int y = (this.height - PANEL_H) / 2;
 
-        // painel
-        int bg = 0xF0101010;
-        ctx.fill(x, y, x + PANEL_W, y + PANEL_H, bg);
+        ctx.fill(x, y, x + panelW, y + PANEL_H, 0xF0101010);
 
-        int border = 0xFFFFFFFF;
-        ctx.fill(x, y, x + PANEL_W, y + 1, border);
-        ctx.fill(x, y + PANEL_H - 1, x + PANEL_W, y + PANEL_H, border);
-        ctx.fill(x, y, x + 1, y + PANEL_H, border);
-        ctx.fill(x + PANEL_W - 1, y, x + PANEL_W, y + PANEL_H, border);
+        ctx.fill(x, y, x + panelW, y + 1, WHITE);
+        ctx.fill(x, y + PANEL_H - 1, x + panelW, y + PANEL_H, WHITE);
+        ctx.fill(x, y, x + 1, y + PANEL_H, WHITE);
+        ctx.fill(x + panelW - 1, y, x + panelW, y + PANEL_H, WHITE);
 
-        // título
         ctx.drawCenteredTextWithShadow(this.textRenderer,
                 Text.translatable("gui.rallyguard.command.title"),
                 this.width / 2, y + 8, WHITE);
 
-        // cabeçalhos
         ctx.drawTextWithShadow(this.textRenderer,
                 Text.translatable("gui.rallyguard.command.name"),
                 x + COL_NAME_X, y + HEADER_Y, MUTED);
 
-        // “Ações” centralizado sobre a área dos botões
-        int groupWidth = BTN_W1 + BTN_GAP + BTN_W2;
-        int actionsRight = x + PANEL_W - MARGIN_R;
+        ctx.drawTextWithShadow(this.textRenderer,
+                Text.translatable("gui.rallyguard.command.status"),
+                x + COL_STATUS_X, y + HEADER_Y, MUTED);
+
+        int groupWidth = actionGroupWidth();
+        int actionsRight = x + panelW - MARGIN_R;
         int actionsLeft = actionsRight - groupWidth;
         int actionsCenterX = actionsLeft + groupWidth / 2;
 
-        int actionsHeaderW = this.textRenderer.getWidth(Text.translatable("gui.rallyguard.command.actions"));
-        ctx.drawTextWithShadow(this.textRenderer,
-                Text.translatable("gui.rallyguard.command.actions"),
-                actionsCenterX - (actionsHeaderW / 2),
-                y + HEADER_Y, MUTED);
+        Text actions = Text.translatable("gui.rallyguard.command.actions");
+        int actionsHeaderW = this.textRenderer.getWidth(actions);
+        ctx.drawTextWithShadow(this.textRenderer, actions, actionsCenterX - (actionsHeaderW / 2), y + HEADER_Y, MUTED);
 
-        // linha do cabeçalho
-        ctx.fill(x + 6, y + HEADER_LINE_Y, x + PANEL_W - 6, y + HEADER_LINE_Y + 1, 0x33FFFFFF);
+        ctx.fill(x + 6, y + HEADER_LINE_Y, x + panelW - 6, y + HEADER_LINE_Y + 1, 0x33FFFFFF);
     }
 
     private void drawRows(DrawContext ctx) {
-        int x = (this.width - PANEL_W) / 2;
+        int panelW = panelWidth();
+        int x = panelX();
         int y = (this.height - PANEL_H) / 2;
 
         if (all.isEmpty()) {
@@ -205,11 +269,8 @@ public class GuardCommandScreen extends Screen {
         int end = Math.min(start + PER_PAGE, all.size());
 
         int fontH = this.textRenderer.fontHeight;
-
-        // área de ações para recorte do nome
-        int groupWidth = BTN_W1 + BTN_GAP + BTN_W2;
-        int actionsRight = x + PANEL_W - MARGIN_R;
-        int actionsLeft = actionsRight - groupWidth;
+        int actionsRight = x + panelW - MARGIN_R;
+        int actionsLeft = actionsRight - actionGroupWidth();
 
         for (int i = start; i < end; i++) {
             Entry e = all.get(i);
@@ -217,21 +278,29 @@ public class GuardCommandScreen extends Screen {
             int rowTop = y + ROW_TOP + (i - start) * ROW_HEIGHT;
             int rowMidY = rowTop + (ROW_HEIGHT / 2);
             int rowBot = rowTop + ROW_HEIGHT;
+            int textY = rowMidY - (fontH / 2);
 
-            // separador ao fim da “div”
-            ctx.fill(x + 6, rowBot - 1, x + PANEL_W - 6, rowBot, 0x22FFFFFF);
+            ctx.fill(x + 6, rowBot - 1, x + panelW - 6, rowBot, 0x22FFFFFF);
 
-            // Nome centralizado verticalmente; recorte até antes da área de botões
-            String name = e.name();
-            int maxNameW = (actionsLeft - 12) - (x + COL_NAME_X);
-            if (this.textRenderer.getWidth(name) > maxNameW) {
-                name = this.textRenderer.trimToWidth(name, maxNameW - this.textRenderer.getWidth("...")) + "...";
-            }
-            int nameY = rowMidY - (fontH / 2);
-            ctx.drawTextWithShadow(this.textRenderer, Text.literal(name), x + COL_NAME_X, nameY, WHITE);
+            int maxNameW = (x + COL_STATUS_X - 12) - (x + COL_NAME_X);
+            String name = trimToWidth(e.name(), maxNameW);
+            ctx.drawTextWithShadow(this.textRenderer, Text.literal(name), x + COL_NAME_X, textY, WHITE);
+
+            int maxStatusW = (actionsLeft - 12) - (x + COL_STATUS_X);
+            String status = trimToWidth(statusText(e.status()).getString(), maxStatusW);
+            ctx.drawTextWithShadow(this.textRenderer, Text.literal(status), x + COL_STATUS_X, textY, MUTED);
         }
 
         drawPageIndicator(ctx, x, y);
+    }
+
+    private static Text statusText(int status) {
+        return switch (status) {
+            case GuardOrderStatus.FOLLOWING -> Text.translatable("gui.rallyguard.command.status.following");
+            case GuardOrderStatus.WAITING -> Text.translatable("gui.rallyguard.command.status.waiting");
+            case GuardOrderStatus.PATROLLING -> Text.translatable("gui.rallyguard.command.status.patrolling");
+            default -> Text.translatable("gui.rallyguard.command.status.idle");
+        };
     }
 
     private void drawPageIndicator(DrawContext ctx, int x, int y) {
@@ -239,7 +308,7 @@ public class GuardCommandScreen extends Screen {
         String pg = (page + 1) + " / " + totalPages;
         int w = this.textRenderer.getWidth(pg);
         ctx.drawTextWithShadow(this.textRenderer, Text.literal(pg),
-                x + (PANEL_W - w) / 2, y + PANEL_H - 24, WHITE);
+                x + (panelWidth() - w) / 2, y + PANEL_H - 24, WHITE);
     }
 
     @Override

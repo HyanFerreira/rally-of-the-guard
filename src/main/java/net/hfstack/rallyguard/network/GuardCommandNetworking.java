@@ -6,6 +6,7 @@ import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.network.payload.GuardActionC2SPayload;
 import net.hfstack.rallyguard.network.payload.GuardListS2CPayload;
 import net.hfstack.rallyguard.network.payload.OpenGuardCommandC2SPayload;
+import net.hfstack.rallyguard.order.GuardOrders;
 import net.minecraft.entity.Entity;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -50,8 +51,14 @@ public final class GuardCommandNetworking {
 
         List<GuardListS2CPayload.Entry> list = new ArrayList<>(guards.size());
         for (Entity g : guards) {
-            boolean patrolling = g instanceof GuardEntity gv && gv.isPatrolling();
-            list.add(new GuardListS2CPayload.Entry(g.getId(), g.getName().getString(), patrolling));
+            if (!(g instanceof GuardEntity guard)) continue;
+            boolean patrolling = guard.isPatrolling();
+            list.add(new GuardListS2CPayload.Entry(
+                    g.getId(),
+                    g.getName().getString(),
+                    patrolling,
+                    GuardOrders.statusOf(guard)
+            ));
         }
 
         ServerPlayNetworking.send(player, new GuardListS2CPayload(list));
@@ -77,23 +84,45 @@ public final class GuardCommandNetworking {
                 guard.refreshPositionAndAngles(player.getX() + ox, player.getY(), player.getZ() + oz,
                         guard.getYaw(), guard.getPitch());
                 guard.setFollowing(false);
+                GuardOrders.setWaiting(guard, false);
                 stopGuardActions(guard);
                 player.sendMessage(Text.translatable("gui.rallyguard.command.summoned"), true);
+            }
+            case NetworkConstants.ACTION_FOLLOW -> {
+                guard.setPatrolling(false);
+                guard.setPatrolPos(null);
+                GuardOrders.setWaiting(guard, false);
+                stopGuardActions(guard);
+                guard.setFollowing(true);
+                player.sendMessage(Text.translatable("gui.rallyguard.command.follow_on"), true);
+            }
+            case NetworkConstants.ACTION_WAIT -> {
+                guard.setFollowing(false);
+                guard.setPatrolling(false);
+                guard.setPatrolPos(null);
+                GuardOrders.setWaiting(guard, true);
+                stopGuardActions(guard);
+                player.sendMessage(Text.translatable("gui.rallyguard.command.wait_on"), true);
             }
             case NetworkConstants.ACTION_TOGGLE_PATROL -> {
                 if (guard.isPatrolling()) {
                     guard.setPatrolling(false);
                     guard.setFollowing(false);
                     guard.setPatrolPos(null);
+                    GuardOrders.setWaiting(guard, true);
                     stopGuardActions(guard);
                     player.sendMessage(Text.translatable("gui.rallyguard.command.patrol_off"), true);
                 } else {
                     guard.setFollowing(false);
+                    GuardOrders.setWaiting(guard, false);
                     guard.setPatrolPos(player.getBlockPos());
                     guard.setPatrolling(true);
                     stopGuardActions(guard);
                     player.sendMessage(Text.translatable("gui.rallyguard.command.patrol_on"), true);
                 }
+            }
+            case NetworkConstants.ACTION_ROUTE_PLACEHOLDER -> {
+                player.sendMessage(Text.translatable("gui.rallyguard.command.route_soon"), true);
             }
             default -> {
             }

@@ -14,4 +14,7 @@ public final class NetworkConstants {
     // Ações
     public static final int ACTION_SUMMON = 1;
     public static final int ACTION_TOGGLE_PATROL = 2;
+    public static final int ACTION_FOLLOW = 3;
+    public static final int ACTION_WAIT = 4;
+    public static final int ACTION_ROUTE_PLACEHOLDER = 5;
 }

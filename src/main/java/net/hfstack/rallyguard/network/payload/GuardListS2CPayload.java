@@ -13,7 +13,7 @@ import java.util.List;
  * S2C: servidor envia lista de guardas (id, nome, patrulhando).
  */
 public record GuardListS2CPayload(List<Entry> entries) implements CustomPayload {
-    public record Entry(int entityId, String name, boolean patrolling) {
+    public record Entry(int entityId, String name, boolean patrolling, int status) {
     }
 
     public static final Id<GuardListS2CPayload> ID =
@@ -32,6 +32,7 @@ public record GuardListS2CPayload(List<Entry> entries) implements CustomPayload 
                         buf.writeVarInt(e.entityId());
                         buf.writeString(e.name());
                         buf.writeBoolean(e.patrolling());
+                        buf.writeVarInt(e.status());
                     }
                 }
 
@@ -43,7 +44,8 @@ public record GuardListS2CPayload(List<Entry> entries) implements CustomPayload 
                         int id = buf.readVarInt();
                         String name = buf.readString();
                         boolean patrolling = buf.readBoolean();
-                        list.add(new Entry(id, name, patrolling));
+                        int status = buf.readVarInt();
+                        list.add(new Entry(id, name, patrolling, status));
                     }
                     return new GuardListS2CPayload(list);
                 }
