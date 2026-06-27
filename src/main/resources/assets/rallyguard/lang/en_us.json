@@ -37,6 +37,7 @@
   "gui.rallyguard.command.status.following": "Following",
   "gui.rallyguard.command.status.waiting": "Waiting",
   "gui.rallyguard.command.status.patrolling": "On patrol",
+  "gui.rallyguard.command.status.routing": "On route",
   "gui.rallyguard.command.status.idle": "Idle",
   "gui.rallyguard.command.not_found": "Guard unavailable or too far.",
   "gui.rallyguard.command.not_owner": "You are not this guard's commander.",
@@ -45,5 +46,23 @@
   "gui.rallyguard.command.wait_on": "Guard is waiting.",
   "gui.rallyguard.command.route_soon": "Patrol routes are coming soon.",
   "gui.rallyguard.command.patrol_on": "Patrol started at your position.",
-  "gui.rallyguard.command.patrol_off": "Patrol stopped."
+  "gui.rallyguard.command.patrol_off": "Patrol stopped.",
+
+  "gui.rallyguard.route.title": "Patrol Route",
+  "gui.rallyguard.route.title_named": "Patrol Route: %s",
+  "gui.rallyguard.route.points": "Route points",
+  "gui.rallyguard.route.empty": "Add your current position to create the route.",
+  "gui.rallyguard.route.wait": "Wait: %ss",
+  "gui.rallyguard.route.use_current": "Use current",
+  "gui.rallyguard.route.remove": "Remove",
+  "gui.rallyguard.route.add_current": "+ Current pos",
+  "gui.rallyguard.route.start": "Start",
+  "gui.rallyguard.route.pause": "Pause",
+  "gui.rallyguard.route.clear": "Clear",
+  "gui.rallyguard.route.back": "Back",
+  "gui.rallyguard.route.saved": "Route saved.",
+  "gui.rallyguard.route.started": "Route started.",
+  "gui.rallyguard.route.paused": "Route paused.",
+  "gui.rallyguard.route.cleared": "Route cleared.",
+  "gui.rallyguard.route.need_points": "Add at least 2 points."
 }

@@ -4,6 +4,7 @@ import net.fabricmc.api.ModInitializer;
 import net.hfstack.rallyguard.component.ModComponents;
 import net.hfstack.rallyguard.effect.ModEffects;
 import net.hfstack.rallyguard.event.GuardVillagersSpawnEggFix;
+import net.hfstack.rallyguard.event.GuardRouteTicker;
 import net.hfstack.rallyguard.event.HiredGuardsNeutralityHandler;
 import net.hfstack.rallyguard.event.InteractGuardHandler;
 import net.hfstack.rallyguard.event.RallyFriendlyFireHandler;
@@ -30,6 +31,7 @@ public class RallyOfTheGuard implements ModInitializer {
         InteractGuardHandler.register();
         RallyFriendlyFireHandler.register();
         HiredGuardsNeutralityHandler.register();
+        GuardRouteTicker.register();
 
         // ✅ Registra codecs uma vez por lado (client e server)
         NetworkBootstrap.registerTypesOnce();

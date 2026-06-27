@@ -24,6 +24,7 @@ public final class GuardOrders {
     }
 
     public static int statusOf(GuardEntity guard) {
+        if (GuardRoutes.get(guard).active()) return GuardOrderStatus.ROUTING;
         if (guard.isPatrolling()) return GuardOrderStatus.PATROLLING;
         if (isWaiting(guard)) return GuardOrderStatus.WAITING;
         if (guard.isFollowing()) return GuardOrderStatus.FOLLOWING;

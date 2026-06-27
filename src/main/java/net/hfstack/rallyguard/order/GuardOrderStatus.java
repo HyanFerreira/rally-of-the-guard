@@ -8,4 +8,5 @@ public final class GuardOrderStatus {
     public static final int FOLLOWING = 1;
     public static final int WAITING = 2;
     public static final int PATROLLING = 3;
+    public static final int ROUTING = 4;
 }

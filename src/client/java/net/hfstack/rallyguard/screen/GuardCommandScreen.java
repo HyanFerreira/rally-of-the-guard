@@ -19,7 +19,8 @@ public class GuardCommandScreen extends Screen {
     private static final int MUTED = 0xFFCCCCCC;
     private static final int EMPTY_TEXT = 0xFFAAAAAA;
 
-    public static record Entry(int entityId, String name, boolean patrolling, int status) {
+    public static record Entry(int entityId, String name, boolean patrolling, int status, boolean routeActive,
+                               int routeWaitSeconds, List<GuardListS2CPayload.Point> routePoints) {
     }
 
     private final List<Entry> all = new ArrayList<>();
@@ -57,7 +58,15 @@ public class GuardCommandScreen extends Screen {
     public static void openFromPayload(GuardListS2CPayload payload) {
         List<Entry> list = new ArrayList<>(payload.entries().size());
         for (GuardListS2CPayload.Entry e : payload.entries()) {
-            list.add(new Entry(e.entityId(), e.name(), e.patrolling(), e.status()));
+            list.add(new Entry(
+                    e.entityId(),
+                    e.name(),
+                    e.patrolling(),
+                    e.status(),
+                    e.routeActive(),
+                    e.routeWaitSeconds(),
+                    e.routePoints()
+            ));
         }
         MinecraftClient.getInstance().execute(() ->
                 MinecraftClient.getInstance().setScreen(new GuardCommandScreen(list))
@@ -136,14 +145,22 @@ public class GuardCommandScreen extends Screen {
                 sendAction(e.entityId(), NetworkConstants.ACTION_TOGGLE_PATROL);
                 Entry curr = all.get(idx);
                 int status = curr.patrolling() ? GuardOrderStatus.WAITING : GuardOrderStatus.PATROLLING;
-                all.set(idx, new Entry(curr.entityId(), curr.name(), !curr.patrolling(), status));
+                all.set(idx, new Entry(
+                        curr.entityId(),
+                        curr.name(),
+                        !curr.patrolling(),
+                        status,
+                        false,
+                        curr.routeWaitSeconds(),
+                        curr.routePoints()
+                ));
                 rebuildButtons();
             }).dimensions(btnX, btnY, BTN_PATROL_W, BTN_H).build();
 
             btnX += BTN_PATROL_W + BTN_GAP;
             ButtonWidget route = ButtonWidget.builder(
                     Text.translatable("gui.rallyguard.command.route"),
-                    b -> sendAction(e.entityId(), NetworkConstants.ACTION_ROUTE_PLACEHOLDER)
+                    b -> MinecraftClient.getInstance().setScreen(new GuardRouteScreen(this, idx, e))
             ).dimensions(btnX, btnY, BTN_ROUTE_W, BTN_H).build();
 
             this.addDrawableChild(summon);
@@ -177,8 +194,35 @@ public class GuardCommandScreen extends Screen {
 
     private void setEntryStatus(int idx, int status) {
         Entry curr = all.get(idx);
-        all.set(idx, new Entry(curr.entityId(), curr.name(), status == GuardOrderStatus.PATROLLING, status));
+        all.set(idx, new Entry(
+                curr.entityId(),
+                curr.name(),
+                status == GuardOrderStatus.PATROLLING,
+                status,
+                status == GuardOrderStatus.ROUTING,
+                curr.routeWaitSeconds(),
+                curr.routePoints()
+        ));
         rebuildButtons();
+    }
+
+    public void updateRouteEntry(int idx, boolean active, int waitSeconds, List<GuardListS2CPayload.Point> points) {
+        Entry curr = all.get(idx);
+        int status = active ? GuardOrderStatus.ROUTING : GuardOrderStatus.WAITING;
+        all.set(idx, new Entry(curr.entityId(), curr.name(), active, status, active, waitSeconds, List.copyOf(points)));
+    }
+
+    public void updateRouteDraft(int idx, int waitSeconds, List<GuardListS2CPayload.Point> points) {
+        Entry curr = all.get(idx);
+        all.set(idx, new Entry(
+                curr.entityId(),
+                curr.name(),
+                curr.patrolling(),
+                curr.status(),
+                curr.routeActive(),
+                waitSeconds,
+                List.copyOf(points)
+        ));
     }
 
     private static int actionGroupWidth() {
@@ -299,6 +343,7 @@ public class GuardCommandScreen extends Screen {
             case GuardOrderStatus.FOLLOWING -> Text.translatable("gui.rallyguard.command.status.following");
             case GuardOrderStatus.WAITING -> Text.translatable("gui.rallyguard.command.status.waiting");
             case GuardOrderStatus.PATROLLING -> Text.translatable("gui.rallyguard.command.status.patrolling");
+            case GuardOrderStatus.ROUTING -> Text.translatable("gui.rallyguard.command.status.routing");
             default -> Text.translatable("gui.rallyguard.command.status.idle");
         };
     }

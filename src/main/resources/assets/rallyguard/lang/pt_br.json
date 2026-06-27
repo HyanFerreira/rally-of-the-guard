@@ -37,6 +37,7 @@
   "gui.rallyguard.command.status.following": "Seguindo",
   "gui.rallyguard.command.status.waiting": "Aguardando",
   "gui.rallyguard.command.status.patrolling": "Em patrulha",
+  "gui.rallyguard.command.status.routing": "Em rota",
   "gui.rallyguard.command.status.idle": "Ocioso",
   "gui.rallyguard.command.not_found": "Guarda indispon\u00edvel ou distante.",
   "gui.rallyguard.command.not_owner": "Voc\u00ea n\u00e3o \u00e9 o comandante deste guarda.",
@@ -45,5 +46,23 @@
   "gui.rallyguard.command.wait_on": "Guarda aguardando.",
   "gui.rallyguard.command.route_soon": "Rotas de patrulha ser\u00e3o adicionadas em breve.",
   "gui.rallyguard.command.patrol_on": "Patrulha iniciada no local.",
-  "gui.rallyguard.command.patrol_off": "Patrulha encerrada."
+  "gui.rallyguard.command.patrol_off": "Patrulha encerrada.",
+
+  "gui.rallyguard.route.title": "Rota de Patrulha",
+  "gui.rallyguard.route.title_named": "Rota de Patrulha: %s",
+  "gui.rallyguard.route.points": "Pontos da rota",
+  "gui.rallyguard.route.empty": "Adicione sua posi\u00e7\u00e3o atual para criar a rota.",
+  "gui.rallyguard.route.wait": "Espera: %ss",
+  "gui.rallyguard.route.use_current": "Esta pos.",
+  "gui.rallyguard.route.remove": "Remover",
+  "gui.rallyguard.route.add_current": "+ Pos. atual",
+  "gui.rallyguard.route.start": "Iniciar",
+  "gui.rallyguard.route.pause": "Pausar",
+  "gui.rallyguard.route.clear": "Limpar",
+  "gui.rallyguard.route.back": "Voltar",
+  "gui.rallyguard.route.saved": "Rota salva.",
+  "gui.rallyguard.route.started": "Rota iniciada.",
+  "gui.rallyguard.route.paused": "Rota pausada.",
+  "gui.rallyguard.route.cleared": "Rota limpa.",
+  "gui.rallyguard.route.need_points": "Adicione pelo menos 2 pontos."
 }

@@ -5,14 +5,18 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.network.payload.GuardActionC2SPayload;
 import net.hfstack.rallyguard.network.payload.GuardListS2CPayload;
+import net.hfstack.rallyguard.network.payload.GuardRouteUpdateC2SPayload;
 import net.hfstack.rallyguard.network.payload.OpenGuardCommandC2SPayload;
 import net.hfstack.rallyguard.order.GuardOrders;
+import net.hfstack.rallyguard.order.GuardRouteState;
+import net.hfstack.rallyguard.order.GuardRoutes;
 import net.minecraft.entity.Entity;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +42,11 @@ public final class GuardCommandNetworking {
             int action = payload.action();
             context.server().execute(() -> handleAction(player, entityId, action));
         });
+
+        ServerPlayNetworking.registerGlobalReceiver(GuardRouteUpdateC2SPayload.ID, (payload, context) -> {
+            ServerPlayerEntity player = context.player();
+            context.server().execute(() -> handleRouteUpdate(player, payload));
+        });
     }
 
     private static void sendGuardList(ServerPlayerEntity player) {
@@ -53,11 +62,17 @@ public final class GuardCommandNetworking {
         for (Entity g : guards) {
             if (!(g instanceof GuardEntity guard)) continue;
             boolean patrolling = guard.isPatrolling();
+            GuardRouteState route = GuardRoutes.get(guard);
             list.add(new GuardListS2CPayload.Entry(
                     g.getId(),
                     g.getName().getString(),
                     patrolling,
-                    GuardOrders.statusOf(guard)
+                    GuardOrders.statusOf(guard),
+                    route.active(),
+                    Math.max(0, route.waitTicks() / 20),
+                    route.points().stream()
+                            .map(p -> new GuardListS2CPayload.Point(p.getX(), p.getY(), p.getZ()))
+                            .toList()
             ));
         }
 
@@ -85,6 +100,7 @@ public final class GuardCommandNetworking {
                         guard.getYaw(), guard.getPitch());
                 guard.setFollowing(false);
                 GuardOrders.setWaiting(guard, false);
+                GuardRoutes.deactivate(guard);
                 stopGuardActions(guard);
                 player.sendMessage(Text.translatable("gui.rallyguard.command.summoned"), true);
             }
@@ -92,6 +108,7 @@ public final class GuardCommandNetworking {
                 guard.setPatrolling(false);
                 guard.setPatrolPos(null);
                 GuardOrders.setWaiting(guard, false);
+                GuardRoutes.deactivate(guard);
                 stopGuardActions(guard);
                 guard.setFollowing(true);
                 player.sendMessage(Text.translatable("gui.rallyguard.command.follow_on"), true);
@@ -101,6 +118,7 @@ public final class GuardCommandNetworking {
                 guard.setPatrolling(false);
                 guard.setPatrolPos(null);
                 GuardOrders.setWaiting(guard, true);
+                GuardRoutes.deactivate(guard);
                 stopGuardActions(guard);
                 player.sendMessage(Text.translatable("gui.rallyguard.command.wait_on"), true);
             }
@@ -110,11 +128,13 @@ public final class GuardCommandNetworking {
                     guard.setFollowing(false);
                     guard.setPatrolPos(null);
                     GuardOrders.setWaiting(guard, true);
+                    GuardRoutes.deactivate(guard);
                     stopGuardActions(guard);
                     player.sendMessage(Text.translatable("gui.rallyguard.command.patrol_off"), true);
                 } else {
                     guard.setFollowing(false);
                     GuardOrders.setWaiting(guard, false);
+                    GuardRoutes.deactivate(guard);
                     guard.setPatrolPos(player.getBlockPos());
                     guard.setPatrolling(true);
                     stopGuardActions(guard);
@@ -133,5 +153,65 @@ public final class GuardCommandNetworking {
         guard.setTarget(null);
         guard.setAttacking(false);
         guard.getNavigation().stop();
+    }
+
+    private static void handleRouteUpdate(ServerPlayerEntity player, GuardRouteUpdateC2SPayload payload) {
+        ServerWorld world = player.getEntityWorld();
+        Entity e = world.getEntityById(payload.entityId());
+
+        if (!(e instanceof GuardEntity guard)) {
+            player.sendMessage(Text.translatable("gui.rallyguard.command.not_found"), true);
+            return;
+        }
+        if (!GuardOwnership.isOwnedBy(guard, player.getUuid())) {
+            player.sendMessage(Text.translatable("gui.rallyguard.command.not_owner"), true);
+            return;
+        }
+
+        List<BlockPos> points = payload.points().stream()
+                .limit(GuardRouteState.MAX_POINTS)
+                .map(p -> new BlockPos(p.x(), p.y(), p.z()))
+                .toList();
+        int waitTicks = Math.max(0, Math.min(300, payload.waitSeconds())) * 20;
+
+        switch (payload.action()) {
+            case NetworkConstants.ROUTE_SAVE -> {
+                GuardRoutes.set(guard, new GuardRouteState(false, 0, waitTicks, 0, points));
+                player.sendMessage(Text.translatable("gui.rallyguard.route.saved"), true);
+            }
+            case NetworkConstants.ROUTE_START -> {
+                if (points.size() < 2) {
+                    player.sendMessage(Text.translatable("gui.rallyguard.route.need_points"), true);
+                    return;
+                }
+                GuardRouteState route = new GuardRouteState(true, 0, waitTicks, 0, points);
+                GuardRoutes.applyToGuard(guard, route);
+                stopGuardActions(guard);
+                guard.setPatrolPos(route.currentPoint());
+                guard.setPatrolling(true);
+                player.sendMessage(Text.translatable("gui.rallyguard.route.started"), true);
+            }
+            case NetworkConstants.ROUTE_PAUSE -> {
+                GuardRouteState current = GuardRoutes.get(guard);
+                GuardRoutes.set(guard, new GuardRouteState(false, current.currentIndex(), waitTicks, 0, points));
+                guard.setPatrolling(false);
+                guard.setFollowing(false);
+                guard.setPatrolPos(null);
+                GuardOrders.setWaiting(guard, true);
+                stopGuardActions(guard);
+                player.sendMessage(Text.translatable("gui.rallyguard.route.paused"), true);
+            }
+            case NetworkConstants.ROUTE_CLEAR -> {
+                GuardRoutes.clear(guard);
+                guard.setPatrolling(false);
+                guard.setFollowing(false);
+                guard.setPatrolPos(null);
+                GuardOrders.setWaiting(guard, true);
+                stopGuardActions(guard);
+                player.sendMessage(Text.translatable("gui.rallyguard.route.cleared"), true);
+            }
+            default -> {
+            }
+        }
     }
 }

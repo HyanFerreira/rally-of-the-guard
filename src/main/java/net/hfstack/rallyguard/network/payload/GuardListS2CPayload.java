@@ -13,7 +13,11 @@ import java.util.List;
  * S2C: servidor envia lista de guardas (id, nome, patrulhando).
  */
 public record GuardListS2CPayload(List<Entry> entries) implements CustomPayload {
-    public record Entry(int entityId, String name, boolean patrolling, int status) {
+    public record Point(int x, int y, int z) {
+    }
+
+    public record Entry(int entityId, String name, boolean patrolling, int status, boolean routeActive,
+                        int routeWaitSeconds, List<Point> routePoints) {
     }
 
     public static final Id<GuardListS2CPayload> ID =
@@ -33,6 +37,14 @@ public record GuardListS2CPayload(List<Entry> entries) implements CustomPayload 
                         buf.writeString(e.name());
                         buf.writeBoolean(e.patrolling());
                         buf.writeVarInt(e.status());
+                        buf.writeBoolean(e.routeActive());
+                        buf.writeVarInt(e.routeWaitSeconds());
+                        buf.writeVarInt(e.routePoints().size());
+                        for (Point point : e.routePoints()) {
+                            buf.writeInt(point.x());
+                            buf.writeInt(point.y());
+                            buf.writeInt(point.z());
+                        }
                     }
                 }
 
@@ -45,7 +57,14 @@ public record GuardListS2CPayload(List<Entry> entries) implements CustomPayload 
                         String name = buf.readString();
                         boolean patrolling = buf.readBoolean();
                         int status = buf.readVarInt();
-                        list.add(new Entry(id, name, patrolling, status));
+                        boolean routeActive = buf.readBoolean();
+                        int routeWaitSeconds = buf.readVarInt();
+                        int pointCount = buf.readVarInt();
+                        List<Point> routePoints = new ArrayList<>(pointCount);
+                        for (int p = 0; p < pointCount; p++) {
+                            routePoints.add(new Point(buf.readInt(), buf.readInt(), buf.readInt()));
+                        }
+                        list.add(new Entry(id, name, patrolling, status, routeActive, routeWaitSeconds, routePoints));
                     }
                     return new GuardListS2CPayload(list);
                 }
