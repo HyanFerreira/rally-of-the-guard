@@ -11,22 +11,23 @@ Built for players who want their hired guards to feel like a real squad instead 
 
 ## What's New in 1.3.0
 
-### Command Postures
+### Patrol Routes
 
-- The **Commander's Ledger** now shows each hired guard's current order state.
-- Added direct **Follow** and **Wait** commands to the guard command panel.
-- The follow control turns into **Stop** while a guard is already following.
-- Stopping a patrol now leaves the guard in the explicit waiting state.
+- The **Commander's Ledger** now includes a patrol route editor.
+- Create routes with up to **5 points** using your current position.
+- Start, pause, clear, and edit a guard's route from the route screen.
+- Configure how long a guard waits at each point before moving to the next one.
 
-### Route UI Preparation
+### Native Guard AI Integration
 
-- Added a **Route** button to the Commander's Ledger as a placeholder for patrol routes.
-- Improved the command panel layout so it fits better on narrower windows.
+- Routes reuse Guard Villagers' existing patrol behavior.
+- Guards still fight hostile mobs they encounter while moving between route points.
+- After waiting at a route point, the mod updates the guard's patrol position to the next point.
 
-### Smarter Rally Respect
+### Persistent Route Orders
 
-- The **Scroll of Rallying** now respects guards ordered to wait, just like it already respects patrolling guards.
-- Waiting guards are not pulled into rallies unless given a new order first.
+- Route data is stored on the guard and survives world reloads.
+- Route guards appear as **On route** / **Em rota** in the command panel.
 
 ---
 
@@ -64,12 +65,17 @@ From the panel, you can:
 - Order a guard to wait.
 - Set a guard to patrol your current position.
 - Stop an active patrol.
-- Preview the upcoming route command.
+- Create and control patrol routes with up to 5 points.
 
 ### Patrol Orders
 
 Patrol commands store the guard's patrol position directly, allowing the guard to walk to the ordered location
 and hold that post until told otherwise.
+
+### Patrol Routes
+
+Route commands store up to 5 patrol points on a guard. A routed guard walks to the current point, waits for the
+configured delay, then receives the next point as its patrol position. The route loops until paused or cleared.
 
 ### Friendly Fire and Neutrality
 
@@ -122,6 +128,7 @@ Empty   | Empty              | Empty
 - Guards in unloaded chunks may not pathfind until their chunk is loaded.
 - If a guard is too far away, summon them first, then assign a patrol position.
 - Rally only affects hired guards that are not currently patrolling or waiting.
+- Patrol routes work only while the guard is loaded in the current world.
 
 ---
 
