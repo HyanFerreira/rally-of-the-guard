@@ -16,6 +16,20 @@ repositories {
 	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
 	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
 	// for more information about repositories.
+	maven {
+		name = "CurseMaven"
+		url = "https://www.cursemaven.com"
+		content {
+			includeGroup "curse.maven"
+		}
+	}
+	maven {
+		name = "QuiltMC"
+		url = "https://maven.quiltmc.org/repository/release/"
+		content {
+			includeGroup "org.quiltmc.parsers"
+		}
+	}
 }
 
 loom {
@@ -43,7 +57,7 @@ dependencies {
 	if (guardVillagersJar.exists()) {
 		modImplementation files(guardVillagersJar)
 	} else {
-		logger.warn("Guard Villagers jar not found at ${guardVillagersJar}. runClient needs this local mod dependency.")
+		modImplementation "curse.maven:guard-villagers-fabric-571503:${project.guardvillagers_file_id}"
 	}
 
 	def midnightLibJar = file(project.midnightlib_jar)
@@ -52,6 +66,11 @@ dependencies {
 	} else {
 		logger.warn("MidnightLib jar not found at ${midnightLibJar}. Guard Villagers needs this local nested dependency.")
 	}
+
+	modRuntimeOnly "curse.maven:configured-457570:${project.configured_file_id}"
+	modRuntimeOnly "curse.maven:modmenu-308702:${project.modmenu_file_id}"
+	modRuntimeOnly "curse.maven:yacl-667299:${project.yacl_file_id}"
+	runtimeOnly "org.quiltmc.parsers:gson:${project.quilt_parsers_gson_version}"
 }
 
 processResources {
