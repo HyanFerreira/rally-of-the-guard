@@ -9,24 +9,24 @@ Built for players who want their hired guards to feel like a real squad instead 
 
 ---
 
-## What's New in 1.2.5
+## What's New in 1.3.0
 
-### Minecraft 1.21.11 Support
+### Command Postures
 
-This release ports Rally of the Guard to **Minecraft 1.21.11** for Fabric.
+- The **Commander's Ledger** now shows each hired guard's current order state.
+- Added direct **Follow** and **Wait** commands to the guard command panel.
+- The follow control turns into **Stop** while a guard is already following.
+- Stopping a patrol now leaves the guard in the explicit waiting state.
 
-### More Reliable Rally Behavior
+### Route UI Preparation
 
-The **Scroll of Rallying** now does more than simply teleport guards and enable follow mode.
-When a rally starts, each summoned guard has its current combat/navigation task cleared, movement reset,
-AI re-enabled, and follow mode refreshed so they react immediately after being called.
+- Added a **Route** button to the Commander's Ledger as a placeholder for patrol routes.
+- Improved the command panel layout so it fits better on narrower windows.
 
-This should greatly reduce cases where a guard arrives near the player but keeps wandering until the player
-gets close or opens the guard inventory.
+### Smarter Rally Respect
 
-### Updated Compatibility
-
-Updated for the current 1.21.11 Fabric toolchain and Guard Villagers dependency.
+- The **Scroll of Rallying** now respects guards ordered to wait, just like it already respects patrolling guards.
+- Waiting guards are not pulled into rallies unless given a new order first.
 
 ---
 
@@ -48,6 +48,7 @@ Use the **Scroll of Rallying** to gather nearby hired guards into formation.
 - When enabled, nearby non-patrolling hired guards are teleported near you and set to follow.
 - When disabled, rallied guards stop following.
 - Patrolling guards are not pulled away from their posts.
+- Waiting guards are not pulled away from their current order.
 - While rallied, your hired guards are protected from your own attacks.
 
 ### Commander's Ledger
@@ -57,9 +58,13 @@ The **Commander's Ledger** opens a portable guard command panel with no keybind 
 From the panel, you can:
 
 - View your hired guards.
+- See whether each guard is following, waiting, patrolling, or idle.
 - Summon a selected guard to your position in the same dimension.
+- Order a guard to follow you.
+- Order a guard to wait.
 - Set a guard to patrol your current position.
 - Stop an active patrol.
+- Preview the upcoming route command.
 
 ### Patrol Orders
 
@@ -116,11 +121,17 @@ Empty   | Empty              | Empty
 - Guard commands work only within the same dimension.
 - Guards in unloaded chunks may not pathfind until their chunk is loaded.
 - If a guard is too far away, summon them first, then assign a patrol position.
-- Rally only affects hired guards that are not currently patrolling.
+- Rally only affects hired guards that are not currently patrolling or waiting.
 
 ---
 
 ## Previous Highlights
+
+### Version 1.2.5
+
+- Ported Rally of the Guard to **Minecraft 1.21.11** for Fabric.
+- Improved rally behavior by clearing guard combat/navigation tasks before refreshing follow mode.
+- Updated compatibility for the current 1.21.11 Fabric toolchain and Guard Villagers dependency.
 
 ### Version 1.2.3
 
