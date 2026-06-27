@@ -2,6 +2,7 @@ package net.hfstack.rallyguard.event;
 
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.effect.ModEffects;
 import net.hfstack.rallyguard.order.GuardOrders;
@@ -32,9 +33,6 @@ public final class RallyFormationTicker {
     private static final int TICK_INTERVAL = 2;
     private static final double HOLD_DISTANCE_SQUARED = 0.75 * 0.75;
     private static final double FORMATION_DISTANCE_SQUARED = 1.2 * 1.2;
-    private static final double TELEPORT_DISTANCE_SQUARED = 30.0 * 30.0;
-    private static final double MOVE_SPEED = 1.0;
-    private static final double SEARCH_RADIUS = 100.0;
     private static final Map<UUID, FormationAnchor> ANCHORS = new HashMap<>();
 
     private record FormationAnchor(BlockPos block, float yaw, boolean inFront) {
@@ -59,17 +57,20 @@ public final class RallyFormationTicker {
         for (ServerPlayerEntity player : world.getPlayers()) {
             if (!player.hasStatusEffect(ModEffects.RALLY_COMMANDER)) continue;
             refreshRallyCommanderEffect(player);
+            if (!RallyConfig.rallyFormationEnabled()) continue;
             tickPlayerFormation(world, player);
         }
     }
 
     private static void refreshRallyCommanderEffect(ServerPlayerEntity player) {
         StatusEffectInstance effect = player.getStatusEffect(ModEffects.RALLY_COMMANDER);
-        if (effect == null || effect.getDuration() > ModEffects.RALLY_COMMANDER_REFRESH_THRESHOLD_TICKS) return;
+        int durationTicks = RallyConfig.rallyEffectTimerSeconds() * 20;
+        int refreshThresholdTicks = Math.max(1, Math.min(durationTicks - 1, durationTicks / 3));
+        if (effect == null || effect.getDuration() > refreshThresholdTicks) return;
 
         player.addStatusEffect(new StatusEffectInstance(
                 ModEffects.RALLY_COMMANDER,
-                ModEffects.RALLY_COMMANDER_DURATION_TICKS,
+                durationTicks,
                 effect.getAmplifier(),
                 false,
                 false,
@@ -90,7 +91,8 @@ public final class RallyFormationTicker {
             guard.setFollowing(false);
             guard.setPatrolling(false);
 
-            if (distance > TELEPORT_DISTANCE_SQUARED) {
+            double teleportDistance = RallyConfig.formationTeleportDistance();
+            if (RallyConfig.rallyTeleportEnabled() && distance > teleportDistance * teleportDistance) {
                 guard.refreshPositionAndAngles(slot.x, slot.y, slot.z, guard.getYaw(), guard.getPitch());
                 guard.setVelocity(0.0, 0.0, 0.0);
                 guard.getNavigation().stop();
@@ -103,7 +105,7 @@ public final class RallyFormationTicker {
             }
 
             if (distance > FORMATION_DISTANCE_SQUARED) {
-                guard.getNavigation().startMovingTo(slot.x, slot.y, slot.z, MOVE_SPEED);
+                guard.getNavigation().startMovingTo(slot.x, slot.y, slot.z, RallyConfig.formationReturnSpeed());
             } else {
                 guard.getNavigation().stop();
                 guard.setVelocity(0.0, guard.getVelocity().y, 0.0);
@@ -164,7 +166,7 @@ public final class RallyFormationTicker {
                         && !guard.isPatrolling()
                         && !GuardOrders.isWaiting(guard)
                         && !GuardRoutes.get(guard).active()
-                        && entity.squaredDistanceTo(player) <= SEARCH_RADIUS * SEARCH_RADIUS
+                        && entity.squaredDistanceTo(player) <= RallyConfig.combatGuardSearchRadius() * RallyConfig.combatGuardSearchRadius()
         );
 
         List<GuardEntity> guards = new ArrayList<>(entities.size());

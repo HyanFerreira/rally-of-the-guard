@@ -1,6 +1,7 @@
 package net.hfstack.rallyguard.screen;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.network.NetworkConstants;
 import net.hfstack.rallyguard.network.payload.GuardListS2CPayload;
 import net.hfstack.rallyguard.network.payload.GuardRouteUpdateC2SPayload;
@@ -20,9 +21,8 @@ public class GuardRouteScreen extends Screen {
     private static final int WARNING = 0xFFFFCC66;
 
     private static final int MAX_PANEL_W = 520;
-    private static final int PANEL_H = 236;
+    private static final int MIN_PANEL_H = 236;
     private static final int SCREEN_PAD = 12;
-    private static final int MAX_POINTS = 5;
     private static final int ROW_TOP = 52;
     private static final int ROW_H = 24;
     private static final int BTN_H = 18;
@@ -40,7 +40,7 @@ public class GuardRouteScreen extends Screen {
         this.entryIndex = entryIndex;
         this.guard = guard;
         this.active = guard.routeActive();
-        this.waitSeconds = guard.routeWaitSeconds() > 0 ? guard.routeWaitSeconds() : 30;
+        this.waitSeconds = guard.routeWaitSeconds() > 0 ? guard.routeWaitSeconds() : RallyConfig.routeDefaultWaitSeconds();
         this.points.addAll(guard.routePoints());
     }
 
@@ -82,7 +82,7 @@ public class GuardRouteScreen extends Screen {
             ).dimensions(removeX, rowY + 3, 58, BTN_H).build());
         }
 
-        int controlsY = y + PANEL_H - 54;
+        int controlsY = y + panelHeight() - 54;
         this.addDrawableChild(ButtonWidget.builder(
                 Text.literal("-5s"),
                 b -> {
@@ -95,7 +95,7 @@ public class GuardRouteScreen extends Screen {
         this.addDrawableChild(ButtonWidget.builder(
                 Text.literal("+5s"),
                 b -> {
-                    waitSeconds = Math.min(300, waitSeconds + 5);
+                    waitSeconds = Math.min(600, waitSeconds + 5);
                     saveOnly();
                     rebuildButtons();
                 }
@@ -104,7 +104,7 @@ public class GuardRouteScreen extends Screen {
         this.addDrawableChild(ButtonWidget.builder(
                 Text.translatable("gui.rallyguard.route.add_current"),
                 b -> {
-            if (points.size() < MAX_POINTS) {
+            if (points.size() < RallyConfig.routeMaxPoints()) {
                 points.add(currentPoint());
                 saveOnly();
                 rebuildButtons();
@@ -112,7 +112,7 @@ public class GuardRouteScreen extends Screen {
                 }
         ).dimensions(x + 118, controlsY, 104, BTN_H).build());
 
-        int bottomY = y + PANEL_H - 28;
+        int bottomY = y + panelHeight() - 28;
         this.addDrawableChild(ButtonWidget.builder(
                 active ? Text.translatable("gui.rallyguard.route.pause") : Text.translatable("gui.rallyguard.route.start"),
                 b -> {
@@ -208,11 +208,13 @@ public class GuardRouteScreen extends Screen {
         int y = panelY();
         int panelW = panelWidth();
 
-        ctx.fill(x, y, x + panelW, y + PANEL_H, 0xF0101010);
+        int panelH = panelHeight();
+
+        ctx.fill(x, y, x + panelW, y + panelH, 0xF0101010);
         ctx.fill(x, y, x + panelW, y + 1, WHITE);
-        ctx.fill(x, y + PANEL_H - 1, x + panelW, y + PANEL_H, WHITE);
-        ctx.fill(x, y, x + 1, y + PANEL_H, WHITE);
-        ctx.fill(x + panelW - 1, y, x + panelW, y + PANEL_H, WHITE);
+        ctx.fill(x, y + panelH - 1, x + panelW, y + panelH, WHITE);
+        ctx.fill(x, y, x + 1, y + panelH, WHITE);
+        ctx.fill(x + panelW - 1, y, x + panelW, y + panelH, WHITE);
 
         ctx.drawCenteredTextWithShadow(this.textRenderer,
                 Text.translatable("gui.rallyguard.route.title_named", guard.name()),
@@ -255,7 +257,7 @@ public class GuardRouteScreen extends Screen {
         if (points.size() < 2) {
             ctx.drawTextWithShadow(this.textRenderer,
                     Text.translatable("gui.rallyguard.route.need_points"),
-                    x + 230, y + PANEL_H - 50, WARNING);
+                    x + 230, y + panelHeight() - 50, WARNING);
         }
     }
 
@@ -268,7 +270,12 @@ public class GuardRouteScreen extends Screen {
     }
 
     private int panelY() {
-        return (this.height - PANEL_H) / 2;
+        return (this.height - panelHeight()) / 2;
+    }
+
+    private int panelHeight() {
+        int rowsHeight = ROW_TOP + RallyConfig.routeMaxPoints() * ROW_H + 84;
+        return Math.min(this.height - SCREEN_PAD * 2, Math.max(MIN_PANEL_H, rowsHeight));
     }
 
     @Override

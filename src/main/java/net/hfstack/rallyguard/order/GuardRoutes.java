@@ -1,6 +1,7 @@
 package net.hfstack.rallyguard.order;
 
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
+import net.hfstack.rallyguard.config.RallyConfig;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 
@@ -55,7 +56,7 @@ public final class GuardRoutes {
     }
 
     private static GuardRouteState empty() {
-        return new GuardRouteState(false, 0, GuardRouteState.DEFAULT_WAIT_TICKS, 0, List.of());
+        return new GuardRouteState(false, 0, GuardRouteState.defaultWaitTicks(), 0, List.of());
     }
 
     private static void clearTags(Entity guard) {
@@ -112,7 +113,7 @@ public final class GuardRoutes {
             int y = Integer.parseInt(coords[1]);
             int z = Integer.parseInt(coords[2]);
             points.add(new BlockPos(x, y, z));
-            if (points.size() >= GuardRouteState.MAX_POINTS) break;
+            if (points.size() >= RallyConfig.routeMaxPoints()) break;
         }
         return points;
     }

@@ -2,6 +2,7 @@ package net.hfstack.rallyguard;
 
 import net.fabricmc.api.ModInitializer;
 import net.hfstack.rallyguard.component.ModComponents;
+import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.effect.ModEffects;
 import net.hfstack.rallyguard.event.GuardVillagersSpawnEggFix;
 import net.hfstack.rallyguard.event.GuardRouteTicker;
@@ -22,6 +23,7 @@ public class RallyOfTheGuard implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        RallyConfig.load();
         GuardVillagersConfigPatcher.patchFollowHeroConfig();
 
         ModComponents.initialize();

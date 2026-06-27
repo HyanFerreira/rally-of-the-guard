@@ -1,5 +1,6 @@
 package net.hfstack.rallyguard.screen;
 
+import net.hfstack.rallyguard.config.RallyConfig;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -78,7 +79,7 @@ public class HireGuardScreen extends HandledScreen<HireGuardScreenHandler> {
                 this.width / 2, y + 10, WHITE);
 
         // Mensagem com suporte a \n e wrap
-        Text body = Text.translatable("gui.rallyguard.hire.body");
+        Text body = Text.translatable("gui.rallyguard.hire.body", RallyConfig.hireCost(), RallyConfig.hireItem().getName());
 
         int maxTextWidth = this.backgroundWidth - 24; // margem interna
         // wrap automático (respeita quebras explícitas \n também)

@@ -17,7 +17,8 @@ Principais mudancas:
 
 - Adicionadas posturas no Livro de Comando: seguir, aguardar, patrulhar e rota.
 - Adicionada tela de rota de patrulha.
-- Rotas suportam ate 5 pontos.
+- Rotas suportam limite configuravel de pontos.
+- Adicionada configuracao via MidnightLib, acessivel pelo Mod Menu/Configured quando disponivel.
 - Cada ponto usa a posicao atual do jogador como referencia.
 - Guardas em rota aguardam um tempo configuravel antes de seguir para o proximo ponto.
 - Rotas usam o comportamento nativo de patrulha do Guard Villagers.
@@ -33,7 +34,7 @@ Principais mudancas:
 ### Contratacao de Guardas
 
 - Clique com o botao direito em um guarda sem dono para abrir a tela de contratacao.
-- O custo padrao e de **3 esmeraldas**.
+- O custo padrao e de **3 esmeraldas**, mas custo e item podem ser alterados no config.
 - Guardas contratados ficam vinculados ao UUID do jogador.
 - Guardas contratados recebem nome dourado e mensagem de apresentacao.
 - Guardas contratados podem seguir o jogador sem depender do efeito Hero of the Village.
@@ -67,7 +68,7 @@ Rotas de patrulha permitem que um guarda percorra varios pontos em loop.
 
 Regras atuais:
 
-- Maximo de 5 pontos por rota.
+- Maximo configuravel de pontos por rota.
 - Minimo de 2 pontos para iniciar.
 - Cada ponto pode ser definido usando a posicao atual do jogador.
 - O tempo de espera por ponto pode ser ajustado na tela da rota.
@@ -167,6 +168,39 @@ Empty   | Empty              | Empty
 - A formacao do rali nao usa `patrolling`; ela usa slots relativos ao jogador e navegacao.
 - Ordens de combate atuam sobre guardas em rali/seguindo no mundo atual.
 - A protecao contra friendly fire se aplica ao contexto de rali.
+
+---
+
+## Configuracao
+
+O mod registra suas opcoes usando MidnightLib. Com **Mod Menu** e uma tela de configuracao compativel instalada, o botao
+de configuracao aparece na lista de mods e abre uma interface para editar as opcoes.
+
+As opcoes tambem ficam salvas no arquivo de configuracao gerado pela MidnightLib para o mod.
+
+Principais opcoes:
+
+- `economy.hireCost`: custo para contratar um guarda.
+- `economy.hireItem`: item usado na contratacao, em formato de ID, por exemplo `minecraft:emerald`.
+- `rally.radius`: raio usado para buscar guardas ao iniciar o rali.
+- `rally.maxGuards`: limite de guardas chamados pelo rali.
+- `rally.teleportEnabled`: permite ou bloqueia teleportes do rali/formacao.
+- `rally.teleportMinDistance`: distancia minima para teleportar um guarda ao iniciar o rali.
+- `rally.formationEnabled`: liga ou desliga a formacao Escolta.
+- `rally.protectRalliedGuardsFromOwner`: impede o comandante de acertar seus guardas durante o rali.
+- `formation.columnSpacing`: distancia entre as duas colunas da formacao.
+- `formation.rowSpacing`: distancia entre fileiras.
+- `formation.returnSpeed`: velocidade usada para voltar ao slot.
+- `formation.teleportDistance`: distancia em que a formacao teleporta um guarda muito longe.
+- `combat.targetRange`: alcance maximo da mira para ordens de ataque.
+- `combat.guardSearchRadius`: raio dos guardas que recebem ordens de combate.
+- `combat.allowPassiveTargets`: permite ordenar ataque contra mobs passivos.
+- `combat.allowPlayerTargets`: permite ordenar ataque contra jogadores.
+- `route.maxPoints`: maximo de pontos por rota, limitado a 10 pela interface atual.
+- `route.defaultWaitSeconds`: espera padrao em cada ponto.
+- `route.moveSpeed`: velocidade ao mover entre pontos.
+- `route.teleportIfStuck`: permite teleportar guardas de rota que ficaram presos/longe.
+- `route.teleportDistance`: distancia minima para considerar teleporte de rota.
 
 ---
 

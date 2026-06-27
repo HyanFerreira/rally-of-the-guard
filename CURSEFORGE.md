@@ -44,6 +44,7 @@ The Commander's Ledger is your portable command panel.
 - Order guards to follow, wait, patrol, or run a route.
 - Manage your squad without needing a keybind.
 - Open combat orders for the target you are looking at.
+- Tune costs, rally behavior, combat ranges, formation spacing, and route limits through config.
 
 Current guard states include:
 
@@ -96,7 +97,7 @@ orders and are not pulled into the attack.
 
 Build real patrol routes for your guards.
 
-- Create routes with up to **5 points**.
+- Create routes with a configurable point limit.
 - Add points using your current position.
 - Choose how long guards wait at each point.
 - Start, pause, clear, and edit routes from the route screen.
@@ -119,6 +120,21 @@ When danger arrives, rally your squad.
 - Guards try to keep an escort formation while not fighting.
 - Patrolling and waiting guards keep their current orders.
 - Friendly fire protection helps prevent accidental hits during the rally.
+
+---
+
+### Modpack Friendly Config
+
+Rally of the Guard uses MidnightLib config integration, so compatible config screens can expose the settings directly
+from Mod Menu.
+
+You can customize:
+
+- guard hiring cost and hiring item, including items from other mods;
+- rally radius, max rallied guards, and whether rally teleporting is allowed;
+- escort formation spacing, return speed, and teleport distance;
+- combat order range, guard search radius, passive targets, and player targets;
+- patrol route point limit, wait time, movement speed, and stuck teleport behavior.
 
 ---
 

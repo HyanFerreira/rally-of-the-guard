@@ -3,6 +3,7 @@ package net.hfstack.rallyguard.event;
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
+import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.minecraft.entity.Entity;
@@ -17,13 +18,15 @@ public final class RallyFriendlyFireHandler {
     public static void register() {
         AttackEntityCallback.EVENT.register((player, world, hand, target, hit) -> {
             if (world.isClient()) return ActionResult.PASS;
+            if (!RallyConfig.rallyProtectRalliedGuardsFromOwner()) return ActionResult.PASS;
             if (!GuardOwnership.isGuard(target)) return ActionResult.PASS;
             if (!GuardOwnership.isOwnedBy(target, player.getUuid())) return ActionResult.PASS;
-            if (!isFollowing(target)) return ActionResult.PASS;
+            if (!isRallied(target)) return ActionResult.PASS;
             return ActionResult.FAIL;
         });
 
         ServerLivingEntityEvents.ALLOW_DAMAGE.register((LivingEntity victim, net.minecraft.entity.damage.DamageSource source, float amount) -> {
+            if (!RallyConfig.rallyProtectRalliedGuardsFromOwner()) return true;
             if (!GuardOwnership.isGuard(victim)) return true;
 
             PlayerEntity attackerPlayer = null;
@@ -36,11 +39,11 @@ public final class RallyFriendlyFireHandler {
             if (attackerPlayer == null) return true;
             if (!GuardOwnership.isOwnedBy(victim, attackerPlayer.getUuid())) return true;
 
-            return !isFollowing(victim);
+            return !isRallied(victim);
         });
     }
 
-    private static boolean isFollowing(Entity guard) {
-        return guard instanceof GuardEntity gv && (gv.isFollowing() || GuardOrders.isRallied(gv));
+    private static boolean isRallied(Entity guard) {
+        return guard instanceof GuardEntity gv && GuardOrders.isRallied(gv);
     }
 }

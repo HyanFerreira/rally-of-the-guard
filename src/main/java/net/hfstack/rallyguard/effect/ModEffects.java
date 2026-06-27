@@ -8,9 +8,6 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 
 public class ModEffects {
-    public static final int RALLY_COMMANDER_DURATION_TICKS = 18 * 20;
-    public static final int RALLY_COMMANDER_REFRESH_THRESHOLD_TICKS = 6 * 20;
-
     public static final RegistryEntry<StatusEffect> RALLY_COMMANDER = registerStatusEffect("rally_commander",
             new RallyCommanderEffect());
 

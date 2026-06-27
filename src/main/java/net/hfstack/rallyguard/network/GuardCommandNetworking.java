@@ -2,6 +2,7 @@ package net.hfstack.rallyguard.network;
 
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.network.payload.GuardActionC2SPayload;
 import net.hfstack.rallyguard.network.payload.GuardAttackTargetC2SPayload;
@@ -13,6 +14,8 @@ import net.hfstack.rallyguard.order.GuardRouteState;
 import net.hfstack.rallyguard.order.GuardRoutes;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
@@ -33,8 +36,6 @@ public final class GuardCommandNetworking {
     }
 
     private static boolean REGISTERED = false;
-    private static final double ATTACK_TARGET_RANGE = 64.0;
-
     public static synchronized void registerServer() {
         if (REGISTERED) return;
         REGISTERED = true;
@@ -187,10 +188,10 @@ public final class GuardCommandNetworking {
         }
 
         List<BlockPos> points = payload.points().stream()
-                .limit(GuardRouteState.MAX_POINTS)
+                .limit(RallyConfig.routeMaxPoints())
                 .map(p -> new BlockPos(p.x(), p.y(), p.z()))
                 .toList();
-        int waitTicks = Math.max(0, Math.min(300, payload.waitSeconds())) * 20;
+        int waitTicks = Math.max(0, Math.min(600, payload.waitSeconds())) * 20;
 
         switch (payload.action()) {
             case NetworkConstants.ROUTE_SAVE -> {
@@ -235,9 +236,10 @@ public final class GuardCommandNetworking {
 
     private static void handleAttackTarget(ServerPlayerEntity player, GuardAttackTargetC2SPayload payload) {
         ServerWorld world = player.getEntityWorld();
+        double attackTargetRange = RallyConfig.combatTargetRange();
         Entity targetEntity = payload.targetEntityId() >= 0
                 ? world.getEntityById(payload.targetEntityId())
-                : findLookedTarget(player, ATTACK_TARGET_RANGE);
+                : findLookedTarget(player, attackTargetRange);
 
         if (!(targetEntity instanceof LivingEntity target) || !target.isAlive()) {
             player.sendMessage(Text.translatable("gui.rallyguard.combat.no_target"), true);
@@ -247,7 +249,15 @@ public final class GuardCommandNetworking {
             player.sendMessage(Text.translatable("gui.rallyguard.combat.invalid_target"), true);
             return;
         }
-        if (target.squaredDistanceTo(player) > ATTACK_TARGET_RANGE * ATTACK_TARGET_RANGE) {
+        if (target instanceof PlayerEntity && !RallyConfig.combatAllowPlayerTargets()) {
+            player.sendMessage(Text.translatable("gui.rallyguard.combat.invalid_target"), true);
+            return;
+        }
+        if (!(target instanceof HostileEntity) && !(target instanceof PlayerEntity) && !RallyConfig.combatAllowPassiveTargets()) {
+            player.sendMessage(Text.translatable("gui.rallyguard.combat.invalid_target"), true);
+            return;
+        }
+        if (target.squaredDistanceTo(player) > attackTargetRange * attackTargetRange) {
             player.sendMessage(Text.translatable("gui.rallyguard.combat.target_too_far"), true);
             return;
         }
@@ -261,7 +271,7 @@ public final class GuardCommandNetworking {
                         && !guard.isPatrolling()
                         && !GuardOrders.isWaiting(guard)
                         && !GuardRoutes.get(guard).active()
-                        && e.squaredDistanceTo(player) <= 100 * 100
+                        && e.squaredDistanceTo(player) <= RallyConfig.combatGuardSearchRadius() * RallyConfig.combatGuardSearchRadius()
         );
 
         int ordered = 0;

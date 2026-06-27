@@ -2,6 +2,7 @@ package net.hfstack.rallyguard.item;
 
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.hfstack.rallyguard.component.ModComponents;
+import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.effect.ModEffects;
 import net.hfstack.rallyguard.event.RallyFormationTicker;
@@ -67,8 +68,12 @@ public class ScrollOfRallyingItem extends Item {
         guard.getNavigation().stop();
         guard.setVelocity(0.0, 0.0, 0.0);
 
-        guard.refreshPositionAndAngles(x, y, z, guard.getYaw(), guard.getPitch());
-        guard.setFollowing(false);
+        double teleportMinDistance = RallyConfig.rallyTeleportMinDistance();
+        if (RallyConfig.rallyTeleportEnabled()
+                && guard.squaredDistanceTo(user) >= teleportMinDistance * teleportMinDistance) {
+            guard.refreshPositionAndAngles(x, y, z, guard.getYaw(), guard.getPitch());
+        }
+        guard.setFollowing(!RallyConfig.rallyFormationEnabled());
         guard.setAiDisabled(false);
         guard.lookAtEntity(user, 30.0F, 30.0F);
     }
@@ -93,7 +98,8 @@ public class ScrollOfRallyingItem extends Item {
 
             List<? extends Entity> myGuards = sw.getEntitiesByType(
                     guardType,
-                    e -> GuardOwnership.isOwnedBy(e, user.getUuid()) && e.squaredDistanceTo(user) <= 100 * 100
+                    e -> GuardOwnership.isOwnedBy(e, user.getUuid())
+                            && e.squaredDistanceTo(user) <= RallyConfig.combatGuardSearchRadius() * RallyConfig.combatGuardSearchRadius()
             );
 
             for (Entity g : myGuards) {
@@ -102,15 +108,16 @@ public class ScrollOfRallyingItem extends Item {
             }
         } else {
             user.addStatusEffect(new StatusEffectInstance(
-                    ModEffects.RALLY_COMMANDER, ModEffects.RALLY_COMMANDER_DURATION_TICKS, 0, false, false, true));
+                    ModEffects.RALLY_COMMANDER, RallyConfig.rallyEffectTimerSeconds() * 20, 0, false, false, true));
             RallyFormationTicker.startRally(sp);
             setActive(stack, true);
-            user.sendMessage(Text.translatable("alert.rallyguard.scroll_of_rallying.strength_gained")
+            user.sendMessage(Text.translatable("alert.rallyguard.scroll_of_rallying.strength_gained", RallyConfig.rallyRadius())
                     .styled(s -> s.withColor(0x00FF00)), false);
 
             List<? extends Entity> candidates = sw.getEntitiesByType(
                     guardType,
-                    e -> GuardOwnership.isOwnedBy(e, user.getUuid()) && e.squaredDistanceTo(user) <= 100 * 100
+                    e -> GuardOwnership.isOwnedBy(e, user.getUuid())
+                            && e.squaredDistanceTo(user) <= RallyConfig.rallyRadius() * RallyConfig.rallyRadius()
             );
 
             List<Entity> joiners = new ArrayList<>();
@@ -120,7 +127,7 @@ public class ScrollOfRallyingItem extends Item {
             }
             joiners.sort(Comparator.comparingInt(Entity::getId));
 
-            int total = joiners.size();
+            int total = Math.min(joiners.size(), RallyConfig.rallyMaxGuards());
             for (int i = 0; i < total; i++) {
                 Entity g = joiners.get(i);
                 Vec3d slot = RallyFormationSlots.safeEscortSlot(sw, user, i, user.getYaw(), true);

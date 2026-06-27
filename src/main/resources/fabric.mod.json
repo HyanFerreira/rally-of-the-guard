@@ -34,7 +34,8 @@
 		"minecraft": ">=1.21.11 <1.21.12",
 		"java": ">=21",
 		"fabric-api": "*",
-		"guardvillagers": "*"
+		"guardvillagers": "*",
+		"midnightlib": "*"
 	},
 	"suggests": {
 		"another-mod": "*"

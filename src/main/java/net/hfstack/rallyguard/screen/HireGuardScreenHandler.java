@@ -1,11 +1,12 @@
 package net.hfstack.rallyguard.screen;
 
+import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -59,27 +60,28 @@ public class HireGuardScreenHandler extends ScreenHandler {
             return true;
         }
 
-        final int COST = 3;
-        int emeralds = 0;
+        int cost = RallyConfig.hireCost();
+        Item hireItem = RallyConfig.hireItem();
+        int paymentItems = 0;
 
         // Conta esmeraldas
         for (int i = 0; i < playerInventory.size(); i++) {
             ItemStack s = playerInventory.getStack(i);
-            if (s.isOf(Items.EMERALD)) emeralds += s.getCount();
+            if (s.isOf(hireItem)) paymentItems += s.getCount();
         }
 
         // Não tem o suficiente -> fecha e avisa em overlay
-        if (emeralds < COST) {
+        if (paymentItems < cost) {
             sp.closeHandledScreen();
-            sp.sendMessage(Text.translatable("gui.rallyguard.hire.not_enough"), true);
+            sp.sendMessage(Text.translatable("gui.rallyguard.hire.not_enough", cost, hireItem.getName()), true);
             return true;
         }
 
         // Desconta custo
-        int remaining = COST;
+        int remaining = cost;
         for (int i = 0; i < playerInventory.size() && remaining > 0; i++) {
             ItemStack s = playerInventory.getStack(i);
-            if (s.isOf(Items.EMERALD)) {
+            if (s.isOf(hireItem)) {
                 int take = Math.min(remaining, s.getCount());
                 s.decrement(take);
                 remaining -= take;

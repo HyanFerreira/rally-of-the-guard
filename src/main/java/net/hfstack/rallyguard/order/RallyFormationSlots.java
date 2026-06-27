@@ -1,5 +1,6 @@
 package net.hfstack.rallyguard.order;
 
+import net.hfstack.rallyguard.config.RallyConfig;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -9,8 +10,6 @@ public final class RallyFormationSlots {
     private RallyFormationSlots() {
     }
 
-    private static final double SIDE_SPACING = 1.35;
-    private static final double ROW_SPACING = 1.8;
     private static final double FIRST_ROW_OFFSET = 1.8;
 
     public static Vec3d escortSlot(PlayerEntity player, int index) {
@@ -24,11 +23,11 @@ public final class RallyFormationSlots {
 
         int row = index / 2;
         double side = index % 2 == 0 ? -1.0 : 1.0;
-        double rowOffset = FIRST_ROW_OFFSET + row * ROW_SPACING;
+        double rowOffset = FIRST_ROW_OFFSET + row * RallyConfig.formationRowSpacing();
         Vec3d rowVector = forward.multiply(inFront ? rowOffset : -rowOffset);
 
         return new Vec3d(player.getX(), player.getY(), player.getZ())
-                .add(right.multiply(side * SIDE_SPACING))
+                .add(right.multiply(side * RallyConfig.formationColumnSpacing()))
                 .add(rowVector);
     }
 
