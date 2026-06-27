@@ -4,7 +4,9 @@ import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.hfstack.rallyguard.component.ModComponents;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.effect.ModEffects;
+import net.hfstack.rallyguard.event.RallyFormationTicker;
 import net.hfstack.rallyguard.order.GuardOrders;
+import net.hfstack.rallyguard.order.RallyFormationSlots;
 import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -20,9 +22,11 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -44,13 +48,12 @@ public class ScrollOfRallyingItem extends Item {
         return e instanceof GuardEntity guard && guard.isPatrolling();
     }
 
-    private static boolean isWaiting(Entity e) {
-        return GuardOrders.isWaiting(e);
-    }
-
     private static void setFollowing(Entity e, boolean following) {
         if (e instanceof GuardEntity guard) {
             guard.setFollowing(following);
+            if (!following) {
+                GuardOrders.setRallied(guard, false);
+            }
         }
     }
 
@@ -59,12 +62,13 @@ public class ScrollOfRallyingItem extends Item {
 
         guard.setTarget(null);
         guard.setAttacking(false);
+        GuardOrders.setWaiting(guard, false);
+        GuardOrders.setRallied(guard, true);
         guard.getNavigation().stop();
         guard.setVelocity(0.0, 0.0, 0.0);
 
         guard.refreshPositionAndAngles(x, y, z, guard.getYaw(), guard.getPitch());
         guard.setFollowing(false);
-        guard.setFollowing(true);
         guard.setAiDisabled(false);
         guard.lookAtEntity(user, 30.0F, 30.0F);
     }
@@ -82,6 +86,7 @@ public class ScrollOfRallyingItem extends Item {
 
         if (rallyOn) {
             user.removeStatusEffect(ModEffects.RALLY_COMMANDER);
+            RallyFormationTicker.stopRally(sp);
             setActive(stack, false);
             user.sendMessage(Text.translatable("alert.rallyguard.scroll_of_rallying.strength_lost")
                     .styled(s -> s.withColor(0xFF0000)), false);
@@ -93,10 +98,12 @@ public class ScrollOfRallyingItem extends Item {
 
             for (Entity g : myGuards) {
                 setFollowing(g, false);
+                GuardOrders.setRallied(g, false);
             }
         } else {
             user.addStatusEffect(new StatusEffectInstance(
                     ModEffects.RALLY_COMMANDER, Integer.MAX_VALUE, 0, false, false, true));
+            RallyFormationTicker.startRally(sp);
             setActive(stack, true);
             user.sendMessage(Text.translatable("alert.rallyguard.scroll_of_rallying.strength_gained")
                     .styled(s -> s.withColor(0x00FF00)), false);
@@ -109,19 +116,16 @@ public class ScrollOfRallyingItem extends Item {
             List<Entity> joiners = new ArrayList<>();
             for (Entity g : candidates) {
                 if (isPatrolling(g)) continue;
-                if (isWaiting(g)) continue;
                 joiners.add(g);
             }
+            joiners.sort(Comparator.comparingInt(Entity::getId));
 
             int total = joiners.size();
-            int i = 0;
-            for (Entity g : joiners) {
-                double angle = (Math.PI / (total + 1)) * (++i);
-                double radius = 3.5;
-                double gx = user.getX() + Math.cos(angle) * radius;
-                double gz = user.getZ() + Math.sin(angle) * radius;
+            for (int i = 0; i < total; i++) {
+                Entity g = joiners.get(i);
+                Vec3d slot = RallyFormationSlots.safeEscortSlot(sw, user, i, user.getYaw(), true);
 
-                rallyGuardToPlayer(g, user, gx, user.getY(), gz);
+                rallyGuardToPlayer(g, user, slot.x, slot.y, slot.z);
             }
         }
 

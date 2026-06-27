@@ -64,5 +64,19 @@
   "gui.rallyguard.route.started": "Rota iniciada.",
   "gui.rallyguard.route.paused": "Rota pausada.",
   "gui.rallyguard.route.cleared": "Rota limpa.",
-  "gui.rallyguard.route.need_points": "Adicione pelo menos 2 pontos."
+  "gui.rallyguard.route.need_points": "Adicione pelo menos 2 pontos.",
+
+  "gui.rallyguard.combat.button": "Combate",
+  "gui.rallyguard.combat.title": "Ordens de Combate",
+  "gui.rallyguard.combat.target": "Alvo: %s",
+  "gui.rallyguard.combat.no_crosshair_target": "Mire em um alvo primeiro.",
+  "gui.rallyguard.combat.long_range_target": "O servidor usara sua linha de visao.",
+  "gui.rallyguard.combat.all": "Todos",
+  "gui.rallyguard.combat.infantry": "Infantaria",
+  "gui.rallyguard.combat.ranged": "Arqueiros",
+  "gui.rallyguard.combat.no_target": "Nenhum alvo valido.",
+  "gui.rallyguard.combat.invalid_target": "Alvo invalido.",
+  "gui.rallyguard.combat.target_too_far": "Alvo distante demais.",
+  "gui.rallyguard.combat.no_guards": "Nenhum guarda em rali corresponde.",
+  "gui.rallyguard.combat.attack_ordered": "Ordem de ataque enviada para %s guarda(s)."
 }

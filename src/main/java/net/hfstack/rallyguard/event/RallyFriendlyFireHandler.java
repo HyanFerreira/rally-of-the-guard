@@ -4,6 +4,7 @@ import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.hfstack.rallyguard.contract.GuardOwnership;
+import net.hfstack.rallyguard.order.GuardOrders;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -40,6 +41,6 @@ public final class RallyFriendlyFireHandler {
     }
 
     private static boolean isFollowing(Entity guard) {
-        return guard instanceof GuardEntity gv && gv.isFollowing();
+        return guard instanceof GuardEntity gv && (gv.isFollowing() || GuardOrders.isRallied(gv));
     }
 }

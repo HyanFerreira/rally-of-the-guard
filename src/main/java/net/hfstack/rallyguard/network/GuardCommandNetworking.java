@@ -4,6 +4,7 @@ import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.network.payload.GuardActionC2SPayload;
+import net.hfstack.rallyguard.network.payload.GuardAttackTargetC2SPayload;
 import net.hfstack.rallyguard.network.payload.GuardListS2CPayload;
 import net.hfstack.rallyguard.network.payload.GuardRouteUpdateC2SPayload;
 import net.hfstack.rallyguard.network.payload.OpenGuardCommandC2SPayload;
@@ -11,21 +12,28 @@ import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRouteState;
 import net.hfstack.rallyguard.order.GuardRoutes;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public final class GuardCommandNetworking {
     private GuardCommandNetworking() {
     }
 
     private static boolean REGISTERED = false;
+    private static final double ATTACK_TARGET_RANGE = 64.0;
 
     public static synchronized void registerServer() {
         if (REGISTERED) return;
@@ -46,6 +54,11 @@ public final class GuardCommandNetworking {
         ServerPlayNetworking.registerGlobalReceiver(GuardRouteUpdateC2SPayload.ID, (payload, context) -> {
             ServerPlayerEntity player = context.player();
             context.server().execute(() -> handleRouteUpdate(player, payload));
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(GuardAttackTargetC2SPayload.ID, (payload, context) -> {
+            ServerPlayerEntity player = context.player();
+            context.server().execute(() -> handleAttackTarget(player, payload));
         });
     }
 
@@ -99,6 +112,7 @@ public final class GuardCommandNetworking {
                 guard.refreshPositionAndAngles(player.getX() + ox, player.getY(), player.getZ() + oz,
                         guard.getYaw(), guard.getPitch());
                 guard.setFollowing(false);
+                GuardOrders.setRallied(guard, false);
                 GuardOrders.setWaiting(guard, false);
                 GuardRoutes.deactivate(guard);
                 stopGuardActions(guard);
@@ -107,6 +121,7 @@ public final class GuardCommandNetworking {
             case NetworkConstants.ACTION_FOLLOW -> {
                 guard.setPatrolling(false);
                 guard.setPatrolPos(null);
+                GuardOrders.setRallied(guard, false);
                 GuardOrders.setWaiting(guard, false);
                 GuardRoutes.deactivate(guard);
                 stopGuardActions(guard);
@@ -117,6 +132,7 @@ public final class GuardCommandNetworking {
                 guard.setFollowing(false);
                 guard.setPatrolling(false);
                 guard.setPatrolPos(null);
+                GuardOrders.setRallied(guard, false);
                 GuardOrders.setWaiting(guard, true);
                 GuardRoutes.deactivate(guard);
                 stopGuardActions(guard);
@@ -127,12 +143,14 @@ public final class GuardCommandNetworking {
                     guard.setPatrolling(false);
                     guard.setFollowing(false);
                     guard.setPatrolPos(null);
+                    GuardOrders.setRallied(guard, false);
                     GuardOrders.setWaiting(guard, true);
                     GuardRoutes.deactivate(guard);
                     stopGuardActions(guard);
                     player.sendMessage(Text.translatable("gui.rallyguard.command.patrol_off"), true);
                 } else {
                     guard.setFollowing(false);
+                    GuardOrders.setRallied(guard, false);
                     GuardOrders.setWaiting(guard, false);
                     GuardRoutes.deactivate(guard);
                     guard.setPatrolPos(player.getBlockPos());
@@ -213,5 +231,103 @@ public final class GuardCommandNetworking {
             default -> {
             }
         }
+    }
+
+    private static void handleAttackTarget(ServerPlayerEntity player, GuardAttackTargetC2SPayload payload) {
+        ServerWorld world = player.getEntityWorld();
+        Entity targetEntity = payload.targetEntityId() >= 0
+                ? world.getEntityById(payload.targetEntityId())
+                : findLookedTarget(player, ATTACK_TARGET_RANGE);
+
+        if (!(targetEntity instanceof LivingEntity target) || !target.isAlive()) {
+            player.sendMessage(Text.translatable("gui.rallyguard.combat.no_target"), true);
+            return;
+        }
+        if (target == player || GuardOwnership.isOwnedBy(target, player.getUuid())) {
+            player.sendMessage(Text.translatable("gui.rallyguard.combat.invalid_target"), true);
+            return;
+        }
+        if (target.squaredDistanceTo(player) > ATTACK_TARGET_RANGE * ATTACK_TARGET_RANGE) {
+            player.sendMessage(Text.translatable("gui.rallyguard.combat.target_too_far"), true);
+            return;
+        }
+
+        Identifier guardTypeId = Identifier.of("guardvillagers", "guard");
+        List<? extends Entity> guards = world.getEntitiesByType(
+                Registries.ENTITY_TYPE.get(guardTypeId),
+                e -> e instanceof GuardEntity guard
+                        && GuardOwnership.isOwnedBy(e, player.getUuid())
+                        && (guard.isFollowing() || GuardOrders.isRallied(guard))
+                        && !guard.isPatrolling()
+                        && !GuardOrders.isWaiting(guard)
+                        && !GuardRoutes.get(guard).active()
+                        && e.squaredDistanceTo(player) <= 100 * 100
+        );
+
+        int ordered = 0;
+        for (Entity e : guards) {
+            if (!(e instanceof GuardEntity guard)) continue;
+            if (!matchesAttackMode(guard, payload.mode())) continue;
+
+            guard.setTarget(target);
+            guard.setAttacking(true);
+            if (!isRangedGuard(guard)) {
+                guard.getNavigation().startMovingTo(target.getX(), target.getY(), target.getZ(), 1.2);
+            }
+            ordered++;
+        }
+
+        if (ordered == 0) {
+            player.sendMessage(Text.translatable("gui.rallyguard.combat.no_guards"), true);
+        } else {
+            player.sendMessage(Text.translatable("gui.rallyguard.combat.attack_ordered", ordered), true);
+        }
+    }
+
+    private static boolean matchesAttackMode(GuardEntity guard, int mode) {
+        boolean ranged = isRangedGuard(guard);
+        return switch (mode) {
+            case NetworkConstants.ATTACK_INFANTRY -> !ranged;
+            case NetworkConstants.ATTACK_RANGED -> ranged;
+            default -> true;
+        };
+    }
+
+    private static boolean isRangedGuard(GuardEntity guard) {
+        return isRangedWeapon(guard.getMainHandStack()) || isRangedWeapon(guard.getOffHandStack());
+    }
+
+    private static boolean isRangedWeapon(ItemStack stack) {
+        return stack.isOf(Items.BOW) || stack.isOf(Items.CROSSBOW);
+    }
+
+    private static Entity findLookedTarget(ServerPlayerEntity player, double range) {
+        Vec3d start = player.getEyePos();
+        Vec3d direction = player.getRotationVec(1.0F);
+        Vec3d end = start.add(direction.multiply(range));
+        Box searchBox = player.getBoundingBox().stretch(direction.multiply(range)).expand(1.0);
+
+        Entity best = null;
+        double bestDistance = range * range;
+
+        List<Entity> candidates = player.getEntityWorld().getOtherEntities(
+                player,
+                searchBox,
+                entity -> entity instanceof LivingEntity living && living.isAlive()
+        );
+
+        for (Entity candidate : candidates) {
+            Box box = candidate.getBoundingBox().expand(candidate.getTargetingMargin());
+            Optional<Vec3d> hit = box.raycast(start, end);
+            if (hit.isEmpty()) continue;
+
+            double distance = start.squaredDistanceTo(hit.get());
+            if (distance < bestDistance) {
+                best = candidate;
+                bestDistance = distance;
+            }
+        }
+
+        return best;
     }
 }

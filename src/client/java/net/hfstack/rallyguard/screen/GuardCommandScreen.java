@@ -186,6 +186,12 @@ public class GuardCommandScreen extends Screen {
 
         this.addDrawableChild(prev);
         this.addDrawableChild(next);
+
+        ButtonWidget combat = ButtonWidget.builder(
+                Text.translatable("gui.rallyguard.combat.button"),
+                b -> MinecraftClient.getInstance().setScreen(new GuardCombatScreen(this))
+        ).dimensions(x + 38, y + PANEL_H - 28, 76, 20).build();
+        this.addDrawableChild(combat);
     }
 
     private void sendAction(int entityId, int action) {

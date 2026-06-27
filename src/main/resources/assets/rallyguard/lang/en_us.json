@@ -64,5 +64,19 @@
   "gui.rallyguard.route.started": "Route started.",
   "gui.rallyguard.route.paused": "Route paused.",
   "gui.rallyguard.route.cleared": "Route cleared.",
-  "gui.rallyguard.route.need_points": "Add at least 2 points."
+  "gui.rallyguard.route.need_points": "Add at least 2 points.",
+
+  "gui.rallyguard.combat.button": "Combat",
+  "gui.rallyguard.combat.title": "Combat Orders",
+  "gui.rallyguard.combat.target": "Target: %s",
+  "gui.rallyguard.combat.no_crosshair_target": "Look at a target first.",
+  "gui.rallyguard.combat.long_range_target": "Server will use your line of sight.",
+  "gui.rallyguard.combat.all": "All",
+  "gui.rallyguard.combat.infantry": "Infantry",
+  "gui.rallyguard.combat.ranged": "Archers",
+  "gui.rallyguard.combat.no_target": "No valid target.",
+  "gui.rallyguard.combat.invalid_target": "Invalid target.",
+  "gui.rallyguard.combat.target_too_far": "Target is too far.",
+  "gui.rallyguard.combat.no_guards": "No matching rallied guards.",
+  "gui.rallyguard.combat.attack_ordered": "Attack order sent to %s guard(s)."
 }
