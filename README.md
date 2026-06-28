@@ -1,47 +1,47 @@
 # Rally of the Guard
 
-**Rally of the Guard** e uma expansao tática leve para o
+**Rally of the Guard** é uma expansão tática leve para o
 [Guard Villagers (Fabric/Quilt)](https://www.curseforge.com/minecraft/mc-mods/guard-villagers-fabric).
 
-O objetivo do mod e transformar guardas contratados em um esquadrao comandavel, sem descaracterizar a IA original do
+O objetivo do mod é transformar guardas contratados em um esquadrão comandável, sem descaracterizar a IA original do
 Guard Villagers. O jogador pode contratar guardas, convocar unidades, definir posturas, criar patrulhas fixas e montar
 rotas de patrulha em loop usando o Livro de Comando.
 
 ---
 
-## Versao Atual
+## Versão Atual
 
 ### 1.3.0
 
-Principais mudancas:
+Principais mudanças:
 
 - Adicionadas posturas no Livro de Comando: seguir, aguardar, patrulhar e rota.
 - Adicionada tela de rota de patrulha.
-- Rotas suportam limite configuravel de pontos.
-- Adicionada configuracao via MidnightLib, acessivel pelo Mod Menu/Configured quando disponivel.
-- Cada ponto usa a posicao atual do jogador como referencia.
-- Guardas em rota aguardam um tempo configuravel antes de seguir para o proximo ponto.
+- Rotas suportam limite configurável de pontos.
+- Adicionada configuração via MidnightLib, acessível pelo Mod Menu/Configured quando disponível.
+- Cada ponto usa a posição atual do jogador como referência.
+- Guardas em rota aguardam um tempo configurável antes de seguir para o próximo ponto.
 - Rotas usam o comportamento nativo de patrulha do Guard Villagers.
-- Dados da rota ficam salvos no proprio guarda e sobrevivem ao reload do mundo.
+- Dados da rota ficam salvos no próprio guarda e sobrevivem ao reload do mundo.
 - O Pergaminho do Rali respeita guardas em patrulha ou aguardando.
-- O Rali usa formacao Escolta para posicionar guardas em duas colunas atras/laterais do jogador.
+- O Rali usa formação Escolta para posicionar guardas em duas colunas atrás/laterais do jogador.
 - Adicionada tela de Ordens de Combate para atacar o alvo mirado com todos, infantaria ou arqueiros.
 
 ---
 
 ## Funcionalidades
 
-### Contratacao de Guardas
+### Contratação de Guardas
 
-- Clique com o botao direito em um guarda sem dono para abrir a tela de contratacao.
-- O custo padrao e de **3 esmeraldas**, mas custo e item podem ser alterados no config.
+- Clique com o botão direito em um guarda sem dono para abrir a tela de contratação.
+- O custo padrão é de **3 esmeraldas**, mas custo e item podem ser alterados na configuração.
 - Guardas contratados ficam vinculados ao UUID do jogador.
-- Guardas contratados recebem nome dourado e mensagem de apresentacao.
+- Guardas contratados recebem nome dourado e mensagem de apresentação.
 - Guardas contratados podem seguir o jogador sem depender do efeito Hero of the Village.
 
 ### Livro de Comando
 
-O **Livro de Comando** abre um painel portatil para gerenciar guardas contratados.
+O **Livro de Comando** abre um painel portátil para gerenciar guardas contratados.
 
 Pelo painel, o jogador pode:
 
@@ -50,7 +50,7 @@ Pelo painel, o jogador pode:
 - Convocar um guarda para perto do jogador.
 - Mandar um guarda seguir.
 - Mandar um guarda aguardar.
-- Definir uma patrulha fixa na posicao atual.
+- Definir uma patrulha fixa na posição atual.
 - Parar uma patrulha.
 - Criar, iniciar, pausar, limpar e editar rotas de patrulha.
 
@@ -64,40 +64,40 @@ Estados exibidos:
 
 ### Rotas de Patrulha
 
-Rotas de patrulha permitem que um guarda percorra varios pontos em loop.
+Rotas de patrulha permitem que um guarda percorra vários pontos em loop.
 
 Regras atuais:
 
-- Maximo configuravel de pontos por rota.
-- Minimo de 2 pontos para iniciar.
-- Cada ponto pode ser definido usando a posicao atual do jogador.
+- Máximo configurável de pontos por rota.
+- Mínimo de 2 pontos para iniciar.
+- Cada ponto pode ser definido usando a posição atual do jogador.
 - O tempo de espera por ponto pode ser ajustado na tela da rota.
-- Ao chegar em um ponto, o guarda aguarda o tempo configurado e depois recebe o proximo ponto como `patrolPos`.
-- A rota continua em loop ate ser pausada ou limpa.
+- Ao chegar em um ponto, o guarda aguarda o tempo configurado e depois recebe o próximo ponto como `patrolPos`.
+- A rota continua em loop até ser pausada ou limpa.
 - Outras ordens, como seguir ou aguardar, pausam a rota sem apagar os pontos.
-- Somente o botao `Limpar` apaga os pontos da rota.
+- Somente o botão `Limpar` apaga os pontos da rota.
 
 ### Pergaminho do Rali
 
-O **Pergaminho do Rali** convoca guardas contratados proximos para perto do jogador.
+O **Pergaminho do Rali** convoca guardas contratados próximos para perto do jogador.
 
-- `Shift + botao direito` ativa ou encerra o rali.
-- Guardas convocados sao posicionados em formacao Escolta e passam a seguir.
-- Guardas em patrulha nao sao puxados.
-- Guardas aguardando nao sao puxados.
-- Enquanto o rali esta ativo, guardas tentam manter seus slots de formacao quando nao estao em combate.
-- Durante o rali, guardas contratados ficam protegidos contra dano causado pelo proprio comandante.
+- `Shift + botão direito` ativa ou encerra o rali.
+- Guardas convocados são posicionados em formação Escolta e passam a seguir.
+- Guardas em patrulha não são puxados.
+- Guardas aguardando não são puxados.
+- Enquanto o rali está ativo, guardas tentam manter seus slots de formação quando não estão em combate.
+- Durante o rali, guardas contratados ficam protegidos contra dano causado pelo próprio comandante.
 
 ### Ordens de Combate
 
 O painel de combate permite mandar guardas em rali atacarem o alvo mirado pelo jogador.
 
-Atalho padrao:
+Atalho padrão:
 
 - `R`: abre a tela de Ordens de Combate.
 - A tecla pode ser alterada na tela de controles do Minecraft.
 
-Modos disponiveis:
+Modos disponíveis:
 
 - `Todos`
 - `Infantaria`
@@ -105,23 +105,23 @@ Modos disponiveis:
 
 Regras atuais:
 
-- A ordem considera guardas contratados que estao seguindo o jogador.
-- Guardas em patrulha, aguardando ou em rota nao recebem a ordem.
-- Arqueiros sao identificados por `Bow` ou `Crossbow` na mao principal ou secundaria.
+- A ordem considera guardas contratados que estão seguindo o jogador.
+- Guardas em patrulha, aguardando ou em rota não recebem a ordem.
+- Arqueiros são identificados por `Bow` ou `Crossbow` na mão principal ou secundária.
 - Infantaria corresponde aos guardas sem arco ou besta equipados.
 
 ### Patrulha Fixa
 
 A patrulha fixa usa o comportamento nativo do Guard Villagers:
 
-- O jogador define a posicao atual como ponto de patrulha.
-- O guarda caminha ate o ponto e guarda aquela posicao.
+- O jogador define a posição atual como ponto de patrulha.
+- O guarda caminha até o ponto e guarda aquela posição.
 - Se encontrar mobs hostis, a IA normal do guarda continua funcionando.
 
 ### Friendly Fire e Neutralidade
 
 - Guardas em rali ficam protegidos contra ataques do jogador dono.
-- Ao atacar um guarda que nao pertence ao jogador, os guardas contratados do jogador permanecem neutros.
+- Ao atacar um guarda que não pertence ao jogador, os guardas contratados do jogador permanecem neutros.
 
 ---
 
@@ -159,54 +159,54 @@ Empty   | Empty              | Empty
 
 ---
 
-## Observacoes Tecnicas
+## Observações Técnicas
 
-- Comandos funcionam apenas no mundo/dimensao onde o guarda esta carregado.
-- Guardas em chunks descarregados nao processam rota ate serem carregados novamente.
-- Rotas sao salvas no guarda usando tags persistentes.
-- O sistema de rota atual nao substitui a IA do Guard Villagers; ele apenas atualiza dinamicamente o `patrolPos`.
-- A formacao do rali nao usa `patrolling`; ela usa slots relativos ao jogador e navegacao.
+- Comandos funcionam apenas no mundo/dimensão onde o guarda está carregado.
+- Guardas em chunks descarregados não processam rota até serem carregados novamente.
+- Rotas são salvas no guarda usando tags persistentes.
+- O sistema de rota atual não substitui a IA do Guard Villagers; ele apenas atualiza dinamicamente o `patrolPos`.
+- A formação do rali não usa `patrolling`; ela usa slots relativos ao jogador e navegação.
 - Ordens de combate atuam sobre guardas em rali/seguindo no mundo atual.
-- A protecao contra friendly fire se aplica ao contexto de rali.
+- A proteção contra friendly fire se aplica ao contexto de rali.
 
 ---
 
-## Configuracao
+## Configuração
 
-O mod registra suas opcoes usando MidnightLib. Com **Mod Menu** e uma tela de configuracao compativel instalada, o botao
-de configuracao aparece na lista de mods e abre uma interface para editar as opcoes.
+O mod registra suas opções usando MidnightLib. Com **Mod Menu** e uma tela de configuração compatível instalada, o botão
+de configuração aparece na lista de mods e abre uma interface para editar as opções.
 
-As opcoes tambem ficam salvas no arquivo de configuracao gerado pela MidnightLib para o mod.
+As opções também ficam salvas no arquivo de configuração gerado pela MidnightLib para o mod.
 
-Principais opcoes:
+Principais opções:
 
 - `economy.hireCost`: custo para contratar um guarda.
-- `economy.hireItem`: item usado na contratacao, em formato de ID, por exemplo `minecraft:emerald`.
+- `economy.hireItem`: item usado na contratação, em formato de ID, por exemplo `minecraft:emerald`.
 - `rally.radius`: raio usado para buscar guardas ao iniciar o rali.
 - `rally.maxGuards`: limite de guardas chamados pelo rali.
-- `rally.teleportEnabled`: permite ou bloqueia teleportes do rali/formacao.
-- `rally.teleportMinDistance`: distancia minima para teleportar um guarda ao iniciar o rali.
-- `rally.formationEnabled`: liga ou desliga a formacao Escolta.
+- `rally.teleportEnabled`: permite ou bloqueia teleportes do rali/formação.
+- `rally.teleportMinDistance`: distância mínima para teleportar um guarda ao iniciar o rali.
+- `rally.formationEnabled`: liga ou desliga a formação Escolta.
 - `rally.protectRalliedGuardsFromOwner`: impede o comandante de acertar seus guardas durante o rali.
-- `formation.columnSpacing`: distancia entre as duas colunas da formacao.
-- `formation.rowSpacing`: distancia entre fileiras.
+- `formation.columnSpacing`: distância entre as duas colunas da formação.
+- `formation.rowSpacing`: distância entre fileiras.
 - `formation.returnSpeed`: velocidade usada para voltar ao slot.
-- `formation.teleportDistance`: distancia em que a formacao teleporta um guarda muito longe.
-- `combat.targetRange`: alcance maximo da mira para ordens de ataque.
+- `formation.teleportDistance`: distância em que a formação teleporta um guarda muito longe.
+- `combat.targetRange`: alcance máximo da mira para ordens de ataque.
 - `combat.guardSearchRadius`: raio dos guardas que recebem ordens de combate.
 - `combat.allowPassiveTargets`: permite ordenar ataque contra mobs passivos.
 - `combat.allowPlayerTargets`: permite ordenar ataque contra jogadores.
-- `route.maxPoints`: maximo de pontos por rota, limitado a 10 pela interface atual.
-- `route.defaultWaitSeconds`: espera padrao em cada ponto.
+- `route.maxPoints`: máximo de pontos por rota, limitado a 10 pela interface atual.
+- `route.defaultWaitSeconds`: espera padrão em cada ponto.
 - `route.moveSpeed`: velocidade ao mover entre pontos.
 - `route.teleportIfStuck`: permite teleportar guardas de rota que ficaram presos/longe.
-- `route.teleportDistance`: distancia minima para considerar teleporte de rota.
+- `route.teleportDistance`: distância mínima para considerar teleporte de rota.
 
 ---
 
-## Licenca
+## Licença
 
-Este mod esta disponivel sob a licenca **CC0-1.0**.
+Este mod está disponível sob a licença **CC0-1.0**.
 
 ---
 
