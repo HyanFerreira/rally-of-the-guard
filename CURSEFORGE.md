@@ -1,6 +1,6 @@
 # Rally of the Guard
 
-![Rally of the Guard Banner](docs/media/rally-of-the-guard-banner.png)
+![Rally of the Guard Banner](https://raw.githubusercontent.com/HyanFerreira/rally-of-the-guard/refs/heads/1.21.11/docs/media/rally-of-the-guard-banner.png)
 
 [CurseForge](https://www.curseforge.com/members/thecyber27/projects) |
 [GitHub](https://github.com/HyanFerreira) |
@@ -26,7 +26,7 @@ react, and defend using their native behavior. Rally of the Guard simply gives p
 
 ### 🪙 Hiring Guards
 
-![Hire Guard](docs/media/hire-guard.png)
+![Hire Guard](https://raw.githubusercontent.com/HyanFerreira/rally-of-the-guard/refs/heads/1.21.11/docs/media/hire-guard.png)
 
 Recruit guards directly in-game and turn them into your personal squad.
 
@@ -39,7 +39,7 @@ Recruit guards directly in-game and turn them into your personal squad.
 
 ### 📒 Commander's Ledger
 
-![Commander's Ledger](docs/media/commanders-ledger.png)
+![Commander's Ledger](https://raw.githubusercontent.com/HyanFerreira/rally-of-the-guard/refs/heads/1.21.11/docs/media/commanders-ledger.png)
 
 The Commander's Ledger is your portable command panel.
 
@@ -56,7 +56,7 @@ Current guard states include **Idle**, **Following**, **Waiting**, **On patrol**
 
 ### ⚔️ Escort Formation
 
-![Rally Formation](docs/media/rally-formation.png)
+![Rally Formation](https://raw.githubusercontent.com/HyanFerreira/rally-of-the-guard/refs/heads/1.21.11/docs/media/rally-formation.png)
 
 Rallied guards can form an escort around you.
 
@@ -74,7 +74,7 @@ they try to keep their formation slots. If combat starts, they are allowed to br
 
 ### 🎯 Combat Orders
 
-![Combat Orders](docs/media/combat-orders.png)
+![Combat Orders](https://raw.githubusercontent.com/HyanFerreira/rally-of-the-guard/refs/heads/1.21.11/docs/media/combat-orders.png)
 
 Look at a target and send your rallied squad after it.
 
@@ -91,7 +91,7 @@ orders and are not pulled into the attack.
 
 ### 🧭 Patrol Routes
 
-![Patrol Route Editor](docs/media/patrol-route-editor.png)
+![Patrol Route Editor](https://raw.githubusercontent.com/HyanFerreira/rally-of-the-guard/refs/heads/1.21.11/docs/media/patrol-route-editor.png)
 
 Build real patrol routes for your guards.
 
@@ -108,7 +108,7 @@ position. If hostile mobs appear along the way, the guard's normal combat AI can
 
 ### 📜 Scroll of Rallying
 
-![Scroll of Rallying](docs/media/scroll-of-rallying.png)
+![Scroll of Rallying](https://raw.githubusercontent.com/HyanFerreira/rally-of-the-guard/refs/heads/1.21.11/docs/media/scroll-of-rallying.png)
 
 When danger arrives, rally your squad.
 
@@ -122,7 +122,7 @@ When danger arrives, rally your squad.
 
 ### ✨ Items & Effects
 
-![Items and Effects](docs/media/items-and-effects.png)
+![Items and Effects](https://raw.githubusercontent.com/HyanFerreira/rally-of-the-guard/refs/heads/1.21.11/docs/media/items-and-effects.png)
 
 Rally of the Guard adds a small set of focused tools built around command and coordination.
 
@@ -143,9 +143,9 @@ using Guard Villagers' native patrol behavior.
 
 ## 🖼️ Media
 
-![Patrol In Action](docs/media/patrol-in-action.png)
+![Patrol In Action](https://raw.githubusercontent.com/HyanFerreira/rally-of-the-guard/refs/heads/1.21.11/docs/media/patrol-in-action.png)
 
-![Guard Inventory](docs/media/guard-inventory.png)
+![Guard Inventory](https://raw.githubusercontent.com/HyanFerreira/rally-of-the-guard/refs/heads/1.21.11/docs/media/guard-inventory.png)
 
 ---
 
