@@ -1,11 +1,13 @@
 package net.hfstack.rallyguard.screen;
 
-import net.hfstack.rallyguard.config.RallyConfig;
+import dev.sterner.guardvillagers.common.entity.GuardEntity;
+import net.hfstack.rallyguard.api.RallyGuardApi;
+import net.hfstack.rallyguard.api.recruitment.GuardRecruitmentService;
+import net.hfstack.rallyguard.api.recruitment.RecruitmentResult;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -13,27 +15,35 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 
 public class HireGuardScreenHandler extends ScreenHandler {
+    private static final GuardRecruitmentService RECRUITMENT = RallyGuardApi.guardRecruitment();
+    private static final double MAX_USE_DISTANCE_SQUARED = 8.0 * 8.0;
 
-    private final int guardEntityId;           // no CLIENTE fica -1 (não usado)
-    private final PlayerInventory playerInventory;
+    private final int guardEntityId;
 
     // Construtor CLIENTE (2 args) — usado pela fábrica registrada em ModScreenHandlers
     public HireGuardScreenHandler(int syncId, PlayerInventory inv) {
         super(ModScreenHandlers.HIRE_HANDLER, syncId);
-        this.playerInventory = inv;
         this.guardEntityId = -1;
     }
 
     // Construtor SERVIDOR (3 args) — usado no SimpleNamedScreenHandlerFactory
     public HireGuardScreenHandler(int syncId, PlayerInventory inv, int guardEntityId) {
         super(ModScreenHandlers.HIRE_HANDLER, syncId);
-        this.playerInventory = inv;
         this.guardEntityId = guardEntityId;
     }
 
     @Override
     public boolean canUse(PlayerEntity player) {
-        return true;
+        if (!(player instanceof ServerPlayerEntity serverPlayer)) {
+            return true;
+        }
+
+        Entity entity = serverPlayer.getEntityWorld().getEntityById(guardEntityId);
+        return entity instanceof GuardEntity guard
+                && guard.isAlive()
+                && !guard.isRemoved()
+                && !GuardOwnership.hasOwner(guard)
+                && serverPlayer.squaredDistanceTo(guard) <= MAX_USE_DISTANCE_SQUARED;
     }
 
     /**
@@ -45,56 +55,16 @@ public class HireGuardScreenHandler extends ScreenHandler {
         if (id != 0) return false;
 
         ServerWorld world = sp.getEntityWorld();
-        Entity guard = world.getEntityById(this.guardEntityId);
+        Entity entity = world.getEntityById(this.guardEntityId);
 
-        // Guarda inexistente -> fecha
-        if (guard == null || !GuardOwnership.isGuard(guard)) {
+        if (!(entity instanceof GuardEntity guard)) {
             sp.closeHandledScreen();
+            sp.sendMessage(Text.translatable("gui.rallyguard.hire.invalid"), true);
             return true;
         }
 
-        // Já tem dono -> fecha e avisa
-        if (GuardOwnership.hasOwner(guard)) {
-            sp.closeHandledScreen();
-            sp.sendMessage(Text.translatable("gui.rallyguard.hire.already_owned"), true); // overlay
-            return true;
-        }
-
-        int cost = RallyConfig.hireCost();
-        Item hireItem = RallyConfig.hireItem();
-        int paymentItems = 0;
-
-        // Conta esmeraldas
-        for (int i = 0; i < playerInventory.size(); i++) {
-            ItemStack s = playerInventory.getStack(i);
-            if (s.isOf(hireItem)) paymentItems += s.getCount();
-        }
-
-        // Não tem o suficiente -> fecha e avisa em overlay
-        if (paymentItems < cost) {
-            sp.closeHandledScreen();
-            sp.sendMessage(Text.translatable("gui.rallyguard.hire.not_enough", cost, hireItem.getName()), true);
-            return true;
-        }
-
-        // Desconta custo
-        int remaining = cost;
-        for (int i = 0; i < playerInventory.size() && remaining > 0; i++) {
-            ItemStack s = playerInventory.getStack(i);
-            if (s.isOf(hireItem)) {
-                int take = Math.min(remaining, s.getCount());
-                s.decrement(take);
-                remaining -= take;
-            }
-        }
-
-        // Define dono (aplica nome dourado + mensagem "apresentando-se" em chat)
-        GuardOwnership.setOwner(guard, sp);
-
-        // Mensagem de sucesso em overlay (apenas essa fica na tela)
-        sp.sendMessage(Text.translatable("gui.rallyguard.hire.success"), true);
-
-        // Fecha a tela
+        RecruitmentResult result = RECRUITMENT.recruit(sp, guard);
+        sp.sendMessage(result.feedback(), true);
         sp.closeHandledScreen();
         return true;
     }

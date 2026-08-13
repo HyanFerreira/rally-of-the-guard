@@ -46,6 +46,12 @@ public final class GuardOwnership {
         player.sendMessage(Text.translatable("message.rallyguard.guard_presenting", display), false);
     }
 
+    public static void clearOwner(Entity guard) {
+        if (guard instanceof GuardEntity gv) {
+            gv.setOwnerId(null);
+        }
+    }
+
     private static void applyGoldName(Entity guard) {
         if (!(guard instanceof LivingEntity le)) return;
 

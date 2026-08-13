@@ -2,6 +2,9 @@ package net.hfstack.rallyguard.network;
 
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.hfstack.rallyguard.api.RallyGuardApi;
+import net.hfstack.rallyguard.api.command.GuardCommandResult;
+import net.hfstack.rallyguard.api.command.GuardCommandService;
 import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.network.payload.GuardActionC2SPayload;
@@ -36,6 +39,8 @@ public final class GuardCommandNetworking {
     }
 
     private static boolean REGISTERED = false;
+    private static final GuardCommandService COMMANDS = RallyGuardApi.guardCommands();
+
     public static synchronized void registerServer() {
         if (REGISTERED) return;
         REGISTERED = true;
@@ -101,70 +106,22 @@ public final class GuardCommandNetworking {
             player.sendMessage(Text.translatable("gui.rallyguard.command.not_found"), true);
             return;
         }
-        if (!GuardOwnership.isOwnedBy(guard, player.getUuid())) {
-            player.sendMessage(Text.translatable("gui.rallyguard.command.not_owner"), true);
-            return;
-        }
-
-        switch (action) {
-            case NetworkConstants.ACTION_SUMMON -> {
-                double ox = (player.getRandom().nextDouble() - 0.5) * 2.5;
-                double oz = (player.getRandom().nextDouble() - 0.5) * 2.5;
-                guard.refreshPositionAndAngles(player.getX() + ox, player.getY(), player.getZ() + oz,
-                        guard.getYaw(), guard.getPitch());
-                guard.setFollowing(false);
-                GuardOrders.setRallied(guard, false);
-                GuardOrders.setWaiting(guard, false);
-                GuardRoutes.deactivate(guard);
-                stopGuardActions(guard);
-                player.sendMessage(Text.translatable("gui.rallyguard.command.summoned"), true);
-            }
-            case NetworkConstants.ACTION_FOLLOW -> {
-                guard.setPatrolling(false);
-                guard.setPatrolPos(null);
-                GuardOrders.setRallied(guard, false);
-                GuardOrders.setWaiting(guard, false);
-                GuardRoutes.deactivate(guard);
-                stopGuardActions(guard);
-                guard.setFollowing(true);
-                player.sendMessage(Text.translatable("gui.rallyguard.command.follow_on"), true);
-            }
-            case NetworkConstants.ACTION_WAIT -> {
-                guard.setFollowing(false);
-                guard.setPatrolling(false);
-                guard.setPatrolPos(null);
-                GuardOrders.setRallied(guard, false);
-                GuardOrders.setWaiting(guard, true);
-                GuardRoutes.deactivate(guard);
-                stopGuardActions(guard);
-                player.sendMessage(Text.translatable("gui.rallyguard.command.wait_on"), true);
-            }
-            case NetworkConstants.ACTION_TOGGLE_PATROL -> {
-                if (guard.isPatrolling()) {
-                    guard.setPatrolling(false);
-                    guard.setFollowing(false);
-                    guard.setPatrolPos(null);
-                    GuardOrders.setRallied(guard, false);
-                    GuardOrders.setWaiting(guard, true);
-                    GuardRoutes.deactivate(guard);
-                    stopGuardActions(guard);
-                    player.sendMessage(Text.translatable("gui.rallyguard.command.patrol_off"), true);
-                } else {
-                    guard.setFollowing(false);
-                    GuardOrders.setRallied(guard, false);
-                    GuardOrders.setWaiting(guard, false);
-                    GuardRoutes.deactivate(guard);
-                    guard.setPatrolPos(player.getBlockPos());
-                    guard.setPatrolling(true);
-                    stopGuardActions(guard);
-                    player.sendMessage(Text.translatable("gui.rallyguard.command.patrol_on"), true);
-                }
-            }
+        GuardCommandResult result = switch (action) {
+            case NetworkConstants.ACTION_SUMMON -> COMMANDS.summon(player, guard);
+            case NetworkConstants.ACTION_FOLLOW -> COMMANDS.follow(player, guard);
+            case NetworkConstants.ACTION_WAIT -> COMMANDS.wait(player, guard);
+            case NetworkConstants.ACTION_TOGGLE_PATROL -> guard.isPatrolling()
+                    ? COMMANDS.stopPatrol(player, guard)
+                    : COMMANDS.patrol(player, guard, player.getBlockPos());
             case NetworkConstants.ACTION_ROUTE_PLACEHOLDER -> {
                 player.sendMessage(Text.translatable("gui.rallyguard.command.route_soon"), true);
+                yield null;
             }
-            default -> {
-            }
+            default -> null;
+        };
+
+        if (result != null) {
+            player.sendMessage(result.feedback(), true);
         }
     }
 

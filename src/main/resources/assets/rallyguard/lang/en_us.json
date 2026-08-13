@@ -76,7 +76,11 @@
   "gui.rallyguard.hire.button": "Hire",
   "gui.rallyguard.hire.not_enough": "You need %s x %s.",
   "gui.rallyguard.hire.success": "Contract accepted!",
-  "gui.rallyguard.hire.already_owned": "This guard is already part of your army.",
+  "gui.rallyguard.hire.already_owned": "This guard is already part of an army.",
+  "gui.rallyguard.hire.invalid": "This guard is no longer available or is too far away.",
+  "gui.rallyguard.hire.invalid_offer": "Recruitment produced an invalid payment offer.",
+  "gui.rallyguard.hire.policy_error": "Recruitment could not be validated. Try again shortly.",
+  "gui.rallyguard.hire.ownership_error": "Recruitment could not be completed. Your payment was returned.",
 
   "message.rallyguard.guard_presenting": "Guard %s reporting for duty.",
 

@@ -13,6 +13,7 @@ import net.hfstack.rallyguard.event.RallyFriendlyFireHandler;
 import net.hfstack.rallyguard.item.ModItems;
 import net.hfstack.rallyguard.network.GuardCommandNetworking;
 import net.hfstack.rallyguard.network.NetworkBootstrap;
+import net.hfstack.rallyguard.screen.ModScreenHandlers;
 import net.hfstack.rallyguard.util.GuardVillagersConfigPatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,7 @@ public class RallyOfTheGuard implements ModInitializer {
         ModComponents.initialize();
         ModItems.registerModItems();
         ModEffects.registerModEffects();
+        ModScreenHandlers.init();
 
         GuardVillagersSpawnEggFix.register();
         InteractGuardHandler.register();
