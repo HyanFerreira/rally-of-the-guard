@@ -30,6 +30,17 @@ repositories {
 			includeGroup "org.quiltmc.parsers"
 		}
 	}
+	exclusiveContent {
+		forRepository {
+			maven {
+				name = "Modrinth"
+				url = "https://api.modrinth.com/maven"
+			}
+		}
+		filter {
+			includeGroup "maven.modrinth"
+		}
+	}
 }
 
 loom {
@@ -60,17 +71,16 @@ dependencies {
 		modImplementation "curse.maven:guard-villagers-fabric-571503:${project.guardvillagers_file_id}"
 	}
 
-	def midnightLibJar = file(project.midnightlib_jar)
-	if (midnightLibJar.exists()) {
-		modImplementation files(midnightLibJar)
-	} else {
-		logger.warn("MidnightLib jar not found at ${midnightLibJar}. Guard Villagers needs this local nested dependency.")
-	}
+	modImplementation "maven.modrinth:midnightlib:${project.midnightlib_version}"
 
-	modRuntimeOnly "curse.maven:configured-457570:${project.configured_file_id}"
-	modRuntimeOnly "curse.maven:modmenu-308702:${project.modmenu_file_id}"
-	modRuntimeOnly "curse.maven:yacl-667299:${project.yacl_file_id}"
-	runtimeOnly "org.quiltmc.parsers:gson:${project.quilt_parsers_gson_version}"
+	modLocalRuntime "curse.maven:configured-457570:${project.configured_file_id}"
+	modLocalRuntime "curse.maven:modmenu-308702:${project.modmenu_file_id}"
+	modLocalRuntime "curse.maven:yacl-667299:${project.yacl_file_id}"
+	localRuntime "org.quiltmc.parsers:gson:${project.quilt_parsers_gson_version}"
+
+	testImplementation platform("org.junit:junit-bom:${project.junit_version}")
+	testImplementation "org.junit.jupiter:junit-jupiter"
+	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
 processResources {
@@ -83,6 +93,10 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
 	it.options.release = 21
+}
+
+tasks.withType(Test).configureEach {
+	useJUnitPlatform()
 }
 
 java {
@@ -107,7 +121,7 @@ jar {
 publishing {
 	publications {
 		create("mavenJava", MavenPublication) {
-			artifactId = project.archives_base_name
+			artifactId = project.maven_artifact_id
 			from components.java
 		}
 	}
