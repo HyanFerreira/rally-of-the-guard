@@ -64,7 +64,7 @@ public final class GuardCommandNetworking {
     }
 
     private static void sendGuardList(ServerPlayerEntity player) {
-        ServerWorld world = player.getEntityWorld();
+        ServerWorld world = player.getServerWorld();
         Identifier guardTypeId = Identifier.of("guardvillagers", "guard");
 
         List<? extends Entity> guards = world.getEntitiesByType(
@@ -94,7 +94,7 @@ public final class GuardCommandNetworking {
     }
 
     private static void handleAction(ServerPlayerEntity player, int entityId, int action) {
-        ServerWorld world = player.getEntityWorld();
+        ServerWorld world = player.getServerWorld();
         Entity e = world.getEntityById(entityId);
 
         if (!(e instanceof GuardEntity guard)) {
@@ -175,7 +175,7 @@ public final class GuardCommandNetworking {
     }
 
     private static void handleRouteUpdate(ServerPlayerEntity player, GuardRouteUpdateC2SPayload payload) {
-        ServerWorld world = player.getEntityWorld();
+        ServerWorld world = player.getServerWorld();
         Entity e = world.getEntityById(payload.entityId());
 
         if (!(e instanceof GuardEntity guard)) {
@@ -235,7 +235,7 @@ public final class GuardCommandNetworking {
     }
 
     private static void handleAttackTarget(ServerPlayerEntity player, GuardAttackTargetC2SPayload payload) {
-        ServerWorld world = player.getEntityWorld();
+        ServerWorld world = player.getServerWorld();
         double attackTargetRange = RallyConfig.combatTargetRange();
         Entity targetEntity = payload.targetEntityId() >= 0
                 ? world.getEntityById(payload.targetEntityId())

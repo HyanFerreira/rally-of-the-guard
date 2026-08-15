@@ -151,7 +151,7 @@ Empty   | Empty              | Empty
 
 ## Requisitos
 
-- **Minecraft:** 1.21.11
+- **Minecraft:** 1.21.1
 - **Loader:** Fabric
 - **Java:** 21 ou superior
 - **Fabric API**

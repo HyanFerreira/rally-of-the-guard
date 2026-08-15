@@ -8,7 +8,6 @@ import net.hfstack.rallyguard.effect.ModEffects;
 import net.hfstack.rallyguard.event.RallyFormationTicker;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.RallyFormationSlots;
-import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -20,16 +19,15 @@ import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class ScrollOfRallyingItem extends Item {
 
@@ -79,15 +77,15 @@ public class ScrollOfRallyingItem extends Item {
     }
 
     @Override
-    public ActionResult use(World world, PlayerEntity user, Hand hand) {
+    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         ItemStack stack = user.getStackInHand(hand);
-        if (world.isClient()) return ActionResult.SUCCESS;
-        if (!user.isSneaking()) return ActionResult.PASS;
-        if (!(user instanceof ServerPlayerEntity sp)) return ActionResult.PASS;
+        if (world.isClient) return TypedActionResult.success(stack, true);
+        if (!user.isSneaking()) return TypedActionResult.pass(stack);
+        if (!(user instanceof ServerPlayerEntity sp)) return TypedActionResult.pass(stack);
 
         boolean rallyOn = user.hasStatusEffect(ModEffects.RALLY_COMMANDER);
         EntityType<?> guardType = Registries.ENTITY_TYPE.get(Identifier.of("guardvillagers", "guard"));
-        ServerWorld sw = sp.getEntityWorld();
+        ServerWorld sw = sp.getServerWorld();
 
         if (rallyOn) {
             user.removeStatusEffect(ModEffects.RALLY_COMMANDER);
@@ -136,8 +134,8 @@ public class ScrollOfRallyingItem extends Item {
             }
         }
 
-        user.getItemCooldownManager().set(stack, 60);
-        return ActionResult.SUCCESS_SERVER;
+        user.getItemCooldownManager().set(this, 60);
+        return TypedActionResult.success(stack, false);
     }
 
     @Override
@@ -146,9 +144,8 @@ public class ScrollOfRallyingItem extends Item {
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, Item.TooltipContext ctx, TooltipDisplayComponent displayComponent,
-                              Consumer<Text> textConsumer, TooltipType type) {
-        textConsumer.accept(Text.translatable("tooltip.rallyguard.scroll_of_rallying.tooltip_desc"));
-        super.appendTooltip(stack, ctx, displayComponent, textConsumer, type);
+    public void appendTooltip(ItemStack stack, Item.TooltipContext ctx, List<Text> tooltip, TooltipType type) {
+        tooltip.add(Text.translatable("tooltip.rallyguard.scroll_of_rallying.tooltip_desc"));
+        super.appendTooltip(stack, ctx, tooltip, type);
     }
 }

@@ -44,7 +44,7 @@ public class HireGuardScreenHandler extends ScreenHandler {
         if (!(player instanceof ServerPlayerEntity sp)) return false;
         if (id != 0) return false;
 
-        ServerWorld world = sp.getEntityWorld();
+        ServerWorld world = sp.getServerWorld();
         Entity guard = world.getEntityById(this.guardEntityId);
 
         // Guarda inexistente -> fecha

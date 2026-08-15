@@ -8,8 +8,8 @@
 		"Hyan Ferreira!"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/HyanFerreira/rally-of-the-guard",
+		"sources": "https://github.com/HyanFerreira/rally-of-the-guard"
 	},
 	"license": "MIT",
 	"icon": "assets/rallyguard/icon.png",
@@ -30,12 +30,12 @@
 		}
 	],
 	"depends": {
-		"fabricloader": ">=0.19.2",
-		"minecraft": ">=1.21.11 <1.21.12",
+		"fabricloader": ">=0.16.14",
+		"minecraft": ">=1.21.1 <1.21.2",
 		"java": ">=21",
 		"fabric-api": "*",
-		"guardvillagers": "*",
-		"midnightlib": "*"
+		"guardvillagers": ">=2.1.2-1.21.1",
+		"midnightlib": ">=1.5.7"
 	},
 	"suggests": {
 		"another-mod": "*"

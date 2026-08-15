@@ -24,6 +24,13 @@ repositories {
 		}
 	}
 	maven {
+		name = "Modrinth"
+		url = "https://api.modrinth.com/maven"
+		content {
+			includeGroup "maven.modrinth"
+		}
+	}
+	maven {
 		name = "QuiltMC"
 		url = "https://maven.quiltmc.org/repository/release/"
 		content {
@@ -57,19 +64,19 @@ dependencies {
 	if (guardVillagersJar.exists()) {
 		modImplementation files(guardVillagersJar)
 	} else {
-		modImplementation "curse.maven:guard-villagers-fabric-571503:${project.guardvillagers_file_id}"
+		modImplementation "maven.modrinth:59rkB3YY:${project.guardvillagers_version}"
 	}
 
 	def midnightLibJar = file(project.midnightlib_jar)
 	if (midnightLibJar.exists()) {
 		modImplementation files(midnightLibJar)
 	} else {
-		logger.warn("MidnightLib jar not found at ${midnightLibJar}. Guard Villagers needs this local nested dependency.")
+		modImplementation "maven.modrinth:codAaoxh:${project.midnightlib_version}"
 	}
 
 	modRuntimeOnly "curse.maven:configured-457570:${project.configured_file_id}"
-	modRuntimeOnly "curse.maven:modmenu-308702:${project.modmenu_file_id}"
-	modRuntimeOnly "curse.maven:yacl-667299:${project.yacl_file_id}"
+	modRuntimeOnly "maven.modrinth:mOgUt4GM:${project.modmenu_version}"
+	modRuntimeOnly "maven.modrinth:1eAoo2KR:${project.yacl_version}"
 	runtimeOnly "org.quiltmc.parsers:gson:${project.quilt_parsers_gson_version}"
 }
 

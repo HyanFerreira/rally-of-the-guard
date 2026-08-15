@@ -4,11 +4,12 @@ import dev.sterner.guardvillagers.GuardVillagers;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.TypedEntityData;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.TypedActionResult;
 
 public final class GuardVillagersSpawnEggFix {
     private GuardVillagersSpawnEggFix() {
@@ -21,8 +22,9 @@ public final class GuardVillagersSpawnEggFix {
         });
 
         UseItemCallback.EVENT.register((player, world, hand) -> {
-            patch(player.getStackInHand(hand));
-            return ActionResult.PASS;
+            ItemStack stack = player.getStackInHand(hand);
+            patch(stack);
+            return TypedActionResult.pass(stack);
         });
     }
 
@@ -32,13 +34,13 @@ public final class GuardVillagersSpawnEggFix {
         }
 
         var entityData = stack.get(DataComponentTypes.ENTITY_DATA);
-        if (entityData != null && entityData.getType() == GuardVillagers.GUARD_VILLAGER) {
+        Identifier guardId = Identifier.of("guardvillagers", "guard");
+        if (entityData != null && guardId.toString().equals(entityData.getNbt().getString("id"))) {
             return;
         }
 
-        stack.set(
-                DataComponentTypes.ENTITY_DATA,
-                TypedEntityData.create((EntityType<?>) GuardVillagers.GUARD_VILLAGER, new NbtCompound())
-        );
+        NbtCompound nbt = new NbtCompound();
+        nbt.putString("id", guardId.toString());
+        stack.set(DataComponentTypes.ENTITY_DATA, NbtComponent.of(nbt));
     }
 }

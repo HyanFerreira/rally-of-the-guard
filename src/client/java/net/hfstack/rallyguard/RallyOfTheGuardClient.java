@@ -12,13 +12,11 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 public class RallyOfTheGuardClient implements ClientModInitializer {
     private static KeyBinding combatOrdersKey;
-    private static final KeyBinding.Category RALLYGUARD_CATEGORY =
-            KeyBinding.Category.create(Identifier.of(RallyOfTheGuard.MOD_ID, "combat_orders"));
+    private static final String RALLYGUARD_CATEGORY = "key.category.rallyguard.combat_orders";
 
     @Override
     public void onInitializeClient() {
