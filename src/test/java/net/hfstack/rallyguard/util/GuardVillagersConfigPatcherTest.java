@@ -1,6 +1,7 @@
 package net.hfstack.rallyguard.util;
 
 import com.google.gson.JsonParser;
+import dev.sterner.guardvillagers.GuardVillagersConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -44,6 +45,23 @@ class GuardVillagersConfigPatcherTest {
 
         assertEquals(GuardVillagersConfigPatcher.PatchResult.UNCHANGED,
                 GuardVillagersConfigPatcher.patchFollowHeroConfig(file));
+    }
+
+    @Test
+    void alreadyLoadedFollowHeroRequirementIsDisabledImmediately() throws IOException {
+        Path file = tempDir.resolve("guardvillagers.json");
+        Files.writeString(file, "{\"followHero\":false}");
+        boolean originalFollowHero = GuardVillagersConfig.followHero;
+
+        try {
+            GuardVillagersConfig.followHero = true;
+
+            assertEquals(GuardVillagersConfigPatcher.PatchResult.UNCHANGED,
+                    GuardVillagersConfigPatcher.patchFollowHeroConfig(file));
+            assertFalse(GuardVillagersConfig.followHero);
+        } finally {
+            GuardVillagersConfig.followHero = originalFollowHero;
+        }
     }
 
     @Test

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import dev.sterner.guardvillagers.GuardVillagersConfig;
 import net.fabricmc.loader.api.FabricLoader;
 import net.hfstack.rallyguard.RallyOfTheGuard;
 import org.slf4j.Logger;
@@ -44,6 +45,11 @@ public final class GuardVillagersConfigPatcher {
     }
 
     static PatchResult patchFollowHeroConfig(Path file) {
+        // Guard Villagers initializes before Rally and has already copied the
+        // JSON value into this static field. Updating only the file would take
+        // effect after a restart, so keep the running game in sync as well.
+        GuardVillagersConfig.followHero = false;
+
         try {
             JsonObject root;
             if (Files.exists(file)) {
