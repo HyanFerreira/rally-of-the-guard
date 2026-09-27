@@ -3,14 +3,14 @@ package net.hfstack.rallyguard.screen;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.hfstack.rallyguard.network.NetworkConstants;
 import net.hfstack.rallyguard.network.payload.GuardAttackTargetC2SPayload;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.entity.Entity;
-import net.minecraft.text.Text;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 
 public class GuardCombatScreen extends Screen {
     private static final int WHITE = 0xFFFFFFFF;
@@ -25,7 +25,7 @@ public class GuardCombatScreen extends Screen {
     private final Entity target;
 
     public GuardCombatScreen(Screen parent) {
-        super(Text.translatable("gui.rallyguard.combat.title"));
+        super(Component.translatable("gui.rallyguard.combat.title"));
         this.parent = parent;
         this.target = currentTarget();
     }
@@ -37,34 +37,34 @@ public class GuardCombatScreen extends Screen {
         int x = panelX();
         int y = panelY();
 
-        ButtonWidget all = ButtonWidget.builder(
-                Text.translatable("gui.rallyguard.combat.all"),
+        Button all = Button.builder(
+                Component.translatable("gui.rallyguard.combat.all"),
                 b -> sendAttack(NetworkConstants.ATTACK_ALL)
-        ).dimensions(x + 18, y + 78, 92, BTN_H).build();
+        ).bounds(x + 18, y + 78, 92, BTN_H).build();
 
-        ButtonWidget infantry = ButtonWidget.builder(
-                Text.translatable("gui.rallyguard.combat.infantry"),
+        Button infantry = Button.builder(
+                Component.translatable("gui.rallyguard.combat.infantry"),
                 b -> sendAttack(NetworkConstants.ATTACK_INFANTRY)
-        ).dimensions(x + 124, y + 78, 92, BTN_H).build();
+        ).bounds(x + 124, y + 78, 92, BTN_H).build();
 
-        ButtonWidget ranged = ButtonWidget.builder(
-                Text.translatable("gui.rallyguard.combat.ranged"),
+        Button ranged = Button.builder(
+                Component.translatable("gui.rallyguard.combat.ranged"),
                 b -> sendAttack(NetworkConstants.ATTACK_RANGED)
-        ).dimensions(x + 230, y + 78, 92, BTN_H).build();
+        ).bounds(x + 230, y + 78, 92, BTN_H).build();
 
-        this.addDrawableChild(all);
-        this.addDrawableChild(infantry);
-        this.addDrawableChild(ranged);
+        this.addRenderableWidget(all);
+        this.addRenderableWidget(infantry);
+        this.addRenderableWidget(ranged);
 
-        this.addDrawableChild(ButtonWidget.builder(
-                Text.translatable("gui.rallyguard.route.back"),
+        this.addRenderableWidget(Button.builder(
+                Component.translatable("gui.rallyguard.route.back"),
                 b -> closeToParent()
-        ).dimensions(x + (PANEL_W - 70) / 2, y + 114, 70, BTN_H).build());
+        ).bounds(x + (PANEL_W - 70) / 2, y + 114, 70, BTN_H).build());
     }
 
     private static Entity currentTarget() {
-        MinecraftClient client = MinecraftClient.getInstance();
-        HitResult hit = client.crosshairTarget;
+        Minecraft client = Minecraft.getInstance();
+        HitResult hit = client.hitResult;
         if (hit instanceof EntityHitResult entityHit) {
             return entityHit.getEntity();
         }
@@ -78,25 +78,25 @@ public class GuardCombatScreen extends Screen {
     }
 
     private void closeToParent() {
-        MinecraftClient.getInstance().setScreen(parent);
+        Minecraft.getInstance().setScreen(parent);
     }
 
     @Override
-    public void close() {
+    public void onClose() {
         closeToParent();
     }
 
     @Override
-    public void renderBackground(DrawContext ctx, int mouseX, int mouseY, float delta) {
+    public void extractBackground(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
     }
 
     @Override
-    public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
         drawPanel(ctx);
-        super.render(ctx, mouseX, mouseY, delta);
+        super.extractRenderState(ctx, mouseX, mouseY, delta);
     }
 
-    private void drawPanel(DrawContext ctx) {
+    private void drawPanel(GuiGraphicsExtractor ctx) {
         int x = panelX();
         int y = panelY();
 
@@ -106,16 +106,16 @@ public class GuardCombatScreen extends Screen {
         ctx.fill(x, y, x + 1, y + PANEL_H, WHITE);
         ctx.fill(x + PANEL_W - 1, y, x + PANEL_W, y + PANEL_H, WHITE);
 
-        ctx.drawCenteredTextWithShadow(this.textRenderer,
-                Text.translatable("gui.rallyguard.combat.title"),
+        ctx.centeredText(this.font,
+                Component.translatable("gui.rallyguard.combat.title"),
                 this.width / 2, y + 10, WHITE);
 
-        Text targetText = target == null
-                ? Text.translatable("gui.rallyguard.combat.long_range_target")
-                : Text.translatable("gui.rallyguard.combat.target", target.getName().getString());
+        Component targetComponent = target == null
+                ? Component.translatable("gui.rallyguard.combat.long_range_target")
+                : Component.translatable("gui.rallyguard.combat.target", target.getName().getString());
 
         int color = target == null ? WARNING : MUTED;
-        ctx.drawCenteredTextWithShadow(this.textRenderer, targetText, this.width / 2, y + 40, color);
+        ctx.centeredText(this.font, targetComponent, this.width / 2, y + 40, color);
         ctx.fill(x + 10, y + 66, x + PANEL_W - 10, y + 67, 0x33FFFFFF);
     }
 
@@ -128,7 +128,7 @@ public class GuardCombatScreen extends Screen {
     }
 
     @Override
-    public boolean shouldPause() {
+    public boolean isPauseScreen() {
         return false;
     }
 }

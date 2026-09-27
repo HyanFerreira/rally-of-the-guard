@@ -5,12 +5,12 @@ import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.network.NetworkConstants;
 import net.hfstack.rallyguard.network.payload.GuardListS2CPayload;
 import net.hfstack.rallyguard.network.payload.GuardRouteUpdateC2SPayload;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.Component;
+import net.minecraft.core.BlockPos;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +35,7 @@ public class GuardRouteScreen extends Screen {
     private int waitSeconds;
 
     public GuardRouteScreen(GuardCommandScreen parent, int entryIndex, GuardCommandScreen.Entry guard) {
-        super(Text.translatable("gui.rallyguard.route.title"));
+        super(Component.translatable("gui.rallyguard.route.title"));
         this.parent = parent;
         this.entryIndex = entryIndex;
         this.guard = guard;
@@ -51,7 +51,7 @@ public class GuardRouteScreen extends Screen {
     }
 
     private void rebuildButtons() {
-        this.clearChildren();
+        this.clearWidgets();
 
         int x = panelX();
         int y = panelY();
@@ -63,46 +63,46 @@ public class GuardRouteScreen extends Screen {
             int useX = x + panelW - 156;
             int removeX = x + panelW - 72;
 
-            this.addDrawableChild(ButtonWidget.builder(
-                    Text.translatable("gui.rallyguard.route.use_current"),
+            this.addRenderableWidget(Button.builder(
+                    Component.translatable("gui.rallyguard.route.use_current"),
                     b -> {
                         setPoint(idx, currentPoint());
                         saveOnly();
                     }
-            ).dimensions(useX, rowY + 3, 78, BTN_H).build());
+            ).bounds(useX, rowY + 3, 78, BTN_H).build());
 
-            this.addDrawableChild(ButtonWidget.builder(
-                    Text.translatable("gui.rallyguard.route.remove"),
+            this.addRenderableWidget(Button.builder(
+                    Component.translatable("gui.rallyguard.route.remove"),
                     b -> {
                         points.remove(idx);
                         if (active && points.size() < 2) active = false;
                         sendRoute(active ? NetworkConstants.ROUTE_START : NetworkConstants.ROUTE_SAVE);
                         rebuildButtons();
                     }
-            ).dimensions(removeX, rowY + 3, 58, BTN_H).build());
+            ).bounds(removeX, rowY + 3, 58, BTN_H).build());
         }
 
         int controlsY = y + panelHeight() - 54;
-        this.addDrawableChild(ButtonWidget.builder(
-                Text.literal("-5s"),
+        this.addRenderableWidget(Button.builder(
+                Component.literal("-5s"),
                 b -> {
                     waitSeconds = Math.max(0, waitSeconds - 5);
                     saveOnly();
                     rebuildButtons();
                 }
-        ).dimensions(x + 16, controlsY, 42, BTN_H).build());
+        ).bounds(x + 16, controlsY, 42, BTN_H).build());
 
-        this.addDrawableChild(ButtonWidget.builder(
-                Text.literal("+5s"),
+        this.addRenderableWidget(Button.builder(
+                Component.literal("+5s"),
                 b -> {
                     waitSeconds = Math.min(600, waitSeconds + 5);
                     saveOnly();
                     rebuildButtons();
                 }
-        ).dimensions(x + 64, controlsY, 42, BTN_H).build());
+        ).bounds(x + 64, controlsY, 42, BTN_H).build());
 
-        this.addDrawableChild(ButtonWidget.builder(
-                Text.translatable("gui.rallyguard.route.add_current"),
+        this.addRenderableWidget(Button.builder(
+                Component.translatable("gui.rallyguard.route.add_current"),
                 b -> {
             if (points.size() < RallyConfig.routeMaxPoints()) {
                 points.add(currentPoint());
@@ -110,11 +110,11 @@ public class GuardRouteScreen extends Screen {
                 rebuildButtons();
             }
                 }
-        ).dimensions(x + 118, controlsY, 104, BTN_H).build());
+        ).bounds(x + 118, controlsY, 104, BTN_H).build());
 
         int bottomY = y + panelHeight() - 28;
-        this.addDrawableChild(ButtonWidget.builder(
-                active ? Text.translatable("gui.rallyguard.route.pause") : Text.translatable("gui.rallyguard.route.start"),
+        this.addRenderableWidget(Button.builder(
+                active ? Component.translatable("gui.rallyguard.route.pause") : Component.translatable("gui.rallyguard.route.start"),
                 b -> {
                     if (!active && points.size() < 2) {
                         sendRoute(NetworkConstants.ROUTE_SAVE);
@@ -124,22 +124,22 @@ public class GuardRouteScreen extends Screen {
                     sendRoute(active ? NetworkConstants.ROUTE_START : NetworkConstants.ROUTE_PAUSE);
                     rebuildButtons();
                 }
-        ).dimensions(x + 16, bottomY, 78, BTN_H).build());
+        ).bounds(x + 16, bottomY, 78, BTN_H).build());
 
-        this.addDrawableChild(ButtonWidget.builder(
-                Text.translatable("gui.rallyguard.route.clear"),
+        this.addRenderableWidget(Button.builder(
+                Component.translatable("gui.rallyguard.route.clear"),
                 b -> {
                     points.clear();
                     active = false;
                     sendRoute(NetworkConstants.ROUTE_CLEAR);
                     rebuildButtons();
                 }
-        ).dimensions(x + 102, bottomY, 58, BTN_H).build());
+        ).bounds(x + 102, bottomY, 58, BTN_H).build());
 
-        this.addDrawableChild(ButtonWidget.builder(
-                Text.translatable("gui.rallyguard.route.back"),
+        this.addRenderableWidget(Button.builder(
+                Component.translatable("gui.rallyguard.route.back"),
                 b -> closeToParent()
-        ).dimensions(x + panelW - 74, bottomY, 58, BTN_H).build());
+        ).bounds(x + panelW - 74, bottomY, 58, BTN_H).build());
     }
 
     private void setPoint(int idx, GuardListS2CPayload.Point point) {
@@ -148,8 +148,8 @@ public class GuardRouteScreen extends Screen {
     }
 
     private GuardListS2CPayload.Point currentPoint() {
-        MinecraftClient client = MinecraftClient.getInstance();
-        BlockPos pos = client.player != null ? client.player.getBlockPos() : BlockPos.ORIGIN;
+        Minecraft client = Minecraft.getInstance();
+        BlockPos pos = client.player != null ? client.player.blockPosition() : BlockPos.ZERO;
         return new GuardListS2CPayload.Point(pos.getX(), pos.getY(), pos.getZ());
     }
 
@@ -184,26 +184,26 @@ public class GuardRouteScreen extends Screen {
     }
 
     private void closeToParent() {
-        MinecraftClient.getInstance().setScreen(parent);
+        Minecraft.getInstance().setScreen(parent);
     }
 
     @Override
-    public void close() {
+    public void onClose() {
         closeToParent();
     }
 
     @Override
-    public void renderBackground(DrawContext ctx, int mouseX, int mouseY, float delta) {
+    public void extractBackground(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
     }
 
     @Override
-    public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
         drawPanel(ctx);
         drawRows(ctx);
-        super.render(ctx, mouseX, mouseY, delta);
+        super.extractRenderState(ctx, mouseX, mouseY, delta);
     }
 
-    private void drawPanel(DrawContext ctx) {
+    private void drawPanel(GuiGraphicsExtractor ctx) {
         int x = panelX();
         int y = panelY();
         int panelW = panelWidth();
@@ -216,29 +216,29 @@ public class GuardRouteScreen extends Screen {
         ctx.fill(x, y, x + 1, y + panelH, WHITE);
         ctx.fill(x + panelW - 1, y, x + panelW, y + panelH, WHITE);
 
-        ctx.drawCenteredTextWithShadow(this.textRenderer,
-                Text.translatable("gui.rallyguard.route.title_named", guard.name()),
+        ctx.centeredText(this.font,
+                Component.translatable("gui.rallyguard.route.title_named", guard.name()),
                 this.width / 2, y + 8, WHITE);
 
-        ctx.drawTextWithShadow(this.textRenderer,
-                Text.translatable("gui.rallyguard.route.points"),
+        ctx.text(this.font,
+                Component.translatable("gui.rallyguard.route.points"),
                 x + 16, y + 30, MUTED);
 
-        String wait = Text.translatable("gui.rallyguard.route.wait", waitSeconds).getString();
-        int waitW = this.textRenderer.getWidth(wait);
-        ctx.drawTextWithShadow(this.textRenderer, Text.literal(wait), x + panelW - 16 - waitW, y + 30, MUTED);
+        String wait = Component.translatable("gui.rallyguard.route.wait", waitSeconds).getString();
+        int waitW = this.font.width(wait);
+        ctx.text(this.font, Component.literal(wait), x + panelW - 16 - waitW, y + 30, MUTED);
 
         ctx.fill(x + 6, y + 44, x + panelW - 6, y + 45, 0x33FFFFFF);
     }
 
-    private void drawRows(DrawContext ctx) {
+    private void drawRows(GuiGraphicsExtractor ctx) {
         int x = panelX();
         int y = panelY();
         int panelW = panelWidth();
 
         if (points.isEmpty()) {
-            ctx.drawCenteredTextWithShadow(this.textRenderer,
-                    Text.translatable("gui.rallyguard.route.empty"),
+            ctx.centeredText(this.font,
+                    Component.translatable("gui.rallyguard.route.empty"),
                     this.width / 2, y + 96, MUTED);
         }
 
@@ -248,15 +248,15 @@ public class GuardRouteScreen extends Screen {
             ctx.fill(x + 6, rowY + ROW_H - 1, x + panelW - 6, rowY + ROW_H, 0x22FFFFFF);
             String label = (i + 1) + ".  X " + point.x() + "   Y " + point.y() + "   Z " + point.z();
             int maxLabelW = panelW - 190;
-            if (this.textRenderer.getWidth(label) > maxLabelW) {
-                label = this.textRenderer.trimToWidth(label, maxLabelW - this.textRenderer.getWidth("...")) + "...";
+            if (this.font.width(label) > maxLabelW) {
+                label = this.font.plainSubstrByWidth(label, maxLabelW - this.font.width("...")) + "...";
             }
-            ctx.drawTextWithShadow(this.textRenderer, Text.literal(label), x + 16, rowY + 8, WHITE);
+            ctx.text(this.font, Component.literal(label), x + 16, rowY + 8, WHITE);
         }
 
         if (points.size() < 2) {
-            ctx.drawTextWithShadow(this.textRenderer,
-                    Text.translatable("gui.rallyguard.route.need_points"),
+            ctx.text(this.font,
+                    Component.translatable("gui.rallyguard.route.need_points"),
                     x + 230, y + panelHeight() - 50, WARNING);
         }
     }
@@ -279,7 +279,7 @@ public class GuardRouteScreen extends Screen {
     }
 
     @Override
-    public boolean shouldPause() {
+    public boolean isPauseScreen() {
         return false;
     }
 }
