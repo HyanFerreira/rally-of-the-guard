@@ -11,7 +11,7 @@ rotas de patrulha em loop usando o Livro de Comando.
 
 ## Versão Atual
 
-### 1.3.0
+### 1.3.1
 
 Principais mudanças:
 

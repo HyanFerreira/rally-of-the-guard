@@ -5,7 +5,7 @@ desenvolvimento sem depender do historico do chat.
 
 ## Estado atual
 
-Versao planejada para publicacao: **1.3.0**
+Versao planejada para publicacao: **1.3.1**
 
 Ja implementado:
 
