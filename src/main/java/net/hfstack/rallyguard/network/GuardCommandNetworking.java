@@ -22,20 +22,20 @@ import net.hfstack.rallyguard.network.payload.OpenGuardCommandC2SPayload;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRouteState;
 import net.hfstack.rallyguard.order.GuardRoutes;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,35 +53,35 @@ public final class GuardCommandNetworking {
         REGISTERED = true;
 
         ServerPlayNetworking.registerGlobalReceiver(OpenGuardCommandC2SPayload.ID, (payload, context) -> {
-            ServerPlayerEntity player = context.player();
+            ServerPlayer player = context.player();
             context.server().execute(() -> sendGuardList(player));
         });
 
         ServerPlayNetworking.registerGlobalReceiver(GuardActionC2SPayload.ID, (payload, context) -> {
-            ServerPlayerEntity player = context.player();
+            ServerPlayer player = context.player();
             int entityId = payload.entityId();
             int action = payload.action();
             context.server().execute(() -> handleAction(player, entityId, action));
         });
 
         ServerPlayNetworking.registerGlobalReceiver(GuardRouteUpdateC2SPayload.ID, (payload, context) -> {
-            ServerPlayerEntity player = context.player();
+            ServerPlayer player = context.player();
             context.server().execute(() -> handleRouteUpdate(player, payload));
         });
 
         ServerPlayNetworking.registerGlobalReceiver(GuardAttackTargetC2SPayload.ID, (payload, context) -> {
-            ServerPlayerEntity player = context.player();
+            ServerPlayer player = context.player();
             context.server().execute(() -> handleAttackTarget(player, payload));
         });
     }
 
-    private static void sendGuardList(ServerPlayerEntity player) {
-        ServerWorld world = player.getEntityWorld();
-        Identifier guardTypeId = Identifier.of("guardvillagers", "guard");
+    private static void sendGuardList(ServerPlayer player) {
+        ServerLevel world = player.level();
+        Identifier guardTypeId = Identifier.fromNamespaceAndPath("guardvillagers", "guard");
 
-        List<? extends Entity> guards = world.getEntitiesByType(
-                Registries.ENTITY_TYPE.get(guardTypeId),
-                e -> GuardOwnership.isOwnedBy(e, player.getUuid())
+        List<? extends Entity> guards = world.getEntities(
+                BuiltInRegistries.ENTITY_TYPE.getValue(guardTypeId),
+                e -> GuardOwnership.isOwnedBy(e, player.getUUID())
         );
 
         List<GuardListS2CPayload.Entry> list = new ArrayList<>(guards.size());
@@ -115,12 +115,12 @@ public final class GuardCommandNetworking {
         ServerPlayNetworking.send(player, new GuardListS2CPayload(list));
     }
 
-    private static void handleAction(ServerPlayerEntity player, int entityId, int action) {
-        ServerWorld world = player.getEntityWorld();
-        Entity e = world.getEntityById(entityId);
+    private static void handleAction(ServerPlayer player, int entityId, int action) {
+        ServerLevel world = player.level();
+        Entity e = world.getEntity(entityId);
 
         if (!(e instanceof GuardEntity guard)) {
-            player.sendMessage(Text.translatable("gui.rallyguard.command.not_found"), true);
+            player.sendOverlayMessage(Component.translatable("gui.rallyguard.command.not_found"));
             return;
         }
         GuardCommandResult result = switch (action) {
@@ -129,35 +129,35 @@ public final class GuardCommandNetworking {
             case NetworkConstants.ACTION_WAIT -> COMMANDS.wait(player, guard);
             case NetworkConstants.ACTION_TOGGLE_PATROL -> guard.isPatrolling()
                     ? COMMANDS.stopPatrol(player, guard)
-                    : COMMANDS.patrol(player, guard, player.getBlockPos());
+                    : COMMANDS.patrol(player, guard, player.blockPosition());
             case NetworkConstants.ACTION_ROUTE_PLACEHOLDER -> {
-                player.sendMessage(Text.translatable("gui.rallyguard.command.route_soon"), true);
+                player.sendOverlayMessage(Component.translatable("gui.rallyguard.command.route_soon"));
                 yield null;
             }
             default -> null;
         };
 
         if (result != null) {
-            player.sendMessage(result.feedback(), true);
+            player.sendOverlayMessage(result.feedback());
         }
     }
 
     private static void stopGuardActions(GuardEntity guard) {
         guard.setTarget(null);
-        guard.setAttacking(false);
+        guard.setAggressive(false);
         guard.getNavigation().stop();
     }
 
-    private static void handleRouteUpdate(ServerPlayerEntity player, GuardRouteUpdateC2SPayload payload) {
-        ServerWorld world = player.getEntityWorld();
-        Entity e = world.getEntityById(payload.entityId());
+    private static void handleRouteUpdate(ServerPlayer player, GuardRouteUpdateC2SPayload payload) {
+        ServerLevel world = player.level();
+        Entity e = world.getEntity(payload.entityId());
 
         if (!(e instanceof GuardEntity guard)) {
-            player.sendMessage(Text.translatable("gui.rallyguard.command.not_found"), true);
+            player.sendOverlayMessage(Component.translatable("gui.rallyguard.command.not_found"));
             return;
         }
-        if (!GuardOwnership.isOwnedBy(guard, player.getUuid())) {
-            player.sendMessage(Text.translatable("gui.rallyguard.command.not_owner"), true);
+        if (!GuardOwnership.isOwnedBy(guard, player.getUUID())) {
+            player.sendOverlayMessage(Component.translatable("gui.rallyguard.command.not_owner"));
             return;
         }
 
@@ -170,11 +170,11 @@ public final class GuardCommandNetworking {
         switch (payload.action()) {
             case NetworkConstants.ROUTE_SAVE -> {
                 GuardRoutes.set(guard, new GuardRouteState(false, 0, waitTicks, 0, points));
-                player.sendMessage(Text.translatable("gui.rallyguard.route.saved"), true);
+                player.sendOverlayMessage(Component.translatable("gui.rallyguard.route.saved"));
             }
             case NetworkConstants.ROUTE_START -> {
                 if (points.size() < 2) {
-                    player.sendMessage(Text.translatable("gui.rallyguard.route.need_points"), true);
+                    player.sendOverlayMessage(Component.translatable("gui.rallyguard.route.need_points"));
                     return;
                 }
                 GuardRouteState route = new GuardRouteState(true, 0, waitTicks, 0, points);
@@ -182,7 +182,7 @@ public final class GuardCommandNetworking {
                 stopGuardActions(guard);
                 guard.setPatrolPos(route.currentPoint());
                 guard.setPatrolling(true);
-                player.sendMessage(Text.translatable("gui.rallyguard.route.started"), true);
+                player.sendOverlayMessage(Component.translatable("gui.rallyguard.route.started"));
             }
             case NetworkConstants.ROUTE_PAUSE -> {
                 GuardRouteState current = GuardRoutes.get(guard);
@@ -192,7 +192,7 @@ public final class GuardCommandNetworking {
                 guard.setPatrolPos(null);
                 GuardOrders.setWaiting(guard, true);
                 stopGuardActions(guard);
-                player.sendMessage(Text.translatable("gui.rallyguard.route.paused"), true);
+                player.sendOverlayMessage(Component.translatable("gui.rallyguard.route.paused"));
             }
             case NetworkConstants.ROUTE_CLEAR -> {
                 GuardRoutes.clear(guard);
@@ -201,51 +201,51 @@ public final class GuardCommandNetworking {
                 guard.setPatrolPos(null);
                 GuardOrders.setWaiting(guard, true);
                 stopGuardActions(guard);
-                player.sendMessage(Text.translatable("gui.rallyguard.route.cleared"), true);
+                player.sendOverlayMessage(Component.translatable("gui.rallyguard.route.cleared"));
             }
             default -> {
             }
         }
     }
 
-    private static void handleAttackTarget(ServerPlayerEntity player, GuardAttackTargetC2SPayload payload) {
-        ServerWorld world = player.getEntityWorld();
+    private static void handleAttackTarget(ServerPlayer player, GuardAttackTargetC2SPayload payload) {
+        ServerLevel world = player.level();
         double attackTargetRange = RallyConfig.combatTargetRange();
         Entity targetEntity = payload.targetEntityId() >= 0
-                ? world.getEntityById(payload.targetEntityId())
+                ? world.getEntity(payload.targetEntityId())
                 : findLookedTarget(player, attackTargetRange);
 
         if (!(targetEntity instanceof LivingEntity target) || !target.isAlive()) {
-            player.sendMessage(Text.translatable("gui.rallyguard.combat.no_target"), true);
+            player.sendOverlayMessage(Component.translatable("gui.rallyguard.combat.no_target"));
             return;
         }
-        if (target == player || GuardOwnership.isOwnedBy(target, player.getUuid())) {
-            player.sendMessage(Text.translatable("gui.rallyguard.combat.invalid_target"), true);
+        if (target == player || GuardOwnership.isOwnedBy(target, player.getUUID())) {
+            player.sendOverlayMessage(Component.translatable("gui.rallyguard.combat.invalid_target"));
             return;
         }
-        if (target instanceof PlayerEntity && !RallyConfig.combatAllowPlayerTargets()) {
-            player.sendMessage(Text.translatable("gui.rallyguard.combat.invalid_target"), true);
+        if (target instanceof Player && !RallyConfig.combatAllowPlayerTargets()) {
+            player.sendOverlayMessage(Component.translatable("gui.rallyguard.combat.invalid_target"));
             return;
         }
-        if (!(target instanceof HostileEntity) && !(target instanceof PlayerEntity) && !RallyConfig.combatAllowPassiveTargets()) {
-            player.sendMessage(Text.translatable("gui.rallyguard.combat.invalid_target"), true);
+        if (!(target instanceof Monster) && !(target instanceof Player) && !RallyConfig.combatAllowPassiveTargets()) {
+            player.sendOverlayMessage(Component.translatable("gui.rallyguard.combat.invalid_target"));
             return;
         }
-        if (target.squaredDistanceTo(player) > attackTargetRange * attackTargetRange) {
-            player.sendMessage(Text.translatable("gui.rallyguard.combat.target_too_far"), true);
+        if (target.distanceToSqr(player) > attackTargetRange * attackTargetRange) {
+            player.sendOverlayMessage(Component.translatable("gui.rallyguard.combat.target_too_far"));
             return;
         }
 
-        Identifier guardTypeId = Identifier.of("guardvillagers", "guard");
-        List<? extends Entity> guards = world.getEntitiesByType(
-                Registries.ENTITY_TYPE.get(guardTypeId),
+        Identifier guardTypeId = Identifier.fromNamespaceAndPath("guardvillagers", "guard");
+        List<? extends Entity> guards = world.getEntities(
+                BuiltInRegistries.ENTITY_TYPE.getValue(guardTypeId),
                 e -> e instanceof GuardEntity guard
-                        && GuardOwnership.isOwnedBy(e, player.getUuid())
+                        && GuardOwnership.isOwnedBy(e, player.getUUID())
                         && (guard.isFollowing() || GuardOrders.isRallied(guard))
                         && !guard.isPatrolling()
                         && !GuardOrders.isWaiting(guard)
                         && !GuardRoutes.get(guard).active()
-                        && e.squaredDistanceTo(player) <= RallyConfig.combatGuardSearchRadius() * RallyConfig.combatGuardSearchRadius()
+                        && e.distanceToSqr(player) <= RallyConfig.combatGuardSearchRadius() * RallyConfig.combatGuardSearchRadius()
         );
 
         int ordered = 0;
@@ -254,17 +254,17 @@ public final class GuardCommandNetworking {
             if (!matchesAttackMode(guard, payload.mode())) continue;
 
             guard.setTarget(target);
-            guard.setAttacking(true);
+            guard.setAggressive(true);
             if (!isRangedGuard(guard)) {
-                guard.getNavigation().startMovingTo(target.getX(), target.getY(), target.getZ(), 1.2);
+                guard.getNavigation().moveTo(target.getX(), target.getY(), target.getZ(), 1.2);
             }
             ordered++;
         }
 
         if (ordered == 0) {
-            player.sendMessage(Text.translatable("gui.rallyguard.combat.no_guards"), true);
+            player.sendOverlayMessage(Component.translatable("gui.rallyguard.combat.no_guards"));
         } else {
-            player.sendMessage(Text.translatable("gui.rallyguard.combat.attack_ordered", ordered), true);
+            player.sendOverlayMessage(Component.translatable("gui.rallyguard.combat.attack_ordered", ordered));
         }
     }
 
@@ -278,34 +278,34 @@ public final class GuardCommandNetworking {
     }
 
     private static boolean isRangedGuard(GuardEntity guard) {
-        return isRangedWeapon(guard.getMainHandStack()) || isRangedWeapon(guard.getOffHandStack());
+        return isRangedWeapon(guard.getMainHandItem()) || isRangedWeapon(guard.getOffhandItem());
     }
 
     private static boolean isRangedWeapon(ItemStack stack) {
-        return stack.isOf(Items.BOW) || stack.isOf(Items.CROSSBOW);
+        return stack.is(Items.BOW) || stack.is(Items.CROSSBOW);
     }
 
-    private static Entity findLookedTarget(ServerPlayerEntity player, double range) {
-        Vec3d start = player.getEyePos();
-        Vec3d direction = player.getRotationVec(1.0F);
-        Vec3d end = start.add(direction.multiply(range));
-        Box searchBox = player.getBoundingBox().stretch(direction.multiply(range)).expand(1.0);
+    private static Entity findLookedTarget(ServerPlayer player, double range) {
+        Vec3 start = player.getEyePosition();
+        Vec3 direction = player.getViewVector(1.0F);
+        Vec3 end = start.add(direction.scale(range));
+        AABB searchBox = player.getBoundingBox().expandTowards(direction.scale(range)).inflate(1.0);
 
         Entity best = null;
         double bestDistance = range * range;
 
-        List<Entity> candidates = player.getEntityWorld().getOtherEntities(
+        List<Entity> candidates = player.level().getEntities(
                 player,
                 searchBox,
                 entity -> entity instanceof LivingEntity living && living.isAlive()
         );
 
         for (Entity candidate : candidates) {
-            Box box = candidate.getBoundingBox().expand(candidate.getTargetingMargin());
-            Optional<Vec3d> hit = box.raycast(start, end);
+            AABB box = candidate.getBoundingBox().inflate(candidate.getPickRadius());
+            Optional<Vec3> hit = box.clip(start, end);
             if (hit.isEmpty()) continue;
 
-            double distance = start.squaredDistanceTo(hit.get());
+            double distance = start.distanceToSqr(hit.get());
             if (distance < bestDistance) {
                 best = candidate;
                 bestDistance = distance;

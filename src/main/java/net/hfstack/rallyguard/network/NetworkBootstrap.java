@@ -21,12 +21,12 @@ public final class NetworkBootstrap {
         DONE = true;
 
         // C2S
-        PayloadTypeRegistry.playC2S().register(OpenGuardCommandC2SPayload.ID, OpenGuardCommandC2SPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(GuardActionC2SPayload.ID, GuardActionC2SPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(GuardRouteUpdateC2SPayload.ID, GuardRouteUpdateC2SPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(GuardAttackTargetC2SPayload.ID, GuardAttackTargetC2SPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(OpenGuardCommandC2SPayload.ID, OpenGuardCommandC2SPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(GuardActionC2SPayload.ID, GuardActionC2SPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(GuardRouteUpdateC2SPayload.ID, GuardRouteUpdateC2SPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(GuardAttackTargetC2SPayload.ID, GuardAttackTargetC2SPayload.CODEC);
 
         // S2C
-        PayloadTypeRegistry.playS2C().register(GuardListS2CPayload.ID, GuardListS2CPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(GuardListS2CPayload.ID, GuardListS2CPayload.CODEC);
     }
 }

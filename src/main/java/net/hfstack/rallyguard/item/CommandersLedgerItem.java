@@ -1,41 +1,41 @@
 package net.hfstack.rallyguard.item;
 
-import net.minecraft.component.type.TooltipDisplayComponent;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.world.World;
+import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.level.Level;
 
 import java.lang.reflect.Method;
 import java.util.function.Consumer;
 
 public class CommandersLedgerItem extends Item {
-    public CommandersLedgerItem(Settings settings) {
+    public CommandersLedgerItem(Properties settings) {
         super(settings);
     }
 
     @Override
-    public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        if (world.isClient()) {
+    public InteractionResult use(Level world, Player user, InteractionHand hand) {
+        if (world.isClientSide()) {
             try {
                 Class<?> hooks = Class.forName("net.hfstack.rallyguard.client.ClientHooks");
                 Method m = hooks.getMethod("requestOpenGuardPanel");
                 m.invoke(null);
             } catch (Throwable ignored) {
             }
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, Item.TooltipContext ctx, TooltipDisplayComponent displayComponent,
-                              Consumer<Text> textConsumer, TooltipType type) {
-        textConsumer.accept(Text.translatable("item.rallyguard.commanders_ledger.tooltip"));
-        super.appendTooltip(stack, ctx, displayComponent, textConsumer, type);
+    public void appendHoverText(ItemStack stack, Item.TooltipContext ctx, TooltipDisplay displayComponent,
+                              Consumer<Component> textConsumer, TooltipFlag type) {
+        textConsumer.accept(Component.translatable("item.rallyguard.commanders_ledger.tooltip"));
+        super.appendHoverText(stack, ctx, displayComponent, textConsumer, type);
     }
 }

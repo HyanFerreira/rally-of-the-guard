@@ -25,11 +25,26 @@ public final class GuardVillagersConfigPatcher {
     private GuardVillagersConfigPatcher() {
     }
 
-    public static void patchFollowHeroConfig() {
-        try {
-            Path cfgDir = FabricLoader.getInstance().getConfigDir();
-            Path file = cfgDir.resolve("guardvillagers.json");
+    enum PatchResult {
+        UPDATED,
+        UNCHANGED,
+        FAILED
+    }
 
+    public static void patchFollowHeroConfig() {
+        Path file = FabricLoader.getInstance().getConfigDir().resolve("guardvillagers.json");
+        PatchResult result = patchFollowHeroConfig(file);
+        if (result == PatchResult.UPDATED) {
+            LOGGER.info("[{}] Config do GuardVillagers ajustada: followHero=false", RallyOfTheGuard.MOD_ID);
+        } else if (result == PatchResult.UNCHANGED) {
+            LOGGER.info("[{}] Config do GuardVillagers já está com followHero=false", RallyOfTheGuard.MOD_ID);
+        } else {
+            LOGGER.error("[{}] Falha ao ajustar followHero no GuardVillagers", RallyOfTheGuard.MOD_ID);
+        }
+    }
+
+    static PatchResult patchFollowHeroConfig(Path file) {
+        try {
             JsonObject root;
             if (Files.exists(file)) {
                 try (Reader r = new InputStreamReader(Files.newInputStream(file), StandardCharsets.UTF_8)) {
@@ -45,12 +60,12 @@ public final class GuardVillagersConfigPatcher {
                 try (Writer w = new OutputStreamWriter(Files.newOutputStream(file), StandardCharsets.UTF_8)) {
                     GSON.toJson(root, w);
                 }
-                LOGGER.info("[{}] Config do GuardVillagers ajustada: followHero=false", RallyOfTheGuard.MOD_ID);
-            } else {
-                LOGGER.info("[{}] Config do GuardVillagers já está com followHero=false", RallyOfTheGuard.MOD_ID);
+                return PatchResult.UPDATED;
             }
+            return PatchResult.UNCHANGED;
         } catch (Exception e) {
-            LOGGER.error("[{}] Falha ao ajustar followHero no GuardVillagers", RallyOfTheGuard.MOD_ID, e);
+            LOGGER.debug("Falha ao ajustar {}", file, e);
+            return PatchResult.FAILED;
         }
     }
 }

@@ -1,17 +1,17 @@
 package net.hfstack.rallyguard.network;
 
 import net.hfstack.rallyguard.RallyOfTheGuard;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 public final class NetworkConstants {
     private NetworkConstants() {
     }
 
-    public static final Identifier OPEN_GUARD_COMMAND = Identifier.of(RallyOfTheGuard.MOD_ID, "open_guard_command");
-    public static final Identifier GUARD_LIST = Identifier.of(RallyOfTheGuard.MOD_ID, "guard_list");
-    public static final Identifier GUARD_ACTION = Identifier.of(RallyOfTheGuard.MOD_ID, "guard_action");
-    public static final Identifier GUARD_ROUTE_UPDATE = Identifier.of(RallyOfTheGuard.MOD_ID, "guard_route_update");
-    public static final Identifier GUARD_ATTACK_TARGET = Identifier.of(RallyOfTheGuard.MOD_ID, "guard_attack_target");
+    public static final Identifier OPEN_GUARD_COMMAND = Identifier.fromNamespaceAndPath(RallyOfTheGuard.MOD_ID, "open_guard_command");
+    public static final Identifier GUARD_LIST = Identifier.fromNamespaceAndPath(RallyOfTheGuard.MOD_ID, "guard_list");
+    public static final Identifier GUARD_ACTION = Identifier.fromNamespaceAndPath(RallyOfTheGuard.MOD_ID, "guard_action");
+    public static final Identifier GUARD_ROUTE_UPDATE = Identifier.fromNamespaceAndPath(RallyOfTheGuard.MOD_ID, "guard_route_update");
+    public static final Identifier GUARD_ATTACK_TARGET = Identifier.fromNamespaceAndPath(RallyOfTheGuard.MOD_ID, "guard_attack_target");
 
     // Ações
     public static final int ACTION_SUMMON = 1;

@@ -1,26 +1,26 @@
 package net.hfstack.rallyguard.network.payload;
 
 import net.hfstack.rallyguard.RallyOfTheGuard;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public record GuardRouteUpdateC2SPayload(int entityId, int action, int waitSeconds, List<Point> points)
-        implements CustomPayload {
+        implements CustomPacketPayload {
     public record Point(int x, int y, int z) {
     }
 
-    public static final Id<GuardRouteUpdateC2SPayload> ID =
-            new Id<>(Identifier.of(RallyOfTheGuard.MOD_ID, "guard_route_update"));
+    public static final Type<GuardRouteUpdateC2SPayload> ID =
+            new Type<>(Identifier.fromNamespaceAndPath(RallyOfTheGuard.MOD_ID, "guard_route_update"));
 
-    public static final PacketCodec<RegistryByteBuf, GuardRouteUpdateC2SPayload> CODEC =
-            new PacketCodec<>() {
+    public static final StreamCodec<RegistryFriendlyByteBuf, GuardRouteUpdateC2SPayload> CODEC =
+            new StreamCodec<>() {
                 @Override
-                public void encode(RegistryByteBuf buf, GuardRouteUpdateC2SPayload value) {
+                public void encode(RegistryFriendlyByteBuf buf, GuardRouteUpdateC2SPayload value) {
                     buf.writeVarInt(value.entityId());
                     buf.writeVarInt(value.action());
                     buf.writeVarInt(value.waitSeconds());
@@ -33,7 +33,7 @@ public record GuardRouteUpdateC2SPayload(int entityId, int action, int waitSecon
                 }
 
                 @Override
-                public GuardRouteUpdateC2SPayload decode(RegistryByteBuf buf) {
+                public GuardRouteUpdateC2SPayload decode(RegistryFriendlyByteBuf buf) {
                     int entityId = buf.readVarInt();
                     int action = buf.readVarInt();
                     int waitSeconds = buf.readVarInt();
@@ -47,7 +47,7 @@ public record GuardRouteUpdateC2SPayload(int entityId, int action, int waitSecon
             };
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 }

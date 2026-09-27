@@ -8,15 +8,15 @@ import net.hfstack.rallyguard.effect.ModEffects;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRoutes;
 import net.hfstack.rallyguard.order.RallyFormationSlots;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.registry.Registries;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -29,7 +29,7 @@ public final class RallyFormationTicker {
     private RallyFormationTicker() {
     }
 
-    private static final Identifier GUARD_ID = Identifier.of("guardvillagers", "guard");
+    private static final Identifier GUARD_ID = Identifier.fromNamespaceAndPath("guardvillagers", "guard");
     private static final int TICK_INTERVAL = 2;
     private static final double HOLD_DISTANCE_SQUARED = 0.75 * 0.75;
     private static final double FORMATION_DISTANCE_SQUARED = 1.2 * 1.2;
@@ -39,36 +39,36 @@ public final class RallyFormationTicker {
     }
 
     public static void register() {
-        ServerTickEvents.END_WORLD_TICK.register(world -> {
-            if (world.getTime() % TICK_INTERVAL != 0) return;
+        ServerTickEvents.END_LEVEL_TICK.register(world -> {
+            if (world.getGameTime() % TICK_INTERVAL != 0) return;
             tickWorld(world);
         });
     }
 
-    public static void startRally(ServerPlayerEntity player) {
-        ANCHORS.put(player.getUuid(), new FormationAnchor(player.getBlockPos(), player.getYaw(), true));
+    public static void startRally(ServerPlayer player) {
+        ANCHORS.put(player.getUUID(), new FormationAnchor(player.blockPosition(), player.getYRot(), true));
     }
 
-    public static void stopRally(ServerPlayerEntity player) {
-        ANCHORS.remove(player.getUuid());
+    public static void stopRally(ServerPlayer player) {
+        ANCHORS.remove(player.getUUID());
     }
 
-    private static void tickWorld(ServerWorld world) {
-        for (ServerPlayerEntity player : world.getPlayers()) {
-            if (!player.hasStatusEffect(ModEffects.RALLY_COMMANDER)) continue;
+    private static void tickWorld(ServerLevel world) {
+        for (ServerPlayer player : world.players()) {
+            if (!player.hasEffect(ModEffects.RALLY_COMMANDER)) continue;
             refreshRallyCommanderEffect(player);
             if (!RallyConfig.rallyFormationEnabled()) continue;
             tickPlayerFormation(world, player);
         }
     }
 
-    private static void refreshRallyCommanderEffect(ServerPlayerEntity player) {
-        StatusEffectInstance effect = player.getStatusEffect(ModEffects.RALLY_COMMANDER);
+    private static void refreshRallyCommanderEffect(ServerPlayer player) {
+        MobEffectInstance effect = player.getEffect(ModEffects.RALLY_COMMANDER);
         int durationTicks = RallyConfig.rallyEffectTimerSeconds() * 20;
         int refreshThresholdTicks = Math.max(1, Math.min(durationTicks - 1, durationTicks / 3));
         if (effect == null || effect.getDuration() > refreshThresholdTicks) return;
 
-        player.addStatusEffect(new StatusEffectInstance(
+        player.addEffect(new MobEffectInstance(
                 ModEffects.RALLY_COMMANDER,
                 durationTicks,
                 effect.getAmplifier(),
@@ -78,7 +78,7 @@ public final class RallyFormationTicker {
         ));
     }
 
-    private static void tickPlayerFormation(ServerWorld world, ServerPlayerEntity player) {
+    private static void tickPlayerFormation(ServerLevel world, ServerPlayer player) {
         List<GuardEntity> guards = ralliedGuards(world, player);
         FormationAnchor anchor = anchorFor(player);
 
@@ -86,15 +86,15 @@ public final class RallyFormationTicker {
             GuardEntity guard = guards.get(i);
             if (isBusyFighting(guard)) continue;
 
-            Vec3d slot = RallyFormationSlots.safeEscortSlot(world, player, i, anchor.yaw(), anchor.inFront());
-            double distance = guard.squaredDistanceTo(slot.x, slot.y, slot.z);
+            Vec3 slot = RallyFormationSlots.safeEscortSlot(world, player, i, anchor.yaw(), anchor.inFront());
+            double distance = guard.distanceToSqr(slot.x, slot.y, slot.z);
             guard.setFollowing(false);
             guard.setPatrolling(false);
 
             double teleportDistance = RallyConfig.formationTeleportDistance();
             if (RallyConfig.rallyTeleportEnabled() && distance > teleportDistance * teleportDistance) {
-                guard.refreshPositionAndAngles(slot.x, slot.y, slot.z, guard.getYaw(), guard.getPitch());
-                guard.setVelocity(0.0, 0.0, 0.0);
+                guard.snapTo(slot.x, slot.y, slot.z, guard.getYRot(), guard.getXRot());
+                guard.setDeltaMovement(0.0, 0.0, 0.0);
                 guard.getNavigation().stop();
                 continue;
             }
@@ -105,10 +105,10 @@ public final class RallyFormationTicker {
             }
 
             if (distance > FORMATION_DISTANCE_SQUARED) {
-                guard.getNavigation().startMovingTo(slot.x, slot.y, slot.z, RallyConfig.formationReturnSpeed());
+                guard.getNavigation().moveTo(slot.x, slot.y, slot.z, RallyConfig.formationReturnSpeed());
             } else {
                 guard.getNavigation().stop();
-                guard.setVelocity(0.0, guard.getVelocity().y, 0.0);
+                guard.setDeltaMovement(0.0, guard.getDeltaMovement().y, 0.0);
             }
         }
     }
@@ -120,23 +120,23 @@ public final class RallyFormationTicker {
         }
 
         guard.setTarget(null);
-        guard.setAttacking(false);
-        guard.clearActiveItem();
+        guard.setAggressive(false);
+        guard.stopUsingItem();
         return false;
     }
 
-    private static void holdSlot(GuardEntity guard, ServerPlayerEntity player) {
+    private static void holdSlot(GuardEntity guard, ServerPlayer player) {
         guard.getNavigation().stop();
-        guard.setVelocity(0.0, guard.getVelocity().y, 0.0);
-        guard.lookAtEntity(player, 30.0F, 30.0F);
+        guard.setDeltaMovement(0.0, guard.getDeltaMovement().y, 0.0);
+        guard.lookAt(player, 30.0F, 30.0F);
     }
 
-    private static FormationAnchor anchorFor(ServerPlayerEntity player) {
-        BlockPos current = player.getBlockPos();
-        FormationAnchor anchor = ANCHORS.get(player.getUuid());
+    private static FormationAnchor anchorFor(ServerPlayer player) {
+        BlockPos current = player.blockPosition();
+        FormationAnchor anchor = ANCHORS.get(player.getUUID());
         if (anchor == null) {
-            anchor = new FormationAnchor(current, player.getYaw(), true);
-            ANCHORS.put(player.getUuid(), anchor);
+            anchor = new FormationAnchor(current, player.getYRot(), true);
+            ANCHORS.put(player.getUUID(), anchor);
             return anchor;
         }
 
@@ -148,7 +148,7 @@ public final class RallyFormationTicker {
         int dz = current.getZ() - anchor.block().getZ();
         float yaw = movementYaw(dx, dz, anchor.yaw());
         FormationAnchor moved = new FormationAnchor(current, yaw, false);
-        ANCHORS.put(player.getUuid(), moved);
+        ANCHORS.put(player.getUUID(), moved);
         return moved;
     }
 
@@ -157,16 +157,16 @@ public final class RallyFormationTicker {
         return (float) Math.toDegrees(Math.atan2(-dx, dz));
     }
 
-    private static List<GuardEntity> ralliedGuards(ServerWorld world, ServerPlayerEntity player) {
-        List<? extends Entity> entities = world.getEntitiesByType(
-                Registries.ENTITY_TYPE.get(GUARD_ID),
+    private static List<GuardEntity> ralliedGuards(ServerLevel world, ServerPlayer player) {
+        List<? extends Entity> entities = world.getEntities(
+                BuiltInRegistries.ENTITY_TYPE.getValue(GUARD_ID),
                 entity -> entity instanceof GuardEntity guard
-                        && GuardOwnership.isOwnedBy(entity, player.getUuid())
+                        && GuardOwnership.isOwnedBy(entity, player.getUUID())
                         && GuardOrders.isRallied(guard)
                         && !guard.isPatrolling()
                         && !GuardOrders.isWaiting(guard)
                         && !GuardRoutes.get(guard).active()
-                        && entity.squaredDistanceTo(player) <= RallyConfig.combatGuardSearchRadius() * RallyConfig.combatGuardSearchRadius()
+                        && entity.distanceToSqr(player) <= RallyConfig.combatGuardSearchRadius() * RallyConfig.combatGuardSearchRadius()
         );
 
         List<GuardEntity> guards = new ArrayList<>(entities.size());

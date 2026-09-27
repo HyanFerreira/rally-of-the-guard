@@ -1,6 +1,6 @@
 package net.hfstack.rallyguard.api.eligibility;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 import java.util.Objects;
 
@@ -11,7 +11,7 @@ public sealed interface GuardEligibilityDecision {
     record Allow() implements GuardEligibilityDecision {
     }
 
-    record Deny(Text reason) implements GuardEligibilityDecision {
+    record Deny(Component reason) implements GuardEligibilityDecision {
         public Deny {
             Objects.requireNonNull(reason, "reason");
         }
@@ -21,7 +21,7 @@ public sealed interface GuardEligibilityDecision {
         return new Allow();
     }
 
-    static GuardEligibilityDecision deny(Text reason) {
+    static GuardEligibilityDecision deny(Component reason) {
         return new Deny(reason);
     }
 }

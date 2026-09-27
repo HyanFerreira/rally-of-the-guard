@@ -1,7 +1,7 @@
 package net.hfstack.rallyguard.order;
 
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 
 public final class GuardOrders {
     private GuardOrders() {
@@ -11,30 +11,30 @@ public final class GuardOrders {
     private static final String RALLIED_TAG = "rallyguard:rallied";
 
     public static boolean isWaiting(Entity guard) {
-        return guard != null && guard.getCommandTags().contains(WAITING_TAG);
+        return guard != null && guard.entityTags().contains(WAITING_TAG);
     }
 
     public static void setWaiting(Entity guard, boolean waiting) {
         if (guard == null) return;
 
         if (waiting) {
-            guard.addCommandTag(WAITING_TAG);
+            guard.addTag(WAITING_TAG);
         } else {
-            guard.removeCommandTag(WAITING_TAG);
+            guard.removeTag(WAITING_TAG);
         }
     }
 
     public static boolean isRallied(Entity guard) {
-        return guard != null && guard.getCommandTags().contains(RALLIED_TAG);
+        return guard != null && guard.entityTags().contains(RALLIED_TAG);
     }
 
     public static void setRallied(Entity guard, boolean rallied) {
         if (guard == null) return;
 
         if (rallied) {
-            guard.addCommandTag(RALLIED_TAG);
+            guard.addTag(RALLIED_TAG);
         } else {
-            guard.removeCommandTag(RALLIED_TAG);
+            guard.removeTag(RALLIED_TAG);
         }
     }
 

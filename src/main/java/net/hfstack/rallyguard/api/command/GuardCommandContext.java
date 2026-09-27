@@ -1,9 +1,9 @@
 package net.hfstack.rallyguard.api.command;
 
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.BlockPos;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -12,10 +12,10 @@ import java.util.Optional;
  * Immutable server-side facts for one validated tactical order attempt.
  */
 public record GuardCommandContext(
-        ServerPlayerEntity commander,
+        ServerPlayer commander,
         GuardEntity guard,
         GuardCommandType command,
-        ServerWorld world,
+        ServerLevel world,
         BlockPos guardPosition,
         BlockPos requestedPosition
 ) {
@@ -24,8 +24,8 @@ public record GuardCommandContext(
         Objects.requireNonNull(guard, "guard");
         Objects.requireNonNull(command, "command");
         Objects.requireNonNull(world, "world");
-        guardPosition = Objects.requireNonNull(guardPosition, "guardPosition").toImmutable();
-        requestedPosition = requestedPosition == null ? null : requestedPosition.toImmutable();
+        guardPosition = Objects.requireNonNull(guardPosition, "guardPosition");
+        requestedPosition = requestedPosition == null ? null : requestedPosition;
     }
 
     /**

@@ -1,6 +1,6 @@
 package net.hfstack.rallyguard.api.recruitment;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 import java.util.Objects;
 import java.util.List;
@@ -20,7 +20,7 @@ public sealed interface RecruitmentDecision {
         }
     }
 
-    record Deny(Text reason) implements RecruitmentDecision {
+    record Deny(Component reason) implements RecruitmentDecision {
         public Deny {
             Objects.requireNonNull(reason, "reason");
         }
@@ -34,7 +34,7 @@ public sealed interface RecruitmentDecision {
         return new Allow(offer, List.of(Objects.requireNonNull(transaction, "transaction")));
     }
 
-    static RecruitmentDecision deny(Text reason) {
+    static RecruitmentDecision deny(Component reason) {
         return new Deny(reason);
     }
 }

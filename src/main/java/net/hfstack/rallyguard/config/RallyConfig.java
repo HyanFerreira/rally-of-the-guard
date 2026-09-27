@@ -2,10 +2,10 @@ package net.hfstack.rallyguard.config;
 
 import eu.midnightdust.lib.config.MidnightConfig;
 import net.hfstack.rallyguard.RallyOfTheGuard;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 
 public final class RallyConfig extends MidnightConfig {
     public RallyConfig() {
@@ -89,7 +89,7 @@ public final class RallyConfig extends MidnightConfig {
         Identifier id = Identifier.tryParse(hireItem);
         if (id == null) return Items.EMERALD;
 
-        Item item = Registries.ITEM.get(id);
+        Item item = BuiltInRegistries.ITEM.getValue(id);
         return item == Items.AIR ? Items.EMERALD : item;
     }
 

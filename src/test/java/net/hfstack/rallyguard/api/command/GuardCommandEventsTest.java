@@ -1,6 +1,6 @@
 package net.hfstack.rallyguard.api.command;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ class GuardCommandEventsTest {
         });
         GuardCommandEvents.BEFORE.register(context -> {
             calls.add("deny");
-            return GuardCommandDecision.deny(Text.literal("denied"));
+            return GuardCommandDecision.deny(Component.literal("denied"));
         });
         GuardCommandEvents.BEFORE.register(context -> {
             calls.add("unreachable");

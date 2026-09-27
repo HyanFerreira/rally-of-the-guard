@@ -1,12 +1,12 @@
 package net.hfstack.rallyguard.network.payload;
 
 import net.hfstack.rallyguard.RallyOfTheGuard;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextCodecs;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.resources.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,13 +15,13 @@ import java.util.Optional;
 /**
  * S2C: servidor envia lista de guardas (id, nome, patrulhando).
  */
-public record GuardListS2CPayload(List<Entry> entries) implements CustomPayload {
+public record GuardListS2CPayload(List<Entry> entries) implements CustomPacketPayload {
     public record Point(int x, int y, int z) {
     }
 
     public record Entry(int entityId, String name, boolean patrolling, int status, boolean routeActive,
-                        int routeWaitSeconds, List<Point> routePoints, Optional<Text> rank,
-                        Optional<Text> settlement) {
+                        int routeWaitSeconds, List<Point> routePoints, Optional<Component> rank,
+                        Optional<Component> settlement) {
         public Entry {
             routePoints = List.copyOf(routePoints);
             rank = rank == null ? Optional.empty() : rank;
@@ -29,21 +29,21 @@ public record GuardListS2CPayload(List<Entry> entries) implements CustomPayload 
         }
     }
 
-    public static final Id<GuardListS2CPayload> ID =
-            new Id<>(Identifier.of(RallyOfTheGuard.MOD_ID, "guard_list"));
+    public static final Type<GuardListS2CPayload> ID =
+            new Type<>(Identifier.fromNamespaceAndPath(RallyOfTheGuard.MOD_ID, "guard_list"));
 
     /**
      * Codec explícito (sem lambdas) para evitar inferência errada de tipos.
      */
-    public static final PacketCodec<RegistryByteBuf, GuardListS2CPayload> CODEC =
-            new PacketCodec<>() {
+    public static final StreamCodec<RegistryFriendlyByteBuf, GuardListS2CPayload> CODEC =
+            new StreamCodec<>() {
                 @Override
-                public void encode(RegistryByteBuf buf, GuardListS2CPayload value) {
+                public void encode(RegistryFriendlyByteBuf buf, GuardListS2CPayload value) {
                     List<Entry> list = value.entries();
                     buf.writeVarInt(list.size());
                     for (Entry e : list) {
                         buf.writeVarInt(e.entityId());
-                        buf.writeString(e.name());
+                        buf.writeUtf(e.name());
                         buf.writeBoolean(e.patrolling());
                         buf.writeVarInt(e.status());
                         buf.writeBoolean(e.routeActive());
@@ -54,18 +54,18 @@ public record GuardListS2CPayload(List<Entry> entries) implements CustomPayload 
                             buf.writeInt(point.y());
                             buf.writeInt(point.z());
                         }
-                        TextCodecs.OPTIONAL_PACKET_CODEC.encode(buf, e.rank());
-                        TextCodecs.OPTIONAL_PACKET_CODEC.encode(buf, e.settlement());
+                        ComponentSerialization.OPTIONAL_STREAM_CODEC.encode(buf, e.rank());
+                        ComponentSerialization.OPTIONAL_STREAM_CODEC.encode(buf, e.settlement());
                     }
                 }
 
                 @Override
-                public GuardListS2CPayload decode(RegistryByteBuf buf) {
+                public GuardListS2CPayload decode(RegistryFriendlyByteBuf buf) {
                     int size = buf.readVarInt();
                     List<Entry> list = new ArrayList<>(size);
                     for (int i = 0; i < size; i++) {
                         int id = buf.readVarInt();
-                        String name = buf.readString();
+                        String name = buf.readUtf();
                         boolean patrolling = buf.readBoolean();
                         int status = buf.readVarInt();
                         boolean routeActive = buf.readBoolean();
@@ -75,8 +75,8 @@ public record GuardListS2CPayload(List<Entry> entries) implements CustomPayload 
                         for (int p = 0; p < pointCount; p++) {
                             routePoints.add(new Point(buf.readInt(), buf.readInt(), buf.readInt()));
                         }
-                        Optional<Text> rank = TextCodecs.OPTIONAL_PACKET_CODEC.decode(buf);
-                        Optional<Text> settlement = TextCodecs.OPTIONAL_PACKET_CODEC.decode(buf);
+                        Optional<Component> rank = ComponentSerialization.OPTIONAL_STREAM_CODEC.decode(buf);
+                        Optional<Component> settlement = ComponentSerialization.OPTIONAL_STREAM_CODEC.decode(buf);
                         list.add(new Entry(
                                 id,
                                 name,
@@ -94,7 +94,7 @@ public record GuardListS2CPayload(List<Entry> entries) implements CustomPayload 
             };
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 }

@@ -3,12 +3,12 @@ package net.hfstack.rallyguard.event;
 import dev.sterner.guardvillagers.GuardVillagers;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.TypedEntityData;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.ActionResult;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.component.TypedEntityData;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.InteractionResult;
 
 public final class GuardVillagersSpawnEggFix {
     private GuardVillagersSpawnEggFix() {
@@ -16,29 +16,29 @@ public final class GuardVillagersSpawnEggFix {
 
     public static void register() {
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-            patch(player.getStackInHand(hand));
-            return ActionResult.PASS;
+            patch(player.getItemInHand(hand));
+            return InteractionResult.PASS;
         });
 
         UseItemCallback.EVENT.register((player, world, hand) -> {
-            patch(player.getStackInHand(hand));
-            return ActionResult.PASS;
+            patch(player.getItemInHand(hand));
+            return InteractionResult.PASS;
         });
     }
 
     private static void patch(ItemStack stack) {
-        if (!stack.isOf(GuardVillagers.GUARD_SPAWN_EGG)) {
+        if (!stack.is(GuardVillagers.GUARD_SPAWN_EGG)) {
             return;
         }
 
-        var entityData = stack.get(DataComponentTypes.ENTITY_DATA);
-        if (entityData != null && entityData.getType() == GuardVillagers.GUARD_VILLAGER) {
+        var entityData = stack.get(DataComponents.ENTITY_DATA);
+        if (entityData != null && entityData.type() == GuardVillagers.GUARD_VILLAGER) {
             return;
         }
 
         stack.set(
-                DataComponentTypes.ENTITY_DATA,
-                TypedEntityData.create((EntityType<?>) GuardVillagers.GUARD_VILLAGER, new NbtCompound())
+                DataComponents.ENTITY_DATA,
+                TypedEntityData.of((EntityType<?>) GuardVillagers.GUARD_VILLAGER, new CompoundTag())
         );
     }
 }

@@ -14,23 +14,23 @@ import net.hfstack.rallyguard.api.eligibility.GuardEligibilityDecision;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRoutes;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.BlockPos;
 
 import java.util.Objects;
 
 public final class DefaultGuardCommandService implements GuardCommandService {
     @Override
-    public GuardCommandResult summon(ServerPlayerEntity commander, GuardEntity guard) {
+    public GuardCommandResult summon(ServerPlayer commander, GuardEntity guard) {
         return execute(commander, guard, GuardCommandType.SUMMON, null, () -> {
             double offsetX = (commander.getRandom().nextDouble() - 0.5) * 2.5;
             double offsetZ = (commander.getRandom().nextDouble() - 0.5) * 2.5;
-            guard.refreshPositionAndAngles(
+            guard.snapTo(
                     commander.getX() + offsetX,
                     commander.getY(),
                     commander.getZ() + offsetZ,
-                    guard.getYaw(),
-                    guard.getPitch()
+                    guard.getYRot(),
+                    guard.getXRot()
             );
             guard.setFollowing(false);
             GuardOrders.setRallied(guard, false);
@@ -41,7 +41,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
     }
 
     @Override
-    public GuardCommandResult follow(ServerPlayerEntity commander, GuardEntity guard) {
+    public GuardCommandResult follow(ServerPlayer commander, GuardEntity guard) {
         return execute(commander, guard, GuardCommandType.FOLLOW, null, () -> {
             guard.setPatrolling(false);
             guard.setPatrolPos(null);
@@ -54,7 +54,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
     }
 
     @Override
-    public GuardCommandResult wait(ServerPlayerEntity commander, GuardEntity guard) {
+    public GuardCommandResult wait(ServerPlayer commander, GuardEntity guard) {
         return execute(commander, guard, GuardCommandType.WAIT, null, () -> {
             guard.setFollowing(false);
             guard.setPatrolling(false);
@@ -67,8 +67,8 @@ public final class DefaultGuardCommandService implements GuardCommandService {
     }
 
     @Override
-    public GuardCommandResult patrol(ServerPlayerEntity commander, GuardEntity guard, BlockPos position) {
-        BlockPos patrolPosition = Objects.requireNonNull(position, "position").toImmutable();
+    public GuardCommandResult patrol(ServerPlayer commander, GuardEntity guard, BlockPos position) {
+        BlockPos patrolPosition = Objects.requireNonNull(position, "position");
         return execute(commander, guard, GuardCommandType.PATROL, patrolPosition, () -> {
             guard.setFollowing(false);
             GuardOrders.setRallied(guard, false);
@@ -81,7 +81,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
     }
 
     @Override
-    public GuardCommandResult stopPatrol(ServerPlayerEntity commander, GuardEntity guard) {
+    public GuardCommandResult stopPatrol(ServerPlayer commander, GuardEntity guard) {
         return execute(commander, guard, GuardCommandType.STOP_PATROL, null, () -> {
             guard.setPatrolling(false);
             guard.setFollowing(false);
@@ -94,14 +94,14 @@ public final class DefaultGuardCommandService implements GuardCommandService {
     }
 
     private static GuardCommandResult execute(
-            ServerPlayerEntity commander,
+            ServerPlayer commander,
             GuardEntity guard,
             GuardCommandType command,
             BlockPos requestedPosition,
             Runnable action,
             String successTranslationKey
     ) {
-        ServerPlayerEntity requiredCommander = requireCommander(commander);
+        ServerPlayer requiredCommander = requireCommander(commander);
         GuardCommandResult rejection = validate(requiredCommander, guard);
         if (rejection != null) {
             return rejection;
@@ -111,8 +111,8 @@ public final class DefaultGuardCommandService implements GuardCommandService {
                 requiredCommander,
                 guard,
                 command,
-                requiredCommander.getEntityWorld(),
-                guard.getBlockPos(),
+                requiredCommander.level(),
+                guard.blockPosition(),
                 requestedPosition
         );
 
@@ -130,7 +130,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
             RallyOfTheGuard.LOGGER.error(
                     "Guard command policy failed for command {} and guard {}",
                     command,
-                    guard.getUuid(),
+                    guard.getUUID(),
                     exception
             );
             return GuardCommandResult.policyError();
@@ -148,22 +148,22 @@ public final class DefaultGuardCommandService implements GuardCommandService {
             RallyOfTheGuard.LOGGER.error(
                     "Guard command AFTER listener failed for command {} and guard {}",
                     command,
-                    guard.getUuid(),
+                    guard.getUUID(),
                     exception
             );
         }
         return result;
     }
 
-    private static ServerPlayerEntity requireCommander(ServerPlayerEntity commander) {
+    private static ServerPlayer requireCommander(ServerPlayer commander) {
         return Objects.requireNonNull(commander, "commander");
     }
 
-    private static GuardCommandResult validate(ServerPlayerEntity commander, GuardEntity guard) {
-        if (guard == null || !guard.isAlive() || guard.getEntityWorld() != commander.getEntityWorld()) {
+    private static GuardCommandResult validate(ServerPlayer commander, GuardEntity guard) {
+        if (guard == null || !guard.isAlive() || guard.level() != commander.level()) {
             return GuardCommandResult.invalidGuard();
         }
-        if (!GuardOwnership.isOwnedBy(guard, commander.getUuid())) {
+        if (!GuardOwnership.isOwnedBy(guard, commander.getUUID())) {
             return GuardCommandResult.notOwner();
         }
         return null;
@@ -171,7 +171,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
 
     private static void stopCurrentActions(GuardEntity guard) {
         guard.setTarget(null);
-        guard.setAttacking(false);
+        guard.setAggressive(false);
         guard.getNavigation().stop();
     }
 }

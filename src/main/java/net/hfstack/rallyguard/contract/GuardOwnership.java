@@ -1,12 +1,12 @@
 package net.hfstack.rallyguard.contract;
 
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.registry.Registries;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 
 import java.util.UUID;
 
@@ -14,11 +14,11 @@ public final class GuardOwnership {
     private GuardOwnership() {
     }
 
-    private static final Identifier GUARD_ID = Identifier.of("guardvillagers", "guard");
+    private static final Identifier GUARD_ID = Identifier.fromNamespaceAndPath("guardvillagers", "guard");
     private static final int GOLD = 0xFFD700;
 
     public static boolean isGuard(Entity e) {
-        return e instanceof GuardEntity || (e != null && e.getType() == Registries.ENTITY_TYPE.get(GUARD_ID));
+        return e instanceof GuardEntity || (e != null && e.getType() == BuiltInRegistries.ENTITY_TYPE.getValue(GUARD_ID));
     }
 
     public static UUID getOwner(Entity guard) {
@@ -35,15 +35,15 @@ public final class GuardOwnership {
         return owner != null && owner.equals(player);
     }
 
-    public static void setOwner(Entity guard, ServerPlayerEntity player) {
+    public static void setOwner(Entity guard, ServerPlayer player) {
         if (guard instanceof GuardEntity gv) {
-            gv.setOwnerId(player.getUuid());
+            gv.setOwnerId(player.getUUID());
         }
 
         applyGoldName(guard);
 
         String display = guard.getName().getString();
-        player.sendMessage(Text.translatable("message.rallyguard.guard_presenting", display), false);
+        player.sendSystemMessage(Component.translatable("message.rallyguard.guard_presenting", display));
     }
 
     public static void clearOwner(Entity guard) {
@@ -56,7 +56,7 @@ public final class GuardOwnership {
         if (!(guard instanceof LivingEntity le)) return;
 
         String base = le.getName().getString();
-        Text golden = Text.literal(base).styled(s -> s.withColor(GOLD));
+        Component golden = Component.literal(base).withStyle(s -> s.withColor(GOLD));
         le.setCustomName(golden);
         le.setCustomNameVisible(true);
     }

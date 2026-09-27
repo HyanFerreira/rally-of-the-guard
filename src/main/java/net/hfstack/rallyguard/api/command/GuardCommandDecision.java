@@ -1,6 +1,6 @@
 package net.hfstack.rallyguard.api.command;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 import java.util.Objects;
 
@@ -11,7 +11,7 @@ public sealed interface GuardCommandDecision {
     record Allow() implements GuardCommandDecision {
     }
 
-    record Deny(Text reason) implements GuardCommandDecision {
+    record Deny(Component reason) implements GuardCommandDecision {
         public Deny {
             Objects.requireNonNull(reason, "reason");
         }
@@ -21,7 +21,7 @@ public sealed interface GuardCommandDecision {
         return new Allow();
     }
 
-    static GuardCommandDecision deny(Text reason) {
+    static GuardCommandDecision deny(Component reason) {
         return new Deny(reason);
     }
 }

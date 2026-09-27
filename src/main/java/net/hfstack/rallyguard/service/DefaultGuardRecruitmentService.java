@@ -15,13 +15,13 @@ import net.hfstack.rallyguard.api.recruitment.RecruitmentResult;
 import net.hfstack.rallyguard.api.recruitment.RecruitmentTransaction;
 import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.contract.GuardOwnership;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
 
 import java.util.Objects;
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ public final class DefaultGuardRecruitmentService implements GuardRecruitmentSer
     public static final double MAX_RECRUITMENT_DISTANCE = 8.0;
 
     @Override
-    public RecruitmentResult recruit(ServerPlayerEntity player, GuardEntity guard) {
+    public RecruitmentResult recruit(ServerPlayer player, GuardEntity guard) {
         Objects.requireNonNull(player, "player");
 
         RecruitmentResult invalid = validate(player, guard);
@@ -50,20 +50,20 @@ public final class DefaultGuardRecruitmentService implements GuardRecruitmentSer
         RecruitmentContext context = new RecruitmentContext(
                 player,
                 guard,
-                Registries.ITEM.getId(RallyConfig.hireItem()),
+                BuiltInRegistries.ITEM.getKey(RallyConfig.hireItem()),
                 RallyConfig.hireCost(),
-                player.getEntityWorld(),
-                guard.getBlockPos()
+                player.level(),
+                guard.blockPosition()
         );
 
         RecruitmentDecision decision;
         try {
             decision = GuardRecruitmentEvents.BEFORE.invoker().evaluate(context, context.defaultOffer());
         } catch (RuntimeException exception) {
-            RallyOfTheGuard.LOGGER.error("Recruitment policy failed for guard {}", guard.getUuid(), exception);
+            RallyOfTheGuard.LOGGER.error("Recruitment policy failed for guard {}", guard.getUUID(), exception);
             return RecruitmentResult.failure(
                     RecruitmentResult.Outcome.POLICY_ERROR,
-                    Text.translatable("gui.rallyguard.hire.policy_error")
+                    Component.translatable("gui.rallyguard.hire.policy_error")
             );
         }
 
@@ -73,10 +73,10 @@ public final class DefaultGuardRecruitmentService implements GuardRecruitmentSer
 
         RecruitmentDecision.Allow allowed = (RecruitmentDecision.Allow) decision;
         RecruitmentOffer offer = allowed.offer();
-        if (!Registries.ITEM.containsId(offer.paymentItemId())) {
+        if (!BuiltInRegistries.ITEM.containsKey(offer.paymentItemId())) {
             return invalidOffer(offer);
         }
-        Item paymentItem = Registries.ITEM.get(offer.paymentItemId());
+        Item paymentItem = BuiltInRegistries.ITEM.getValue(offer.paymentItemId());
         if (paymentItem == Items.AIR) {
             return invalidOffer(offer);
         }
@@ -85,11 +85,11 @@ public final class DefaultGuardRecruitmentService implements GuardRecruitmentSer
             return changedState;
         }
 
-        PlayerInventory inventory = player.getInventory();
+        Inventory inventory = player.getInventory();
         if (countPayment(inventory, paymentItem) < offer.cost()) {
             return RecruitmentResult.failure(
                     RecruitmentResult.Outcome.NOT_ENOUGH_PAYMENT,
-                    Text.translatable("gui.rallyguard.hire.not_enough", offer.cost(), paymentItem.getName())
+                    Component.translatable("gui.rallyguard.hire.not_enough", offer.cost(), paymentItem.getName(new ItemStack(paymentItem)))
             );
         }
 
@@ -97,7 +97,7 @@ public final class DefaultGuardRecruitmentService implements GuardRecruitmentSer
         try {
             for (RecruitmentTransaction transaction : allowed.transactions()) {
                 reservedTransactions.add(transaction);
-                Optional<Text> reservationIssue = transaction.reserve();
+                Optional<Component> reservationIssue = transaction.reserve();
                 if (reservationIssue.isPresent()) {
                     rollbackTransactions(reservedTransactions);
                     return RecruitmentResult.failure(
@@ -108,15 +108,15 @@ public final class DefaultGuardRecruitmentService implements GuardRecruitmentSer
             }
         } catch (RuntimeException exception) {
             rollbackTransactions(reservedTransactions);
-            RallyOfTheGuard.LOGGER.error("Recruitment transaction reservation failed for guard {}", guard.getUuid(), exception);
+            RallyOfTheGuard.LOGGER.error("Recruitment transaction reservation failed for guard {}", guard.getUUID(), exception);
             return RecruitmentResult.failure(
                     RecruitmentResult.Outcome.POLICY_ERROR,
-                    Text.translatable("gui.rallyguard.hire.policy_error")
+                    Component.translatable("gui.rallyguard.hire.policy_error")
             );
         }
 
         removePayment(inventory, paymentItem, offer.cost());
-        Text originalCustomName = guard.getCustomName();
+        Component originalCustomName = guard.getCustomName();
         boolean originalCustomNameVisible = guard.isCustomNameVisible();
         try {
             GuardOwnership.setOwner(guard, player);
@@ -126,10 +126,10 @@ public final class DefaultGuardRecruitmentService implements GuardRecruitmentSer
             guard.setCustomNameVisible(originalCustomNameVisible);
             refundPayment(inventory, paymentItem, offer.cost());
             rollbackTransactions(reservedTransactions);
-            RallyOfTheGuard.LOGGER.error("Failed to assign guard {} to player {}", guard.getUuid(), player.getUuid(), exception);
+            RallyOfTheGuard.LOGGER.error("Failed to assign guard {} to player {}", guard.getUUID(), player.getUUID(), exception);
             return RecruitmentResult.failure(
                     RecruitmentResult.Outcome.OWNERSHIP_ERROR,
-                    Text.translatable("gui.rallyguard.hire.ownership_error")
+                    Component.translatable("gui.rallyguard.hire.ownership_error")
             );
         }
 
@@ -143,17 +143,17 @@ public final class DefaultGuardRecruitmentService implements GuardRecruitmentSer
             guard.setCustomNameVisible(originalCustomNameVisible);
             refundPayment(inventory, paymentItem, offer.cost());
             rollbackTransactions(reservedTransactions);
-            RallyOfTheGuard.LOGGER.error("Recruitment transaction commit failed for guard {}", guard.getUuid(), exception);
+            RallyOfTheGuard.LOGGER.error("Recruitment transaction commit failed for guard {}", guard.getUUID(), exception);
             return RecruitmentResult.failure(
                     RecruitmentResult.Outcome.POLICY_ERROR,
-                    Text.translatable("gui.rallyguard.hire.policy_error")
+                    Component.translatable("gui.rallyguard.hire.policy_error")
             );
         }
 
         try {
             GuardRecruitmentEvents.AFTER.invoker().onRecruited(context, offer);
         } catch (RuntimeException exception) {
-            RallyOfTheGuard.LOGGER.error("Recruitment AFTER listener failed for guard {}", guard.getUuid(), exception);
+            RallyOfTheGuard.LOGGER.error("Recruitment AFTER listener failed for guard {}", guard.getUUID(), exception);
         }
 
         return RecruitmentResult.success(offer);
@@ -163,58 +163,58 @@ public final class DefaultGuardRecruitmentService implements GuardRecruitmentSer
         RallyOfTheGuard.LOGGER.error("Recruitment policy produced invalid payment item {}", offer.paymentItemId());
         return RecruitmentResult.failure(
                 RecruitmentResult.Outcome.INVALID_OFFER,
-                Text.translatable("gui.rallyguard.hire.invalid_offer")
+                Component.translatable("gui.rallyguard.hire.invalid_offer")
         );
     }
 
-    private static RecruitmentResult validate(ServerPlayerEntity player, GuardEntity guard) {
+    private static RecruitmentResult validate(ServerPlayer player, GuardEntity guard) {
         if (guard == null
                 || !guard.isAlive()
                 || guard.isRemoved()
-                || guard.getEntityWorld() != player.getEntityWorld()
-                || player.squaredDistanceTo(guard) > MAX_RECRUITMENT_DISTANCE * MAX_RECRUITMENT_DISTANCE) {
+                || guard.level() != player.level()
+                || player.distanceToSqr(guard) > MAX_RECRUITMENT_DISTANCE * MAX_RECRUITMENT_DISTANCE) {
             return RecruitmentResult.failure(
                     RecruitmentResult.Outcome.INVALID_GUARD,
-                    Text.translatable("gui.rallyguard.hire.invalid")
+                    Component.translatable("gui.rallyguard.hire.invalid")
             );
         }
         if (GuardOwnership.hasOwner(guard)) {
             return RecruitmentResult.failure(
                     RecruitmentResult.Outcome.ALREADY_OWNED,
-                    Text.translatable("gui.rallyguard.hire.already_owned")
+                    Component.translatable("gui.rallyguard.hire.already_owned")
             );
         }
         return null;
     }
 
-    private static int countPayment(PlayerInventory inventory, Item paymentItem) {
+    private static int countPayment(Inventory inventory, Item paymentItem) {
         int total = 0;
-        for (int slot = 0; slot < inventory.size(); slot++) {
-            ItemStack stack = inventory.getStack(slot);
-            if (stack.isOf(paymentItem)) {
+        for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
+            ItemStack stack = inventory.getItem(slot);
+            if (stack.is(paymentItem)) {
                 total += stack.getCount();
             }
         }
         return total;
     }
 
-    private static void removePayment(PlayerInventory inventory, Item paymentItem, int cost) {
+    private static void removePayment(Inventory inventory, Item paymentItem, int cost) {
         int remaining = cost;
-        for (int slot = 0; slot < inventory.size() && remaining > 0; slot++) {
-            ItemStack stack = inventory.getStack(slot);
-            if (stack.isOf(paymentItem)) {
+        for (int slot = 0; slot < inventory.getContainerSize() && remaining > 0; slot++) {
+            ItemStack stack = inventory.getItem(slot);
+            if (stack.is(paymentItem)) {
                 int removed = Math.min(remaining, stack.getCount());
-                stack.decrement(removed);
+                stack.shrink(removed);
                 remaining -= removed;
             }
         }
     }
 
-    private static void refundPayment(PlayerInventory inventory, Item paymentItem, int cost) {
+    private static void refundPayment(Inventory inventory, Item paymentItem, int cost) {
         if (cost == 0) {
             return;
         }
-        inventory.offerOrDrop(new ItemStack(paymentItem, cost));
+        inventory.placeItemBackInInventory(new ItemStack(paymentItem, cost));
     }
 
     private static void rollbackTransactions(List<RecruitmentTransaction> transactions) {

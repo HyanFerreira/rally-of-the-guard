@@ -1,7 +1,7 @@
 package net.hfstack.rallyguard.order;
 
 import net.hfstack.rallyguard.config.RallyConfig;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
 import java.util.List;
 

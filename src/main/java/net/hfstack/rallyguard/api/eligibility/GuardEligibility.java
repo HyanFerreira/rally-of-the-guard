@@ -1,7 +1,7 @@
 package net.hfstack.rallyguard.api.eligibility;
 
 import net.hfstack.rallyguard.RallyOfTheGuard;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 import java.util.Objects;
 
@@ -20,10 +20,10 @@ public final class GuardEligibility {
             RallyOfTheGuard.LOGGER.error(
                     "Guard eligibility policy failed for operation {} and guard {}",
                     context.operation(),
-                    context.guard().getUuid(),
+                    context.guard().getUUID(),
                     exception
             );
-            return GuardEligibilityDecision.deny(Text.translatable("gui.rallyguard.eligibility.policy_error"));
+            return GuardEligibilityDecision.deny(Component.translatable("gui.rallyguard.eligibility.policy_error"));
         }
     }
 }

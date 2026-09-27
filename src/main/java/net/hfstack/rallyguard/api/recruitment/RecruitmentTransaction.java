@@ -1,6 +1,6 @@
 package net.hfstack.rallyguard.api.recruitment;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 import java.util.Optional;
 
@@ -10,7 +10,7 @@ import java.util.Optional;
  */
 public interface RecruitmentTransaction {
     /** An empty result reserves successfully; a message denies recruitment. */
-    Optional<Text> reserve();
+    Optional<Component> reserve();
 
     /** Finalizes a successful ownership assignment. */
     void commit();

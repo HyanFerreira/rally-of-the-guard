@@ -2,9 +2,9 @@ package net.hfstack.rallyguard.api.eligibility;
 
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.hfstack.rallyguard.api.command.GuardCommandType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.BlockPos;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -13,10 +13,10 @@ import java.util.Optional;
  * Immutable server-side facts used by guard eligibility policies.
  */
 public record GuardEligibilityContext(
-        ServerPlayerEntity player,
+        ServerPlayer player,
         GuardEntity guard,
         GuardEligibilityOperation operation,
-        ServerWorld world,
+        ServerLevel world,
         GuardCommandType command,
         BlockPos requestedPosition
 ) {
@@ -31,19 +31,19 @@ public record GuardEligibilityContext(
         if (operation != GuardEligibilityOperation.ISSUE_COMMAND && command != null) {
             throw new IllegalArgumentException("Only command eligibility accepts a command type");
         }
-        requestedPosition = requestedPosition == null ? null : requestedPosition.toImmutable();
+        requestedPosition = requestedPosition == null ? null : requestedPosition;
     }
 
     public static GuardEligibilityContext of(
-            ServerPlayerEntity player,
+            ServerPlayer player,
             GuardEntity guard,
             GuardEligibilityOperation operation
     ) {
-        return new GuardEligibilityContext(player, guard, operation, player.getEntityWorld(), null, null);
+        return new GuardEligibilityContext(player, guard, operation, player.level(), null, null);
     }
 
     public static GuardEligibilityContext command(
-            ServerPlayerEntity player,
+            ServerPlayer player,
             GuardEntity guard,
             GuardCommandType command,
             BlockPos requestedPosition
@@ -52,7 +52,7 @@ public record GuardEligibilityContext(
                 player,
                 guard,
                 GuardEligibilityOperation.ISSUE_COMMAND,
-                player.getEntityWorld(),
+                player.level(),
                 command,
                 requestedPosition
         );

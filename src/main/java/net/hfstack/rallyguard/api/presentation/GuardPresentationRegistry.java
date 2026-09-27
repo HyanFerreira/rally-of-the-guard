@@ -31,7 +31,7 @@ public final class GuardPresentationRegistry {
             } catch (RuntimeException exception) {
                 RallyOfTheGuard.LOGGER.error(
                         "Guard presentation provider failed for guard {}",
-                        context.guard().getUuid(),
+                        context.guard().getUUID(),
                         exception
                 );
             }

@@ -1,15 +1,15 @@
 package net.hfstack.rallyguard.api.presentation;
 
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.Objects;
 
 public record GuardPresentationContext(
-        ServerPlayerEntity viewer,
+        ServerPlayer viewer,
         GuardEntity guard,
-        ServerWorld world
+        ServerLevel world
 ) {
     public GuardPresentationContext {
         Objects.requireNonNull(viewer, "viewer");

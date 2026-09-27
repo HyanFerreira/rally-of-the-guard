@@ -1,7 +1,7 @@
 package net.hfstack.rallyguard.api.recruitment;
 
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ class GuardRecruitmentEventsTest {
         });
         GuardRecruitmentEvents.BEFORE.register((context, offer) -> {
             calls.add("deny:" + offer.cost());
-            return RecruitmentDecision.deny(Text.literal("denied"));
+            return RecruitmentDecision.deny(Component.literal("denied"));
         });
         GuardRecruitmentEvents.BEFORE.register((context, offer) -> {
             calls.add("unreachable");
@@ -30,7 +30,7 @@ class GuardRecruitmentEventsTest {
 
         RecruitmentDecision decision = GuardRecruitmentEvents.BEFORE.invoker().evaluate(
                 null,
-                new RecruitmentOffer(Identifier.of("minecraft", "emerald"), 3)
+                new RecruitmentOffer(Identifier.fromNamespaceAndPath("minecraft", "emerald"), 3)
         );
 
         RecruitmentDecision.Deny denied = assertInstanceOf(RecruitmentDecision.Deny.class, decision);

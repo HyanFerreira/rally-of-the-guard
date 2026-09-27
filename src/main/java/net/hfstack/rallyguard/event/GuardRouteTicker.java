@@ -5,11 +5,11 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.order.GuardRouteState;
 import net.hfstack.rallyguard.order.GuardRoutes;
-import net.minecraft.entity.Entity;
-import net.minecraft.registry.Registries;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.resources.Identifier;
+import net.minecraft.core.BlockPos;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +20,7 @@ public final class GuardRouteTicker {
     private GuardRouteTicker() {
     }
 
-    private static final Identifier GUARD_ID = Identifier.of("guardvillagers", "guard");
+    private static final Identifier GUARD_ID = Identifier.fromNamespaceAndPath("guardvillagers", "guard");
     private static final int TICK_INTERVAL = 10;
     private static final double ARRIVAL_DISTANCE_SQUARED = 2.5 * 2.5;
     private static final int STUCK_TICKS_BEFORE_TELEPORT = 20 * 8;
@@ -31,15 +31,15 @@ public final class GuardRouteTicker {
     }
 
     public static void register() {
-        ServerTickEvents.END_WORLD_TICK.register(world -> {
-            if (world.getTime() % TICK_INTERVAL != 0) return;
+        ServerTickEvents.END_LEVEL_TICK.register(world -> {
+            if (world.getGameTime() % TICK_INTERVAL != 0) return;
             tickWorld(world);
         });
     }
 
-    private static void tickWorld(ServerWorld world) {
-        List<? extends Entity> guards = world.getEntitiesByType(
-                Registries.ENTITY_TYPE.get(GUARD_ID),
+    private static void tickWorld(ServerLevel world) {
+        List<? extends Entity> guards = world.getEntities(
+                BuiltInRegistries.ENTITY_TYPE.getValue(GUARD_ID),
                 entity -> entity instanceof GuardEntity && GuardRoutes.get(entity).active()
         );
 
@@ -65,25 +65,25 @@ public final class GuardRouteTicker {
 
         if (guard.getTarget() != null) return;
 
-        double distance = guard.squaredDistanceTo(
+        double distance = guard.distanceToSqr(
                 target.getX() + 0.5,
                 target.getY(),
                 target.getZ() + 0.5
         );
         if (distance > ARRIVAL_DISTANCE_SQUARED) {
             if (shouldTeleportStuckGuard(guard, distance)) {
-                guard.refreshPositionAndAngles(target.getX() + 0.5, target.getY(), target.getZ() + 0.5, guard.getYaw(), guard.getPitch());
-                guard.setVelocity(0.0, 0.0, 0.0);
+                guard.snapTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5, guard.getYRot(), guard.getXRot());
+                guard.setDeltaMovement(0.0, 0.0, 0.0);
                 guard.getNavigation().stop();
-                ROUTE_PROGRESS.remove(guard.getUuid());
+                ROUTE_PROGRESS.remove(guard.getUUID());
                 return;
             }
 
-            guard.getNavigation().startMovingTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5, RallyConfig.routeMoveSpeed());
+            guard.getNavigation().moveTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5, RallyConfig.routeMoveSpeed());
             return;
         }
 
-        ROUTE_PROGRESS.remove(guard.getUuid());
+        ROUTE_PROGRESS.remove(guard.getUUID());
 
         int dwellTicks = route.dwellTicks() + TICK_INTERVAL;
         if (dwellTicks < route.waitTicks()) {
@@ -101,18 +101,18 @@ public final class GuardRouteTicker {
     private static boolean shouldTeleportStuckGuard(GuardEntity guard, double distanceSquared) {
         double teleportDistance = RallyConfig.routeTeleportDistance();
         if (!RallyConfig.routeTeleportIfStuck() || distanceSquared <= teleportDistance * teleportDistance) {
-            ROUTE_PROGRESS.remove(guard.getUuid());
+            ROUTE_PROGRESS.remove(guard.getUUID());
             return false;
         }
 
-        RouteProgress progress = ROUTE_PROGRESS.get(guard.getUuid());
+        RouteProgress progress = ROUTE_PROGRESS.get(guard.getUUID());
         if (progress == null || progress.distanceSquared() - distanceSquared > MIN_PROGRESS_SQUARED) {
-            ROUTE_PROGRESS.put(guard.getUuid(), new RouteProgress(distanceSquared, 0));
+            ROUTE_PROGRESS.put(guard.getUUID(), new RouteProgress(distanceSquared, 0));
             return false;
         }
 
         int stuckTicks = progress.stuckTicks() + TICK_INTERVAL;
-        ROUTE_PROGRESS.put(guard.getUuid(), new RouteProgress(distanceSquared, stuckTicks));
+        ROUTE_PROGRESS.put(guard.getUUID(), new RouteProgress(distanceSquared, stuckTicks));
         return stuckTicks >= STUCK_TICKS_BEFORE_TELEPORT;
     }
 }

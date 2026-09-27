@@ -6,10 +6,10 @@ import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.order.GuardOrders;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ActionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionResult;
 
 public final class RallyFriendlyFireHandler {
     private RallyFriendlyFireHandler() {
@@ -17,27 +17,27 @@ public final class RallyFriendlyFireHandler {
 
     public static void register() {
         AttackEntityCallback.EVENT.register((player, world, hand, target, hit) -> {
-            if (world.isClient()) return ActionResult.PASS;
-            if (!RallyConfig.rallyProtectRalliedGuardsFromOwner()) return ActionResult.PASS;
-            if (!GuardOwnership.isGuard(target)) return ActionResult.PASS;
-            if (!GuardOwnership.isOwnedBy(target, player.getUuid())) return ActionResult.PASS;
-            if (!isRallied(target)) return ActionResult.PASS;
-            return ActionResult.FAIL;
+            if (world.isClientSide()) return InteractionResult.PASS;
+            if (!RallyConfig.rallyProtectRalliedGuardsFromOwner()) return InteractionResult.PASS;
+            if (!GuardOwnership.isGuard(target)) return InteractionResult.PASS;
+            if (!GuardOwnership.isOwnedBy(target, player.getUUID())) return InteractionResult.PASS;
+            if (!isRallied(target)) return InteractionResult.PASS;
+            return InteractionResult.FAIL;
         });
 
-        ServerLivingEntityEvents.ALLOW_DAMAGE.register((LivingEntity victim, net.minecraft.entity.damage.DamageSource source, float amount) -> {
+        ServerLivingEntityEvents.ALLOW_DAMAGE.register((LivingEntity victim, net.minecraft.world.damagesource.DamageSource source, float amount) -> {
             if (!RallyConfig.rallyProtectRalliedGuardsFromOwner()) return true;
             if (!GuardOwnership.isGuard(victim)) return true;
 
-            PlayerEntity attackerPlayer = null;
-            Entity attacker = source.getAttacker();
-            Entity origin = source.getSource();
+            Player attackerPlayer = null;
+            Entity attacker = source.getEntity();
+            Entity origin = source.getDirectEntity();
 
-            if (attacker instanceof PlayerEntity p) attackerPlayer = p;
-            else if (origin instanceof PlayerEntity p2) attackerPlayer = p2;
+            if (attacker instanceof Player p) attackerPlayer = p;
+            else if (origin instanceof Player p2) attackerPlayer = p2;
 
             if (attackerPlayer == null) return true;
-            if (!GuardOwnership.isOwnedBy(victim, attackerPlayer.getUuid())) return true;
+            if (!GuardOwnership.isOwnedBy(victim, attackerPlayer.getUUID())) return true;
 
             return !isRallied(victim);
         });

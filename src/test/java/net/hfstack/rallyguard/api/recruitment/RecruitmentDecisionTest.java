@@ -1,7 +1,7 @@
 package net.hfstack.rallyguard.api.recruitment;
 
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -14,7 +14,7 @@ class RecruitmentDecisionTest {
     void transactionalDecisionCarriesItsReversibleReservation() {
         RecruitmentTransaction transaction = new RecruitmentTransaction() {
             @Override
-            public Optional<Text> reserve() {
+            public Optional<Component> reserve() {
                 return Optional.empty();
             }
 
@@ -26,7 +26,7 @@ class RecruitmentDecisionTest {
             public void rollback() {
             }
         };
-        RecruitmentOffer freePersonalOffer = new RecruitmentOffer(Identifier.of("minecraft", "emerald"), 0);
+        RecruitmentOffer freePersonalOffer = new RecruitmentOffer(Identifier.fromNamespaceAndPath("minecraft", "emerald"), 0);
 
         RecruitmentDecision.Allow allowed = assertInstanceOf(
                 RecruitmentDecision.Allow.class,

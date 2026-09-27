@@ -1,6 +1,6 @@
 package net.hfstack.rallyguard.api.eligibility;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ class GuardEligibilityEventsTest {
         });
         GuardEligibilityEvents.CHECK.register(context -> {
             calls.add("deny");
-            return GuardEligibilityDecision.deny(Text.literal("not eligible"));
+            return GuardEligibilityDecision.deny(Component.literal("not eligible"));
         });
         GuardEligibilityEvents.CHECK.register(context -> {
             calls.add("unreachable");

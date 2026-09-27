@@ -1,11 +1,11 @@
 package net.hfstack.rallyguard.effect;
 
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 
-public class RallyCommanderEffect extends StatusEffect {
+public class RallyCommanderEffect extends MobEffect {
     public RallyCommanderEffect() {
-        super(StatusEffectCategory.NEUTRAL, 0xFFD700); // Dourado
+        super(MobEffectCategory.NEUTRAL, 0xFFD700); // Dourado
     }
 
 }

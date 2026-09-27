@@ -1,6 +1,6 @@
 package net.hfstack.rallyguard.api.presentation;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class GuardPresentationTest {
     @Test
     void mergeKeepsFirstLabelAndFillsMissingFields() {
-        GuardPresentation rank = GuardPresentation.of(Text.literal("Captain"), null);
-        GuardPresentation settlement = GuardPresentation.of(Text.literal("Ignored"), Text.literal("Oakwatch"));
+        GuardPresentation rank = GuardPresentation.of(Component.literal("Captain"), null);
+        GuardPresentation settlement = GuardPresentation.of(Component.literal("Ignored"), Component.literal("Oakwatch"));
 
         GuardPresentation merged = rank.merge(settlement);
 

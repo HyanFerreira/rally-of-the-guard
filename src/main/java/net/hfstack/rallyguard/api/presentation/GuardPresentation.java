@@ -1,6 +1,6 @@
 package net.hfstack.rallyguard.api.presentation;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -8,7 +8,7 @@ import java.util.Optional;
 /**
  * Read-only labels contributed to Rally's guard screens.
  */
-public record GuardPresentation(Optional<Text> rank, Optional<Text> settlement) {
+public record GuardPresentation(Optional<Component> rank, Optional<Component> settlement) {
     public GuardPresentation {
         rank = Objects.requireNonNull(rank, "rank");
         settlement = Objects.requireNonNull(settlement, "settlement");
@@ -18,7 +18,7 @@ public record GuardPresentation(Optional<Text> rank, Optional<Text> settlement) 
         return new GuardPresentation(Optional.empty(), Optional.empty());
     }
 
-    public static GuardPresentation of(Text rank, Text settlement) {
+    public static GuardPresentation of(Component rank, Component settlement) {
         return new GuardPresentation(Optional.ofNullable(rank), Optional.ofNullable(settlement));
     }
 

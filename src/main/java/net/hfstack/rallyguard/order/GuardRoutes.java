@@ -2,8 +2,8 @@ package net.hfstack.rallyguard.order;
 
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.hfstack.rallyguard.config.RallyConfig;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.core.BlockPos;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ public final class GuardRoutes {
     public static GuardRouteState get(Entity guard) {
         if (guard == null) return empty();
 
-        for (String tag : guard.getCommandTags()) {
+        for (String tag : guard.entityTags()) {
             if (tag.startsWith(ROUTE_PREFIX)) {
                 return parse(tag);
             }
@@ -30,7 +30,7 @@ public final class GuardRoutes {
         if (guard == null) return;
         clearTags(guard);
         if (route.points().isEmpty()) return;
-        guard.addCommandTag(serialize(route));
+        guard.addTag(serialize(route));
     }
 
     public static void clear(Entity guard) {
@@ -60,10 +60,10 @@ public final class GuardRoutes {
     }
 
     private static void clearTags(Entity guard) {
-        Set<String> tags = guard.getCommandTags();
+        Set<String> tags = guard.entityTags();
         for (String tag : List.copyOf(tags)) {
             if (tag.startsWith(ROUTE_PREFIX)) {
-                guard.removeCommandTag(tag);
+                guard.removeTag(tag);
             }
         }
     }
@@ -84,7 +84,7 @@ public final class GuardRoutes {
                 + points;
     }
 
-    private static GuardRouteState parse(String tag) {
+    static GuardRouteState parse(String tag) {
         try {
             String data = tag.substring(ROUTE_PREFIX.length());
             String[] parts = data.split(":", 5);

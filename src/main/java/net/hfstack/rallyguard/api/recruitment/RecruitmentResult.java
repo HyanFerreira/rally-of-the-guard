@@ -1,11 +1,11 @@
 package net.hfstack.rallyguard.api.recruitment;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 import java.util.Objects;
 import java.util.Optional;
 
-public record RecruitmentResult(Outcome outcome, Text feedback, RecruitmentOffer appliedOffer) {
+public record RecruitmentResult(Outcome outcome, Component feedback, RecruitmentOffer appliedOffer) {
     public RecruitmentResult {
         Objects.requireNonNull(outcome, "outcome");
         Objects.requireNonNull(feedback, "feedback");
@@ -25,12 +25,12 @@ public record RecruitmentResult(Outcome outcome, Text feedback, RecruitmentOffer
     public static RecruitmentResult success(RecruitmentOffer offer) {
         return new RecruitmentResult(
                 Outcome.SUCCESS,
-                Text.translatable("gui.rallyguard.hire.success"),
+                Component.translatable("gui.rallyguard.hire.success"),
                 offer
         );
     }
 
-    public static RecruitmentResult failure(Outcome outcome, Text feedback) {
+    public static RecruitmentResult failure(Outcome outcome, Component feedback) {
         if (outcome == Outcome.SUCCESS) {
             throw new IllegalArgumentException("Use success for successful recruitment");
         }
