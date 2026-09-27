@@ -106,6 +106,8 @@
   "gui.rallyguard.command.status.idle": "Idle",
   "gui.rallyguard.command.not_found": "Guard unavailable or too far.",
   "gui.rallyguard.command.not_owner": "You are not this guard's commander.",
+  "gui.rallyguard.command.policy_error": "The tactical order could not be validated. Try again shortly.",
+  "gui.rallyguard.eligibility.policy_error": "Guard eligibility could not be validated. Try again shortly.",
   "gui.rallyguard.command.summoned": "Guard summoned.",
   "gui.rallyguard.command.follow_on": "Guard is now following you.",
   "gui.rallyguard.command.wait_on": "Guard is waiting.",

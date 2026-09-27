@@ -37,4 +37,5 @@ class GuardRecruitmentEventsTest {
         assertEquals("denied", denied.reason().getString());
         assertEquals(List.of("replace:3", "deny:7"), calls);
     }
+
 }

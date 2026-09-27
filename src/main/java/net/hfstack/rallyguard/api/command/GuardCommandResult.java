@@ -38,9 +38,22 @@ public record GuardCommandResult(Outcome outcome, Text feedback) {
         );
     }
 
+    public static GuardCommandResult denied(Text reason) {
+        return new GuardCommandResult(Outcome.DENIED, Objects.requireNonNull(reason, "reason"));
+    }
+
+    public static GuardCommandResult policyError() {
+        return new GuardCommandResult(
+                Outcome.POLICY_ERROR,
+                Text.translatable("gui.rallyguard.command.policy_error")
+        );
+    }
+
     public enum Outcome {
         SUCCESS,
         INVALID_GUARD,
-        NOT_OWNER
+        NOT_OWNER,
+        DENIED,
+        POLICY_ERROR
     }
 }

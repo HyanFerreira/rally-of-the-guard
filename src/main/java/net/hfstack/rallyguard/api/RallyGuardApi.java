@@ -9,7 +9,7 @@ import net.hfstack.rallyguard.service.DefaultGuardRecruitmentService;
  * Stable entry point for integrations with Rally of the Guard.
  */
 public final class RallyGuardApi {
-    public static final int API_VERSION = 1;
+    public static final int API_VERSION = 2;
 
     private static final GuardCommandService GUARD_COMMANDS = new DefaultGuardCommandService();
     private static final GuardRecruitmentService GUARD_RECRUITMENT = new DefaultGuardRecruitmentService();

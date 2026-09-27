@@ -13,6 +13,7 @@ import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class GuardCommandScreen extends Screen {
     private static final int WHITE = 0xFFFFFFFF;
@@ -20,7 +21,8 @@ public class GuardCommandScreen extends Screen {
     private static final int EMPTY_TEXT = 0xFFAAAAAA;
 
     public static record Entry(int entityId, String name, boolean patrolling, int status, boolean routeActive,
-                               int routeWaitSeconds, List<GuardListS2CPayload.Point> routePoints) {
+                               int routeWaitSeconds, List<GuardListS2CPayload.Point> routePoints,
+                               Optional<Text> rank, Optional<Text> settlement) {
     }
 
     private final List<Entry> all = new ArrayList<>();
@@ -65,7 +67,9 @@ public class GuardCommandScreen extends Screen {
                     e.status(),
                     e.routeActive(),
                     e.routeWaitSeconds(),
-                    e.routePoints()
+                    e.routePoints(),
+                    e.rank(),
+                    e.settlement()
             ));
         }
         MinecraftClient.getInstance().execute(() ->
@@ -152,7 +156,9 @@ public class GuardCommandScreen extends Screen {
                         status,
                         false,
                         curr.routeWaitSeconds(),
-                        curr.routePoints()
+                        curr.routePoints(),
+                        curr.rank(),
+                        curr.settlement()
                 ));
                 rebuildButtons();
             }).dimensions(btnX, btnY, BTN_PATROL_W, BTN_H).build();
@@ -207,7 +213,9 @@ public class GuardCommandScreen extends Screen {
                 status,
                 status == GuardOrderStatus.ROUTING,
                 curr.routeWaitSeconds(),
-                curr.routePoints()
+                curr.routePoints(),
+                curr.rank(),
+                curr.settlement()
         ));
         rebuildButtons();
     }
@@ -215,7 +223,10 @@ public class GuardCommandScreen extends Screen {
     public void updateRouteEntry(int idx, boolean active, int waitSeconds, List<GuardListS2CPayload.Point> points) {
         Entry curr = all.get(idx);
         int status = active ? GuardOrderStatus.ROUTING : GuardOrderStatus.WAITING;
-        all.set(idx, new Entry(curr.entityId(), curr.name(), active, status, active, waitSeconds, List.copyOf(points)));
+        all.set(idx, new Entry(
+                curr.entityId(), curr.name(), active, status, active, waitSeconds, List.copyOf(points),
+                curr.rank(), curr.settlement()
+        ));
     }
 
     public void updateRouteDraft(int idx, int waitSeconds, List<GuardListS2CPayload.Point> points) {
@@ -227,7 +238,9 @@ public class GuardCommandScreen extends Screen {
                 curr.status(),
                 curr.routeActive(),
                 waitSeconds,
-                List.copyOf(points)
+                List.copyOf(points),
+                curr.rank(),
+                curr.settlement()
         ));
     }
 
@@ -328,13 +341,24 @@ public class GuardCommandScreen extends Screen {
             int rowTop = y + ROW_TOP + (i - start) * ROW_HEIGHT;
             int rowMidY = rowTop + (ROW_HEIGHT / 2);
             int rowBot = rowTop + ROW_HEIGHT;
-            int textY = rowMidY - (fontH / 2);
+            Optional<Text> presentation = presentationText(e);
+            int textY = presentation.isPresent() ? rowTop + 3 : rowMidY - (fontH / 2);
 
             ctx.fill(x + 6, rowBot - 1, x + panelW - 6, rowBot, 0x22FFFFFF);
 
             int maxNameW = (x + COL_STATUS_X - 12) - (x + COL_NAME_X);
             String name = trimToWidth(e.name(), maxNameW);
             ctx.drawTextWithShadow(this.textRenderer, Text.literal(name), x + COL_NAME_X, textY, WHITE);
+            presentation.ifPresent(label -> {
+                String metadata = trimToWidth(label.getString(), maxNameW);
+                ctx.drawTextWithShadow(
+                        this.textRenderer,
+                        Text.literal(metadata).setStyle(label.getStyle()),
+                        x + COL_NAME_X,
+                        rowTop + 15,
+                        EMPTY_TEXT
+                );
+            });
 
             int maxStatusW = (actionsLeft - 12) - (x + COL_STATUS_X);
             String status = trimToWidth(statusText(e.status()).getString(), maxStatusW);
@@ -352,6 +376,15 @@ public class GuardCommandScreen extends Screen {
             case GuardOrderStatus.ROUTING -> Text.translatable("gui.rallyguard.command.status.routing");
             default -> Text.translatable("gui.rallyguard.command.status.idle");
         };
+    }
+
+    private static Optional<Text> presentationText(Entry entry) {
+        if (entry.rank().isPresent() && entry.settlement().isPresent()) {
+            return Optional.of(entry.rank().get().copy()
+                    .append(Text.literal(" · "))
+                    .append(entry.settlement().get()));
+        }
+        return entry.rank().or(() -> entry.settlement());
     }
 
     private void drawPageIndicator(DrawContext ctx, int x, int y) {

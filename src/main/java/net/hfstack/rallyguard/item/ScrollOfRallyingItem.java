@@ -2,6 +2,10 @@ package net.hfstack.rallyguard.item;
 
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.hfstack.rallyguard.component.ModComponents;
+import net.hfstack.rallyguard.api.eligibility.GuardEligibility;
+import net.hfstack.rallyguard.api.eligibility.GuardEligibilityContext;
+import net.hfstack.rallyguard.api.eligibility.GuardEligibilityDecision;
+import net.hfstack.rallyguard.api.eligibility.GuardEligibilityOperation;
 import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.effect.ModEffects;
@@ -122,7 +126,11 @@ public class ScrollOfRallyingItem extends Item {
 
             List<Entity> joiners = new ArrayList<>();
             for (Entity g : candidates) {
-                if (isPatrolling(g)) continue;
+                if (!(g instanceof GuardEntity guard) || isPatrolling(g)) continue;
+                GuardEligibilityDecision eligibility = GuardEligibility.evaluate(
+                        GuardEligibilityContext.of(sp, guard, GuardEligibilityOperation.JOIN_RALLY)
+                );
+                if (eligibility instanceof GuardEligibilityDecision.Deny) continue;
                 joiners.add(g);
             }
             joiners.sort(Comparator.comparingInt(Entity::getId));

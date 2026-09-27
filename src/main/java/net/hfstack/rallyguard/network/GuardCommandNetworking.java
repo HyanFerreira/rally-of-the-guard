@@ -5,6 +5,13 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.hfstack.rallyguard.api.RallyGuardApi;
 import net.hfstack.rallyguard.api.command.GuardCommandResult;
 import net.hfstack.rallyguard.api.command.GuardCommandService;
+import net.hfstack.rallyguard.api.eligibility.GuardEligibility;
+import net.hfstack.rallyguard.api.eligibility.GuardEligibilityContext;
+import net.hfstack.rallyguard.api.eligibility.GuardEligibilityDecision;
+import net.hfstack.rallyguard.api.eligibility.GuardEligibilityOperation;
+import net.hfstack.rallyguard.api.presentation.GuardPresentation;
+import net.hfstack.rallyguard.api.presentation.GuardPresentationContext;
+import net.hfstack.rallyguard.api.presentation.GuardPresentationRegistry;
 import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.network.payload.GuardActionC2SPayload;
@@ -80,8 +87,16 @@ public final class GuardCommandNetworking {
         List<GuardListS2CPayload.Entry> list = new ArrayList<>(guards.size());
         for (Entity g : guards) {
             if (!(g instanceof GuardEntity guard)) continue;
+            GuardEligibilityDecision visibility = GuardEligibility.evaluate(
+                    GuardEligibilityContext.of(player, guard, GuardEligibilityOperation.SHOW_IN_COMMAND_LIST)
+            );
+            if (visibility instanceof GuardEligibilityDecision.Deny) continue;
+
             boolean patrolling = guard.isPatrolling();
             GuardRouteState route = GuardRoutes.get(guard);
+            GuardPresentation presentation = GuardPresentationRegistry.resolve(
+                    new GuardPresentationContext(player, guard, world)
+            );
             list.add(new GuardListS2CPayload.Entry(
                     g.getId(),
                     g.getName().getString(),
@@ -91,7 +106,9 @@ public final class GuardCommandNetworking {
                     Math.max(0, route.waitTicks() / 20),
                     route.points().stream()
                             .map(p -> new GuardListS2CPayload.Point(p.getX(), p.getY(), p.getZ()))
-                            .toList()
+                            .toList(),
+                    presentation.rank(),
+                    presentation.settlement()
             ));
         }
 

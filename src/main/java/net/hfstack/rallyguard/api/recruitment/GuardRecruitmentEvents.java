@@ -4,6 +4,8 @@ import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 
 import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class GuardRecruitmentEvents {
     private GuardRecruitmentEvents() {
@@ -17,6 +19,7 @@ public final class GuardRecruitmentEvents {
             Before.class,
             listeners -> (context, initialOffer) -> {
                 RecruitmentOffer currentOffer = initialOffer;
+                List<RecruitmentTransaction> transactions = new ArrayList<>();
                 for (Before listener : listeners) {
                     RecruitmentDecision decision = Objects.requireNonNull(
                             listener.evaluate(context, currentOffer),
@@ -25,9 +28,11 @@ public final class GuardRecruitmentEvents {
                     if (decision instanceof RecruitmentDecision.Deny) {
                         return decision;
                     }
-                    currentOffer = ((RecruitmentDecision.Allow) decision).offer();
+                    RecruitmentDecision.Allow allowed = (RecruitmentDecision.Allow) decision;
+                    currentOffer = allowed.offer();
+                    transactions.addAll(allowed.transactions());
                 }
-                return RecruitmentDecision.allow(currentOffer);
+                return new RecruitmentDecision.Allow(currentOffer, transactions);
             }
     );
 

@@ -4,10 +4,13 @@ import net.hfstack.rallyguard.RallyOfTheGuard;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
 import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * S2C: servidor envia lista de guardas (id, nome, patrulhando).
@@ -17,7 +20,13 @@ public record GuardListS2CPayload(List<Entry> entries) implements CustomPayload 
     }
 
     public record Entry(int entityId, String name, boolean patrolling, int status, boolean routeActive,
-                        int routeWaitSeconds, List<Point> routePoints) {
+                        int routeWaitSeconds, List<Point> routePoints, Optional<Text> rank,
+                        Optional<Text> settlement) {
+        public Entry {
+            routePoints = List.copyOf(routePoints);
+            rank = rank == null ? Optional.empty() : rank;
+            settlement = settlement == null ? Optional.empty() : settlement;
+        }
     }
 
     public static final Id<GuardListS2CPayload> ID =
@@ -45,6 +54,8 @@ public record GuardListS2CPayload(List<Entry> entries) implements CustomPayload 
                             buf.writeInt(point.y());
                             buf.writeInt(point.z());
                         }
+                        TextCodecs.OPTIONAL_PACKET_CODEC.encode(buf, e.rank());
+                        TextCodecs.OPTIONAL_PACKET_CODEC.encode(buf, e.settlement());
                     }
                 }
 
@@ -64,7 +75,19 @@ public record GuardListS2CPayload(List<Entry> entries) implements CustomPayload 
                         for (int p = 0; p < pointCount; p++) {
                             routePoints.add(new Point(buf.readInt(), buf.readInt(), buf.readInt()));
                         }
-                        list.add(new Entry(id, name, patrolling, status, routeActive, routeWaitSeconds, routePoints));
+                        Optional<Text> rank = TextCodecs.OPTIONAL_PACKET_CODEC.decode(buf);
+                        Optional<Text> settlement = TextCodecs.OPTIONAL_PACKET_CODEC.decode(buf);
+                        list.add(new Entry(
+                                id,
+                                name,
+                                patrolling,
+                                status,
+                                routeActive,
+                                routeWaitSeconds,
+                                routePoints,
+                                rank,
+                                settlement
+                        ));
                     }
                     return new GuardListS2CPayload(list);
                 }

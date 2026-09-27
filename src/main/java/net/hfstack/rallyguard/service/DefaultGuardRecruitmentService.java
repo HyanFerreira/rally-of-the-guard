@@ -2,12 +2,17 @@ package net.hfstack.rallyguard.service;
 
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.hfstack.rallyguard.RallyOfTheGuard;
+import net.hfstack.rallyguard.api.eligibility.GuardEligibility;
+import net.hfstack.rallyguard.api.eligibility.GuardEligibilityContext;
+import net.hfstack.rallyguard.api.eligibility.GuardEligibilityDecision;
+import net.hfstack.rallyguard.api.eligibility.GuardEligibilityOperation;
 import net.hfstack.rallyguard.api.recruitment.GuardRecruitmentEvents;
 import net.hfstack.rallyguard.api.recruitment.GuardRecruitmentService;
 import net.hfstack.rallyguard.api.recruitment.RecruitmentContext;
 import net.hfstack.rallyguard.api.recruitment.RecruitmentDecision;
 import net.hfstack.rallyguard.api.recruitment.RecruitmentOffer;
 import net.hfstack.rallyguard.api.recruitment.RecruitmentResult;
+import net.hfstack.rallyguard.api.recruitment.RecruitmentTransaction;
 import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.minecraft.entity.player.PlayerInventory;
@@ -19,6 +24,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
 import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public final class DefaultGuardRecruitmentService implements GuardRecruitmentService {
     public static final double MAX_RECRUITMENT_DISTANCE = 8.0;
@@ -30,6 +38,13 @@ public final class DefaultGuardRecruitmentService implements GuardRecruitmentSer
         RecruitmentResult invalid = validate(player, guard);
         if (invalid != null) {
             return invalid;
+        }
+
+        GuardEligibilityDecision eligibility = GuardEligibility.evaluate(
+                GuardEligibilityContext.of(player, guard, GuardEligibilityOperation.RECRUIT)
+        );
+        if (eligibility instanceof GuardEligibilityDecision.Deny denied) {
+            return RecruitmentResult.failure(RecruitmentResult.Outcome.DENIED, denied.reason());
         }
 
         RecruitmentContext context = new RecruitmentContext(
@@ -56,7 +71,8 @@ public final class DefaultGuardRecruitmentService implements GuardRecruitmentSer
             return RecruitmentResult.failure(RecruitmentResult.Outcome.DENIED, denied.reason());
         }
 
-        RecruitmentOffer offer = ((RecruitmentDecision.Allow) decision).offer();
+        RecruitmentDecision.Allow allowed = (RecruitmentDecision.Allow) decision;
+        RecruitmentOffer offer = allowed.offer();
         if (!Registries.ITEM.containsId(offer.paymentItemId())) {
             return invalidOffer(offer);
         }
@@ -77,6 +93,28 @@ public final class DefaultGuardRecruitmentService implements GuardRecruitmentSer
             );
         }
 
+        List<RecruitmentTransaction> reservedTransactions = new ArrayList<>();
+        try {
+            for (RecruitmentTransaction transaction : allowed.transactions()) {
+                reservedTransactions.add(transaction);
+                Optional<Text> reservationIssue = transaction.reserve();
+                if (reservationIssue.isPresent()) {
+                    rollbackTransactions(reservedTransactions);
+                    return RecruitmentResult.failure(
+                            RecruitmentResult.Outcome.DENIED,
+                            reservationIssue.get()
+                    );
+                }
+            }
+        } catch (RuntimeException exception) {
+            rollbackTransactions(reservedTransactions);
+            RallyOfTheGuard.LOGGER.error("Recruitment transaction reservation failed for guard {}", guard.getUuid(), exception);
+            return RecruitmentResult.failure(
+                    RecruitmentResult.Outcome.POLICY_ERROR,
+                    Text.translatable("gui.rallyguard.hire.policy_error")
+            );
+        }
+
         removePayment(inventory, paymentItem, offer.cost());
         Text originalCustomName = guard.getCustomName();
         boolean originalCustomNameVisible = guard.isCustomNameVisible();
@@ -87,10 +125,28 @@ public final class DefaultGuardRecruitmentService implements GuardRecruitmentSer
             guard.setCustomName(originalCustomName);
             guard.setCustomNameVisible(originalCustomNameVisible);
             refundPayment(inventory, paymentItem, offer.cost());
+            rollbackTransactions(reservedTransactions);
             RallyOfTheGuard.LOGGER.error("Failed to assign guard {} to player {}", guard.getUuid(), player.getUuid(), exception);
             return RecruitmentResult.failure(
                     RecruitmentResult.Outcome.OWNERSHIP_ERROR,
                     Text.translatable("gui.rallyguard.hire.ownership_error")
+            );
+        }
+
+        try {
+            for (RecruitmentTransaction transaction : reservedTransactions) {
+                transaction.commit();
+            }
+        } catch (RuntimeException exception) {
+            GuardOwnership.clearOwner(guard);
+            guard.setCustomName(originalCustomName);
+            guard.setCustomNameVisible(originalCustomNameVisible);
+            refundPayment(inventory, paymentItem, offer.cost());
+            rollbackTransactions(reservedTransactions);
+            RallyOfTheGuard.LOGGER.error("Recruitment transaction commit failed for guard {}", guard.getUuid(), exception);
+            return RecruitmentResult.failure(
+                    RecruitmentResult.Outcome.POLICY_ERROR,
+                    Text.translatable("gui.rallyguard.hire.policy_error")
             );
         }
 
@@ -159,5 +215,15 @@ public final class DefaultGuardRecruitmentService implements GuardRecruitmentSer
             return;
         }
         inventory.offerOrDrop(new ItemStack(paymentItem, cost));
+    }
+
+    private static void rollbackTransactions(List<RecruitmentTransaction> transactions) {
+        for (int index = transactions.size() - 1; index >= 0; index--) {
+            try {
+                transactions.get(index).rollback();
+            } catch (RuntimeException exception) {
+                RallyOfTheGuard.LOGGER.error("Recruitment transaction rollback failed", exception);
+            }
+        }
     }
 }
