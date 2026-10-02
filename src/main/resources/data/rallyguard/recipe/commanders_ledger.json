@@ -7,15 +7,9 @@
     "   "
   ],
   "key": {
-    "X": {
-      "item": "minecraft:book"
-    },
-    "Y": {
-      "item": "rallyguard:scroll_of_rallying"
-    },
-    "Z": {
-      "item": "minecraft:emerald"
-    }
+    "X": "minecraft:book",
+    "Y": "rallyguard:scroll_of_rallying",
+    "Z": "minecraft:emerald"
   },
   "result": {
     "id": "rallyguard:commanders_ledger",

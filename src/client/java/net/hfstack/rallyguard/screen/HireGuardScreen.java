@@ -1,22 +1,22 @@
 package net.hfstack.rallyguard.screen;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.Text;
+import net.hfstack.rallyguard.config.RallyConfig;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.network.chat.Component;
 
 import java.util.List;
 
-public class HireGuardScreen extends HandledScreen<HireGuardScreenHandler> {
+public class HireGuardScreen extends AbstractContainerScreen<HireGuardScreenHandler> {
+    private static final int WHITE = 0xFFFFFFFF;
 
-    private ButtonWidget hireButton;
+    private Button hireButton;
 
-    public HireGuardScreen(HireGuardScreenHandler handler, PlayerInventory inv, Text title) {
-        super(handler, inv, title);
-        this.backgroundWidth = 320;
-        this.backgroundHeight = 110;
+    public HireGuardScreen(HireGuardScreenHandler handler, Inventory inv, Component title) {
+        super(handler, inv, title, 320, 110);
     }
 
     @Override
@@ -24,76 +24,71 @@ public class HireGuardScreen extends HandledScreen<HireGuardScreenHandler> {
         super.init();
 
         // esconde labels padrão
-        this.playerInventoryTitleX = Integer.MAX_VALUE / 2;
-        this.playerInventoryTitleY = -1000;
-        this.titleX = Integer.MAX_VALUE / 2;
+        this.inventoryLabelX = Integer.MAX_VALUE / 2;
+        this.inventoryLabelY = -1000;
+        this.titleLabelX = Integer.MAX_VALUE / 2;
 
-        int y = (this.height - this.backgroundHeight) / 2;
+        int y = (this.height - this.imageHeight) / 2;
 
         // Botão “Contratar” — envia o botão 0 para o SERVIDOR
-        this.hireButton = ButtonWidget.builder(
-                Text.translatable("gui.rallyguard.hire.button"),
+        this.hireButton = Button.builder(
+                Component.translatable("gui.rallyguard.hire.button"),
                 b -> {
-                    if (this.client != null && this.client.interactionManager != null) {
-                        this.client.interactionManager.clickButton(this.handler.syncId, 0);
+                    if (this.minecraft.gameMode != null) {
+                        this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, 0);
                     }
                 }
-        ).dimensions(this.width / 2 - 50, y + 66, 100, 20).build();
+        ).bounds(this.width / 2 - 50, y + 66, 100, 20).build();
 
-        this.addDrawableChild(this.hireButton);
+        this.addRenderableWidget(this.hireButton);
     }
 
     /**
      * NÃO chamamos renderBackground para não escurecer o mundo atrás.
      */
     @Override
-    public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
-        super.render(ctx, mouseX, mouseY, delta);
-        this.drawMouseoverTooltip(ctx, mouseX, mouseY);
-    }
-
-    /**
-     * Painel estilo vanilla simples (retângulo + borda) + texto com wrap/linhas múltiplas centralizadas.
-     */
-    @Override
-    protected void drawBackground(DrawContext ctx, float delta, int mouseX, int mouseY) {
-        int x = (this.width - this.backgroundWidth) / 2;
-        int y = (this.height - this.backgroundHeight) / 2;
+    public void extractBackground(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
+        int x = (this.width - this.imageWidth) / 2;
+        int y = (this.height - this.imageHeight) / 2;
 
         // Corpo do painel
         int bg = 0xF0101010; // leve translucidez, “vanilla vibe”
-        ctx.fill(x, y, x + this.backgroundWidth, y + this.backgroundHeight, bg);
+        ctx.fill(x, y, x + this.imageWidth, y + this.imageHeight, bg);
 
         // Borda
         int border = 0xFFFFFFFF;
-        ctx.fill(x, y, x + this.backgroundWidth, y + 1, border);                                       // topo
-        ctx.fill(x, y + this.backgroundHeight - 1, x + this.backgroundWidth, y + this.backgroundHeight, border); // base
-        ctx.fill(x, y, x + 1, y + this.backgroundHeight, border);                                      // esquerda
-        ctx.fill(x + this.backgroundWidth - 1, y, x + this.backgroundWidth, y + this.backgroundHeight, border);  // direita
+        ctx.fill(x, y, x + this.imageWidth, y + 1, border);                                       // topo
+        ctx.fill(x, y + this.imageHeight - 1, x + this.imageWidth, y + this.imageHeight, border); // base
+        ctx.fill(x, y, x + 1, y + this.imageHeight, border);                                      // esquerda
+        ctx.fill(x + this.imageWidth - 1, y, x + this.imageWidth, y + this.imageHeight, border);  // direita
 
         // Título central
-        ctx.drawCenteredTextWithShadow(this.textRenderer,
-                Text.translatable("gui.rallyguard.hire.title"),
-                this.width / 2, y + 10, 0xFFFFFF);
+        ctx.centeredText(this.font,
+                Component.translatable("gui.rallyguard.hire.title"),
+                this.width / 2, y + 10, WHITE);
 
         // Mensagem com suporte a \n e wrap
-        Text body = Text.translatable("gui.rallyguard.hire.body");
+        Component body = Component.translatable(
+                "gui.rallyguard.hire.body",
+                RallyConfig.hireCost(),
+                RallyConfig.hireItem().getName(RallyConfig.hireItem().getDefaultInstance())
+        );
 
-        int maxTextWidth = this.backgroundWidth - 24; // margem interna
+        int maxComponentWidth = this.imageWidth - 24; // margem interna
         // wrap automático (respeita quebras explícitas \n também)
-        List<OrderedText> lines = this.textRenderer.wrapLines(body, maxTextWidth);
+        List<FormattedCharSequence> lines = this.font.split(body, maxComponentWidth);
 
         int lineY = y + 36;
-        for (OrderedText ot : lines) {
-            int w = this.textRenderer.getWidth(ot);
+        for (FormattedCharSequence ot : lines) {
+            int w = this.font.width(ot);
             int lineX = this.width / 2 - (w / 2); // centraliza cada linha
-            ctx.drawTextWithShadow(this.textRenderer, ot, lineX, lineY, 0xFFFFFF);
-            lineY += this.textRenderer.fontHeight + 2;
+            ctx.text(this.font, ot, lineX, lineY, WHITE);
+            lineY += this.font.lineHeight + 2;
         }
     }
 
     @Override
-    protected void drawForeground(DrawContext ctx, int mouseX, int mouseY) {
+    protected void extractLabels(GuiGraphicsExtractor ctx, int mouseX, int mouseY) {
         // intencionalmente vazio
     }
 }

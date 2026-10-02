@@ -2,7 +2,7 @@ package net.hfstack.rallyguard.screen;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.screen.ingame.HandledScreens;
+import net.minecraft.client.gui.screens.MenuScreens;
 
 @Environment(EnvType.CLIENT)
 public final class ModScreensClient {
@@ -10,6 +10,6 @@ public final class ModScreensClient {
     }
 
     public static void register() {
-        HandledScreens.register(ModScreenHandlers.HIRE_HANDLER, HireGuardScreen::new);
+        MenuScreens.register(ModScreenHandlers.HIRE_HANDLER, HireGuardScreen::new);
     }
 }

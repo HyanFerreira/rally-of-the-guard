@@ -1,85 +1,135 @@
 # Rally of the Guard
 
-**Rally of the Guard** is a lightweight tactical expansion for
+**Rally of the Guard** é uma expansão tática leve para o
 [Guard Villagers (Fabric/Quilt)](https://www.curseforge.com/minecraft/mc-mods/guard-villagers-fabric).
-It lets you hire guards, command them from anywhere, send them on patrol, and rally your squad on demand
-without needing the Hero of the Village effect.
 
-Built for players who want their hired guards to feel like a real squad instead of passive village decoration.
-
----
-
-## What's New in 1.2.5
-
-### Minecraft 1.21.11 Support
-
-This release ports Rally of the Guard to **Minecraft 1.21.11** for Fabric.
-
-### More Reliable Rally Behavior
-
-The **Scroll of Rallying** now does more than simply teleport guards and enable follow mode.
-When a rally starts, each summoned guard has its current combat/navigation task cleared, movement reset,
-AI re-enabled, and follow mode refreshed so they react immediately after being called.
-
-This should greatly reduce cases where a guard arrives near the player but keeps wandering until the player
-gets close or opens the guard inventory.
-
-### Updated Compatibility
-
-Updated for the current 1.21.11 Fabric toolchain and Guard Villagers dependency.
+O objetivo do mod é transformar guardas contratados em um esquadrão comandável, sem descaracterizar a IA original do
+Guard Villagers. O jogador pode contratar guardas, convocar unidades, definir posturas, criar patrulhas fixas e montar
+rotas de patrulha em loop usando o Livro de Comando.
 
 ---
 
-## Core Features
+## Versão Atual
 
-### Hire Guards
+### 1.3.1
 
-- Right-click an unowned guard to open the hire screen.
-- Pay **3 emeralds** to recruit the guard.
-- Hired guards are linked to your player UUID.
-- Newly hired guards receive a gold-colored display name and introduce themselves in chat.
-- Hired guards can follow you without requiring Hero of the Village.
+Principais mudanças:
 
-### Scroll of Rallying
-
-Use the **Scroll of Rallying** to gather nearby hired guards into formation.
-
-- **Shift + Right-click** to toggle Rally.
-- When enabled, nearby non-patrolling hired guards are teleported near you and set to follow.
-- When disabled, rallied guards stop following.
-- Patrolling guards are not pulled away from their posts.
-- While rallied, your hired guards are protected from your own attacks.
-
-### Commander's Ledger
-
-The **Commander's Ledger** opens a portable guard command panel with no keybind required.
-
-From the panel, you can:
-
-- View your hired guards.
-- Summon a selected guard to your position in the same dimension.
-- Set a guard to patrol your current position.
-- Stop an active patrol.
-
-### Patrol Orders
-
-Patrol commands store the guard's patrol position directly, allowing the guard to walk to the ordered location
-and hold that post until told otherwise.
-
-### Friendly Fire and Neutrality
-
-- Your rallied guards are protected from your melee and projectile damage.
-- If you attack a guard you do not own, your hired guards will stay neutral and will not help you fight other guards.
+- Adicionadas posturas no Livro de Comando: seguir, aguardar, patrulhar e rota.
+- Adicionada tela de rota de patrulha.
+- Rotas suportam limite configurável de pontos.
+- Adicionada configuração via MidnightLib, acessível pelo Mod Menu/Configured quando disponível.
+- Cada ponto usa a posição atual do jogador como referência.
+- Guardas em rota aguardam um tempo configurável antes de seguir para o próximo ponto.
+- Rotas usam o comportamento nativo de patrulha do Guard Villagers.
+- Dados da rota ficam salvos no próprio guarda e sobrevivem ao reload do mundo.
+- O Pergaminho do Rali respeita guardas em patrulha ou aguardando.
+- O Rali usa formação Escolta para posicionar guardas em duas colunas atrás/laterais do jogador.
+- Adicionada tela de Ordens de Combate para atacar o alvo mirado com todos, infantaria ou arqueiros.
 
 ---
 
-## Items
+## Funcionalidades
 
-### Scroll of Rallying
+### Contratação de Guardas
 
-Used to start or end a rally.
+- Clique com o botão direito em um guarda sem dono para abrir a tela de contratação.
+- O custo padrão é de **3 esmeraldas**, mas custo e item podem ser alterados na configuração.
+- Guardas contratados ficam vinculados ao UUID do jogador.
+- Guardas contratados recebem nome dourado e mensagem de apresentação.
+- Guardas contratados podem seguir o jogador sem depender do efeito Hero of the Village.
 
-Recipe:
+### Livro de Comando
+
+O **Livro de Comando** abre um painel portátil para gerenciar guardas contratados.
+
+Pelo painel, o jogador pode:
+
+- Ver guardas contratados carregados no mundo atual.
+- Ver o estado atual de cada guarda.
+- Convocar um guarda para perto do jogador.
+- Mandar um guarda seguir.
+- Mandar um guarda aguardar.
+- Definir uma patrulha fixa na posição atual.
+- Parar uma patrulha.
+- Criar, iniciar, pausar, limpar e editar rotas de patrulha.
+
+Estados exibidos:
+
+- `Ocioso`
+- `Seguindo`
+- `Aguardando`
+- `Em patrulha`
+- `Em rota`
+
+### Rotas de Patrulha
+
+Rotas de patrulha permitem que um guarda percorra vários pontos em loop.
+
+Regras atuais:
+
+- Máximo configurável de pontos por rota.
+- Mínimo de 2 pontos para iniciar.
+- Cada ponto pode ser definido usando a posição atual do jogador.
+- O tempo de espera por ponto pode ser ajustado na tela da rota.
+- Ao chegar em um ponto, o guarda aguarda o tempo configurado e depois recebe o próximo ponto como `patrolPos`.
+- A rota continua em loop até ser pausada ou limpa.
+- Outras ordens, como seguir ou aguardar, pausam a rota sem apagar os pontos.
+- Somente o botão `Limpar` apaga os pontos da rota.
+
+### Pergaminho do Rali
+
+O **Pergaminho do Rali** convoca guardas contratados próximos para perto do jogador.
+
+- `Shift + botão direito` ativa ou encerra o rali.
+- Guardas convocados são posicionados em formação Escolta e passam a seguir.
+- Guardas em patrulha não são puxados.
+- Guardas aguardando não são puxados.
+- Enquanto o rali está ativo, guardas tentam manter seus slots de formação quando não estão em combate.
+- Durante o rali, guardas contratados ficam protegidos contra dano causado pelo próprio comandante.
+
+### Ordens de Combate
+
+O painel de combate permite mandar guardas em rali atacarem o alvo mirado pelo jogador.
+
+Atalho padrão:
+
+- `R`: abre a tela de Ordens de Combate.
+- A tecla pode ser alterada na tela de controles do Minecraft.
+
+Modos disponíveis:
+
+- `Todos`
+- `Infantaria`
+- `Arqueiros`
+
+Regras atuais:
+
+- A ordem considera guardas contratados que estão seguindo o jogador.
+- Guardas em patrulha, aguardando ou em rota não recebem a ordem.
+- Arqueiros são identificados por `Bow` ou `Crossbow` na mão principal ou secundária.
+- Infantaria corresponde aos guardas sem arco ou besta equipados.
+
+### Patrulha Fixa
+
+A patrulha fixa usa o comportamento nativo do Guard Villagers:
+
+- O jogador define a posição atual como ponto de patrulha.
+- O guarda caminha até o ponto e guarda aquela posição.
+- Se encontrar mobs hostis, a IA normal do guarda continua funcionando.
+
+### Friendly Fire e Neutralidade
+
+- Guardas em rali ficam protegidos contra ataques do jogador dono.
+- Ao atacar um guarda que não pertence ao jogador, os guardas contratados do jogador permanecem neutros.
+
+---
+
+## Itens
+
+### Pergaminho do Rali
+
+Receita:
 
 ```text
 Spruce Slab | Spruce Planks | Spruce Slab
@@ -87,11 +137,9 @@ Black Wool  | Iron Sword    | Black Wool
 Empty       | Spruce Slab   | Empty
 ```
 
-### Commander's Ledger
+### Livro de Comando
 
-Used to open the guard command panel.
-
-Recipe:
+Receita:
 
 ```text
 Book    | Scroll of Rallying | Empty
@@ -101,55 +149,68 @@ Empty   | Empty              | Empty
 
 ---
 
-## Requirements
+## Requisitos
 
 - **Minecraft:** 1.21.11
-- **Mod loader:** Fabric
-- **Java:** 21 or newer
+- **Loader:** Fabric
+- **Java:** 21 ou superior
 - **Fabric API**
 - **Guard Villagers (Fabric/Quilt)**
 
 ---
 
-## Notes and Limits
+## Observações Técnicas
 
-- Guard commands work only within the same dimension.
-- Guards in unloaded chunks may not pathfind until their chunk is loaded.
-- If a guard is too far away, summon them first, then assign a patrol position.
-- Rally only affects hired guards that are not currently patrolling.
-
----
-
-## Previous Highlights
-
-### Version 1.2.3
-
-- Added the **Commander's Ledger**.
-- Added the paginated guard command panel.
-- Added summon and patrol controls for hired guards.
-- Improved hire feedback messages.
-- Added gold display names for hired guards.
-
-### Version 1.2.0
-
-- Added rally-only friendly fire protection.
-- Added selective rally behavior so patrolling guards stay at their posts.
-- Improved rally dismiss behavior.
-- Added neutrality logic when attacking non-owned guards.
-- Added automatic Guard Villagers config patch for `followHero=false`.
+- Comandos funcionam apenas no mundo/dimensão onde o guarda está carregado.
+- Guardas em chunks descarregados não processam rota até serem carregados novamente.
+- Rotas são salvas no guarda usando tags persistentes.
+- O sistema de rota atual não substitui a IA do Guard Villagers; ele apenas atualiza dinamicamente o `patrolPos`.
+- A formação do rali não usa `patrolling`; ela usa slots relativos ao jogador e navegação.
+- Ordens de combate atuam sobre guardas em rali/seguindo no mundo atual.
+- A proteção contra friendly fire se aplica ao contexto de rali.
 
 ---
 
-## License
+## Configuração
 
-This mod is available under the **CC0-1.0 license**.
-You may use, modify, distribute, and build on it freely.
+O mod registra suas opções usando MidnightLib. Com **Mod Menu** e uma tela de configuração compatível instalada, o botão
+de configuração aparece na lista de mods e abre uma interface para editar as opções.
+
+As opções também ficam salvas no arquivo de configuração gerado pela MidnightLib para o mod.
+
+Principais opções:
+
+- `economy.hireCost`: custo para contratar um guarda.
+- `economy.hireItem`: item usado na contratação, em formato de ID, por exemplo `minecraft:emerald`.
+- `rally.radius`: raio usado para buscar guardas ao iniciar o rali.
+- `rally.maxGuards`: limite de guardas chamados pelo rali.
+- `rally.teleportEnabled`: permite ou bloqueia teleportes do rali/formação.
+- `rally.teleportMinDistance`: distância mínima para teleportar um guarda ao iniciar o rali.
+- `rally.formationEnabled`: liga ou desliga a formação Escolta.
+- `rally.protectRalliedGuardsFromOwner`: impede o comandante de acertar seus guardas durante o rali.
+- `formation.columnSpacing`: distância entre as duas colunas da formação.
+- `formation.rowSpacing`: distância entre fileiras.
+- `formation.returnSpeed`: velocidade usada para voltar ao slot.
+- `formation.teleportDistance`: distância em que a formação teleporta um guarda muito longe.
+- `combat.targetRange`: alcance máximo da mira para ordens de ataque.
+- `combat.guardSearchRadius`: raio dos guardas que recebem ordens de combate.
+- `combat.allowPassiveTargets`: permite ordenar ataque contra mobs passivos.
+- `combat.allowPlayerTargets`: permite ordenar ataque contra jogadores.
+- `route.maxPoints`: máximo de pontos por rota, limitado a 10 pela interface atual.
+- `route.defaultWaitSeconds`: espera padrão em cada ponto.
+- `route.moveSpeed`: velocidade ao mover entre pontos.
+- `route.teleportIfStuck`: permite teleportar guardas de rota que ficaram presos/longe.
+- `route.teleportDistance`: distância mínima para considerar teleporte de rota.
 
 ---
 
-## Feedback and Contributions
+## Licença
 
-Found a bug or have an idea?
-Visit the GitHub repository:
+Este mod está disponível sob a licença **CC0-1.0**.
 
-https://github.com/HyanFerreira/rally-of-the-guard
+---
+
+## Links
+
+- GitHub: https://github.com/HyanFerreira/rally-of-the-guard
+- Perfil do autor: https://github.com/HyanFerreira

@@ -1,31 +1,43 @@
 package net.hfstack.rallyguard.item;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.hfstack.rallyguard.component.ModComponents;
+import net.hfstack.rallyguard.api.eligibility.GuardEligibility;
+import net.hfstack.rallyguard.api.eligibility.GuardEligibilityContext;
+import net.hfstack.rallyguard.api.eligibility.GuardEligibilityDecision;
+import net.hfstack.rallyguard.api.eligibility.GuardEligibilityOperation;
+import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.effect.ModEffects;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.Registries;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.world.World;
+import net.hfstack.rallyguard.event.RallyFormationTicker;
+import net.hfstack.rallyguard.order.GuardOrders;
+import net.hfstack.rallyguard.order.RallyFormationSlots;
+import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class ScrollOfRallyingItem extends Item {
 
-    public ScrollOfRallyingItem(Settings settings) {
+    public ScrollOfRallyingItem(Properties settings) {
         super(settings);
     }
 
@@ -37,96 +49,114 @@ public class ScrollOfRallyingItem extends Item {
         stack.set(ModComponents.ACTIVE, v);
     }
 
-    private static NbtCompound read(Entity e) {
-        NbtCompound n = new NbtCompound();
-        e.writeNbt(n);
-        return n;
+    private static boolean isPatrolling(Entity e) {
+        return e instanceof GuardEntity guard && guard.isPatrolling();
     }
 
-    private static boolean isPatrolling(Entity e) {
-        return read(e).getBoolean("Patrolling");
+    private static void setFollowing(Entity e, boolean following) {
+        if (e instanceof GuardEntity guard) {
+            guard.setFollowing(following);
+            if (!following) {
+                GuardOrders.setRallied(guard, false);
+            }
+        }
+    }
+
+    private static void rallyGuardToPlayer(Entity e, Player user, double x, double y, double z) {
+        if (!(e instanceof GuardEntity guard)) return;
+
+        guard.setTarget(null);
+        guard.setAggressive(false);
+        GuardOrders.setWaiting(guard, false);
+        GuardOrders.setRallied(guard, true);
+        guard.getNavigation().stop();
+        guard.setDeltaMovement(0.0, 0.0, 0.0);
+
+        double teleportMinDistance = RallyConfig.rallyTeleportMinDistance();
+        if (RallyConfig.rallyTeleportEnabled()
+                && guard.distanceToSqr(user) >= teleportMinDistance * teleportMinDistance) {
+            guard.snapTo(x, y, z, guard.getYRot(), guard.getXRot());
+        }
+        guard.setFollowing(!RallyConfig.rallyFormationEnabled());
+        guard.setNoAi(false);
+        guard.lookAt(user, 30.0F, 30.0F);
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-        ItemStack stack = user.getStackInHand(hand);
-        if (world.isClient) return TypedActionResult.success(stack, true);
-        if (!user.isSneaking()) return TypedActionResult.pass(stack);
-        if (!(user instanceof ServerPlayerEntity sp)) return TypedActionResult.pass(stack);
+    public InteractionResult use(Level world, Player user, InteractionHand hand) {
+        ItemStack stack = user.getItemInHand(hand);
+        if (world.isClientSide()) return InteractionResult.SUCCESS;
+        if (!user.isShiftKeyDown()) return InteractionResult.PASS;
+        if (!(user instanceof ServerPlayer sp)) return InteractionResult.PASS;
 
-        boolean rallyOn = user.hasStatusEffect(ModEffects.RALLY_COMMANDER);
-        EntityType<?> guardType = Registries.ENTITY_TYPE.get(Identifier.of("guardvillagers", "guard"));
-        ServerWorld sw = sp.getServerWorld();
+        boolean rallyOn = user.hasEffect(ModEffects.RALLY_COMMANDER);
+        EntityType<?> guardType = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.fromNamespaceAndPath("guardvillagers", "guard"));
+        ServerLevel sw = sp.level();
 
         if (rallyOn) {
-            // === DESATIVAR RALI === (estilo antigo: aplica a TODOS os seus guardas no raio)
-            user.removeStatusEffect(ModEffects.RALLY_COMMANDER);
+            user.removeEffect(ModEffects.RALLY_COMMANDER);
+            RallyFormationTicker.stopRally(sp);
             setActive(stack, false);
-            user.sendMessage(Text.translatable("alert.rallyguard.scroll_of_rallying.strength_lost")
-                    .styled(s -> s.withColor(0xFF0000)), false);
+            user.sendSystemMessage(Component.translatable("alert.rallyguard.scroll_of_rallying.strength_lost")
+                    .withStyle(s -> s.withColor(0xFF0000)));
 
-            List<? extends Entity> myGuards = sw.getEntitiesByType(
+            List<? extends Entity> myGuards = sw.getEntities(
                     guardType,
-                    e -> GuardOwnership.isOwnedBy(e, user.getUuid()) && e.squaredDistanceTo(user) <= 100 * 100
+                    e -> GuardOwnership.isOwnedBy(e, user.getUUID())
+                            && e.distanceToSqr(user) <= RallyConfig.combatGuardSearchRadius() * RallyConfig.combatGuardSearchRadius()
             );
 
             for (Entity g : myGuards) {
-                NbtCompound nbt = new NbtCompound();
-                g.writeNbt(nbt);
-                nbt.putBoolean("rallyguard:in_rally", false);
-                nbt.putBoolean("Following", false); // <- só boolean, como no seu código antigo
-                g.readNbt(nbt);
+                setFollowing(g, false);
+                GuardOrders.setRallied(g, false);
             }
-
         } else {
-            // === ATIVAR RALI === (apenas guardas seus que NÃO estão patrulhando)
-            user.addStatusEffect(new StatusEffectInstance(
-                    ModEffects.RALLY_COMMANDER, Integer.MAX_VALUE, 0, false, false, true));
+            user.addEffect(new MobEffectInstance(
+                    ModEffects.RALLY_COMMANDER, RallyConfig.rallyEffectTimerSeconds() * 20, 0, false, false, true));
+            RallyFormationTicker.startRally(sp);
             setActive(stack, true);
-            user.sendMessage(Text.translatable("alert.rallyguard.scroll_of_rallying.strength_gained")
-                    .styled(s -> s.withColor(0x00FF00)), false);
+            user.sendSystemMessage(Component.translatable("alert.rallyguard.scroll_of_rallying.strength_gained", RallyConfig.rallyRadius())
+                    .withStyle(s -> s.withColor(0x00FF00)));
 
-            List<? extends Entity> candidates = sw.getEntitiesByType(
+            List<? extends Entity> candidates = sw.getEntities(
                     guardType,
-                    e -> GuardOwnership.isOwnedBy(e, user.getUuid()) && e.squaredDistanceTo(user) <= 100 * 100
+                    e -> GuardOwnership.isOwnedBy(e, user.getUUID())
+                            && e.distanceToSqr(user) <= RallyConfig.rallyRadius() * RallyConfig.rallyRadius()
             );
 
             List<Entity> joiners = new ArrayList<>();
             for (Entity g : candidates) {
-                if (isPatrolling(g)) continue; // não puxa sentinelas
+                if (!(g instanceof GuardEntity guard) || isPatrolling(g)) continue;
+                GuardEligibilityDecision eligibility = GuardEligibility.evaluate(
+                        GuardEligibilityContext.of(sp, guard, GuardEligibilityOperation.JOIN_RALLY)
+                );
+                if (eligibility instanceof GuardEligibilityDecision.Deny) continue;
                 joiners.add(g);
             }
+            joiners.sort(Comparator.comparingInt(Entity::getId));
 
-            int total = joiners.size();
-            int i = 0;
-            for (Entity g : joiners) {
-                double angle = (Math.PI / (total + 1)) * (++i);
-                double radius = 3.5;
-                double gx = user.getX() + Math.cos(angle) * radius;
-                double gz = user.getZ() + Math.sin(angle) * radius;
+            int total = Math.min(joiners.size(), RallyConfig.rallyMaxGuards());
+            for (int i = 0; i < total; i++) {
+                Entity g = joiners.get(i);
+                Vec3 slot = RallyFormationSlots.safeEscortSlot(sw, user, i, user.getYRot(), true);
 
-                g.refreshPositionAndAngles(gx, user.getY(), gz, g.getYaw(), g.getPitch());
-
-                NbtCompound nbt = new NbtCompound();
-                g.writeNbt(nbt);
-                nbt.putBoolean("rallyguard:in_rally", true);
-                nbt.putBoolean("Following", true); // <- só boolean, como no seu código antigo
-                g.readNbt(nbt);
+                rallyGuardToPlayer(g, user, slot.x, slot.y, slot.z);
             }
         }
 
-        user.getItemCooldownManager().set(this, 60);
-        return TypedActionResult.success(stack, false);
+        user.getCooldowns().addCooldown(stack, 60);
+        return InteractionResult.SUCCESS_SERVER;
     }
 
     @Override
-    public boolean hasGlint(ItemStack stack) {
+    public boolean isFoil(ItemStack stack) {
         return isActive(stack);
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, Item.TooltipContext ctx, java.util.List<Text> tip, TooltipType type) {
-        tip.add(Text.translatable("tooltip.rallyguard.scroll_of_rallying.tooltip_desc"));
-        super.appendTooltip(stack, ctx, tip, type);
+    public void appendHoverText(ItemStack stack, Item.TooltipContext ctx, TooltipDisplay displayComponent,
+                              Consumer<Component> textConsumer, TooltipFlag type) {
+        textConsumer.accept(Component.translatable("tooltip.rallyguard.scroll_of_rallying.tooltip_desc"));
+        super.appendHoverText(stack, ctx, displayComponent, textConsumer, type);
     }
 }
