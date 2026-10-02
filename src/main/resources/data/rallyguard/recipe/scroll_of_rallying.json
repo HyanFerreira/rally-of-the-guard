@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "_O_",
+    "YIY",
+    " _ "
+  ],
+  "key": {
+    "_": "minecraft:spruce_slab",
+    "O": "minecraft:spruce_planks",
+    "Y": "minecraft:black_wool",
+    "I": "minecraft:iron_sword"
+  },
+  "result": {
+    "id": "rallyguard:scroll_of_rallying",
+    "count": 1
+  }
+}

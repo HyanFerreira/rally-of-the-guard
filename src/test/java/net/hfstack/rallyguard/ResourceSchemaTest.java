@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -35,10 +36,16 @@ class ResourceSchemaTest {
 
     private static void assertRecipeResult(String recipeName, String expectedItemId) throws IOException {
         JsonObject recipe = readJson(RESOURCES.resolve(
-                "data/rallyguard/recipes/" + recipeName + ".json"
+                "data/rallyguard/recipe/" + recipeName + ".json"
         ));
 
+        assertEquals("minecraft:crafting_shaped", recipe.get("type").getAsString());
+        assertEquals("equipment", recipe.get("category").getAsString());
         assertEquals(expectedItemId, recipe.getAsJsonObject("result").get("id").getAsString());
+        for (Map.Entry<String, com.google.gson.JsonElement> ingredient : recipe.getAsJsonObject("key").entrySet()) {
+            assertTrue(ingredient.getValue().isJsonPrimitive(),
+                    () -> "Ingredient " + ingredient.getKey() + " must use the 26.1 string syntax");
+        }
     }
 
     private static void assertItemResources(String itemName, String expectedModelId) throws IOException {

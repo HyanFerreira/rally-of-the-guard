@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "XY ",
+    "Z  ",
+    "   "
+  ],
+  "key": {
+    "X": "minecraft:book",
+    "Y": "rallyguard:scroll_of_rallying",
+    "Z": "minecraft:emerald"
+  },
+  "result": {
+    "id": "rallyguard:commanders_ledger",
+    "count": 1
+  }
+}
