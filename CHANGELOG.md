@@ -1,6 +1,6 @@
 # Changelog
 
-## Recipe visibility hotfix - 2026-10-02
+## 1.3.1 - 2026-10-02
 
 - Fixed the Commander's Ledger and Scroll of Rallying recipes not appearing in JEI, JEB, or other recipe viewers.
 - Replaced the invalid crafting category with Minecraft's supported `equipment` category.
