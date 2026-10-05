@@ -3,6 +3,9 @@ package net.hfstack.rallyguard.event;
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.hfstack.rallyguard.config.RallyConfig;
+import net.hfstack.rallyguard.combat.GuardCombatState;
+import net.hfstack.rallyguard.combat.ProtectedAllyPolicy;
+import net.hfstack.rallyguard.combat.RallyCombatPolicy;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.effect.ModEffects;
 import net.hfstack.rallyguard.order.GuardOrders;
@@ -57,7 +60,6 @@ public final class RallyFormationTicker {
         for (ServerPlayer player : world.players()) {
             if (!player.hasEffect(ModEffects.RALLY_COMMANDER)) continue;
             refreshRallyCommanderEffect(player);
-            if (!RallyConfig.rallyFormationEnabled()) continue;
             tickPlayerFormation(world, player);
         }
     }
@@ -84,7 +86,25 @@ public final class RallyFormationTicker {
 
         for (int i = 0; i < guards.size(); i++) {
             GuardEntity guard = guards.get(i);
-            if (isBusyFighting(guard)) continue;
+            LivingEntity target = guard.getTarget();
+            boolean hasLiveTarget = target != null && target.isAlive();
+            boolean protectedTarget = hasLiveTarget
+                    && ProtectedAllyPolicy.isProtectedAlly(player.getUUID(), target);
+            RallyCombatPolicy.Decision combatDecision = RallyCombatPolicy.decide(
+                    hasLiveTarget,
+                    protectedTarget,
+                    RallyConfig.rallyRetreatEnabled(),
+                    guard.distanceToSqr(player),
+                    RallyConfig.rallyRetreatDistance()
+            );
+            if (combatDecision == RallyCombatPolicy.Decision.CONTINUE_COMBAT) continue;
+
+            GuardCombatState.disengage(guard);
+            if (!RallyConfig.rallyFormationEnabled()) {
+                guard.setPatrolling(false);
+                guard.setFollowing(true);
+                continue;
+            }
 
             Vec3 slot = RallyFormationSlots.safeEscortSlot(world, player, i, anchor.yaw(), anchor.inFront());
             double distance = guard.distanceToSqr(slot.x, slot.y, slot.z);
@@ -111,18 +131,6 @@ public final class RallyFormationTicker {
                 guard.setDeltaMovement(0.0, guard.getDeltaMovement().y, 0.0);
             }
         }
-    }
-
-    private static boolean isBusyFighting(GuardEntity guard) {
-        LivingEntity target = guard.getTarget();
-        if (target != null && target.isAlive()) {
-            return true;
-        }
-
-        guard.setTarget(null);
-        guard.setAggressive(false);
-        guard.stopUsingItem();
-        return false;
     }
 
     private static void holdSlot(GuardEntity guard, ServerPlayer player) {
@@ -166,7 +174,6 @@ public final class RallyFormationTicker {
                         && !guard.isPatrolling()
                         && !GuardOrders.isWaiting(guard)
                         && !GuardRoutes.get(guard).active()
-                        && entity.distanceToSqr(player) <= RallyConfig.combatGuardSearchRadius() * RallyConfig.combatGuardSearchRadius()
         );
 
         List<GuardEntity> guards = new ArrayList<>(entities.size());

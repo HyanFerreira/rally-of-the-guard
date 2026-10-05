@@ -38,6 +38,12 @@ public final class RallyConfig extends MidnightConfig {
     @Entry(category = "rally")
     public static boolean rallyProtectRalliedGuardsFromOwner = true;
 
+    @Entry(category = "rally")
+    public static boolean rallyRetreatEnabled = true;
+
+    @Entry(category = "rally", min = 1.0, max = 512.0)
+    public static double rallyRetreatDistance = 24.0;
+
     @Entry(category = "formation", min = 0.5, max = 8.0)
     public static double formationColumnSpacing = 1.35;
 
@@ -123,6 +129,14 @@ public final class RallyConfig extends MidnightConfig {
 
     public static boolean rallyProtectRalliedGuardsFromOwner() {
         return rallyProtectRalliedGuardsFromOwner;
+    }
+
+    public static boolean rallyRetreatEnabled() {
+        return rallyRetreatEnabled;
+    }
+
+    public static double rallyRetreatDistance() {
+        return clamp(rallyRetreatDistance, 1.0, 512.0);
     }
 
     public static double formationColumnSpacing() {
