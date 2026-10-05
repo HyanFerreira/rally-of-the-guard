@@ -33,19 +33,7 @@ A partir daqui, a evolução do mod deve priorizar duas frentes:
 
 Esta será a **próxima grande atualização do Rally of the Guard** e terá prioridade sobre as demais expansões de gameplay.
 
-A proposta é fazer com que cada guarda deixe de ser apenas mais uma entidade idêntica às outras.
-
-Cada guarda passará a possuir um perfil persistente próprio, com:
-
-- nível;
-- experiência;
-- patente;
-- atributos individuais;
-- qualidade natural;
-- estatísticas de combate;
-- valor de contratação;
-- possível função especial;
-- histórico de progressão.
+A proposta é fazer com que cada guarda deixe de ser apenas mais uma entidade idêntica às outras. Cada guarda passará a possuir um perfil persistente próprio, com nível, experiência, patente, atributos naturais, qualidade natural, progressão de atributos, estatísticas de combate, valor de contratação, possível função especial e histórico de progressão.
 
 A intenção é criar apego aos guardas e transformar contratação, exploração e combate em sistemas de progressão de longo prazo.
 
@@ -60,7 +48,7 @@ Exemplo conceitual:
 ```text
 Thomas
 Level 4
-Guard
+Guardsman
 
 Health: 22
 Attack: 10.8
@@ -83,8 +71,6 @@ Esse perfil deverá ser salvo persistentemente no próprio guarda ou em uma estr
 - evitar substituir a IA original do Guard Villagers.
 
 ### Inicialização
-
-Conceitualmente:
 
 ```text
 Guard Villager carregado
@@ -111,8 +97,10 @@ rally:
     naturalQuality: 0.72,
     healthRoll: 0.08,
     attackRoll: -0.02,
+    armorRoll: 1,
     speedRoll: 0.01,
-    rank: "GUARD",
+    rank: "GUARDSMAN",
+    captain: false,
     kills: 14,
     assists: 9
 }
@@ -122,29 +110,13 @@ A estrutura final ainda será definida durante a implementação.
 
 ---
 
-# 2. Níveis
+## 2. Níveis
 
-Os guardas terão progressão por níveis.
+Os guardas terão progressão de **Level 1 até Level 10**.
 
-A ideia inicial é utilizar:
-
-```text
-Level 1 → Level 10
-```
-
-O nível representa a experiência acumulada em combate.
-
-Quanto maior o nível:
-
-- maior a experiência necessária para evoluir;
-- melhores podem ser os atributos do guarda;
-- maior sua patente;
-- maior seu valor;
-- maior seu histórico de combate.
+O nível representa a experiência acumulada em combate. Quanto maior o nível, maior a experiência necessária para evoluir, melhores os bônus de progressão e maior o valor histórico daquele guarda.
 
 ### Curva inicial de XP
-
-Valores ainda sujeitos a balanceamento:
 
 | Evolução | XP necessário |
 |---|---:|
@@ -158,35 +130,40 @@ Valores ainda sujeitos a balanceamento:
 | Lv. 8 → 9 | 170 |
 | Lv. 9 → 10 | 210 |
 
-A progressão final deverá ser lenta o suficiente para que um guarda de nível máximo represente tempo real de serviço.
+Total aproximado para alcançar o nível máximo: **855 XP**.
 
-O objetivo é evitar que uma única raid transforme rapidamente todos os guardas em unidades máximas.
+A intenção é que:
+
+- Lv. 1–3 seja relativamente comum;
+- Lv. 4–6 represente experiência real;
+- Lv. 7–8 seja claramente veterano;
+- Lv. 9–10 seja raro e memorável.
+
+Um guarda Lv.10 deve representar bastante tempo de serviço e ser alguém que o jogador reconhece.
 
 ---
 
-# 3. Patentes
+## 3. Patentes
 
-**Nível e patente não serão exatamente a mesma coisa.**
+**Nível, patente e cargo são conceitos separados.**
 
-A patente funcionará como uma representação legível da experiência do guarda.
-
-Estrutura inicial sugerida:
+A patente representa a experiência militar do guarda.
 
 | Nível | Patente |
 |---|---|
 | 1–2 | Recruit |
-| 3–4 | Guard |
+| 3–4 | Guardsman |
 | 5–6 | Soldier |
 | 7–8 | Veteran |
 | 9–10 | Elite |
 
-Os nomes e intervalos poderão ser ajustados posteriormente.
+`Guardsman` é preferível a `Guard` para evitar confusão com o próprio tipo de entidade.
 
-## Capitão não será simplesmente uma patente de nível
+---
 
-A função **Captain** deverá ser tratada separadamente.
+## 4. Captain é cargo, não patente
 
-Isso evita uma situação em que todos os guardas veteranos eventualmente se tornam capitães.
+`Captain` não será simplesmente a última patente da progressão. Isso evita que todos os guardas veteranos eventualmente se tornem capitães.
 
 Um guarda poderá ser, por exemplo:
 
@@ -194,122 +171,119 @@ Um guarda poderá ser, por exemplo:
 William
 Level 8
 Veteran
-
-Role: Captain
+Captain
 ```
 
-No futuro, capitães poderão liderar squads e participar de sistemas de comando específicos.
+No futuro, Captains deverão conversar diretamente com Squads, Officers, formações e sistemas de liderança.
+
+Um Captain natural poderá nascer já com nível elevado, mas o cargo continuará separado da patente.
 
 ---
 
-# 4. Experiência de combate
+## 5. Experiência de combate
 
-Guardas ganharão experiência ao participar da morte de entidades hostis.
+Guardas ganharão experiência ao participar da morte de entidades hostis válidas.
 
-## Regra principal
+**XP não será concedido por hit.** O cálculo ocorrerá quando o alvo morrer, evitando farms baseadas em atacar repetidamente entidades resistentes sem matá-las.
 
-**XP não será concedido por hit.**
+---
 
-O XP será processado quando o alvo morrer.
+## 6. XP por contribuição de dano
 
-Isso evita farms em que um guarda poderia atacar repetidamente uma entidade resistente sem matá-la.
+O sistema não deverá usar apenas valores fixos de `Assist XP` e `Kill XP`, pois isso premiaria excessivamente quem apenas deu o último hit.
 
-### Participação em combate
+Cada inimigo possuirá um **orçamento total de XP**. Esse XP será dividido conforme a contribuição de dano de cada guarda, com um pequeno bônus para quem der o golpe final.
+
+Referência inicial:
+
+```text
+80% do XP total → participação no dano
+20% do XP total → Final Blow
+```
 
 Exemplo:
 
 ```text
-Zombie
+Zombie = 6 XP total
 
-Guard A causou dano.
-Guard B causou dano.
-Guard C não participou.
-
-Guard A deu o último hit.
-
-Resultado:
-
-Guard A → XP de Kill
-Guard B → XP de Assist
-Guard C → 0 XP
+Guard A causou 75% do dano.
+Guard B causou 25% do dano.
+Guard B deu o último hit.
 ```
 
-### Valores conceituais
-
-Exemplo inicial:
+Resultado aproximado:
 
 ```text
-Assist: +2 XP
-Final Blow: +5 XP
+Guard A:
+4.8 × 75%
+≈ 3.6 XP
+
+Guard B:
+4.8 × 25%
++ 1.2 Final Blow
+≈ 2.4 XP
 ```
 
-Os valores deverão ser configuráveis.
+Dessa forma:
+
+- o último hit continua importante;
+- quem realmente participou do combate é recompensado;
+- kill stealing deixa de ser extremamente vantajoso;
+- o XP total gerado por um mob permanece controlado mesmo com muitos guardas envolvidos.
 
 ---
 
-# 5. Apenas alvos válidos concederão XP
+## 7. XP por ameaça
 
-O sistema deve impedir progressão por matar entidades passivas.
+Nem todo mob hostil deverá valer a mesma quantidade de XP.
 
-Não deverá ser possível evoluir guardas matando repetidamente:
+| Categoria | Exemplos | XP base |
+|---|---|---:|
+| Common | Zombie, Skeleton, Spider | 5 |
+| Dangerous | Creeper, Witch | 7 |
+| Elite | Piglin Brute, Guardian | 10 |
+| Raid | Pillager, Vindicator | 6–10 |
+| Raid Elite | Evoker, Ravager | 15–20 |
+| Boss | Wither e equivalentes | 30+ |
 
-- sheep;
-- cows;
-- pigs;
-- chickens;
-- villagers;
-- outros mobs passivos comuns.
+Os valores exatos ainda deverão ser testados e balanceados.
+
+---
+
+## 8. Apenas alvos válidos concederão XP
+
+O sistema deve impedir progressão por matar entidades passivas. Não deverá ser possível evoluir guardas matando repetidamente sheep, cows, pigs, chickens, villagers ou outros mobs passivos comuns.
 
 A progressão deve ocorrer através de combate real.
 
-Exemplos de alvos naturalmente válidos:
-
-- zombies;
-- skeletons;
-- creepers;
-- hostile spiders;
-- pillagers;
-- vindicators;
-- evokers;
-- ravagers;
-- outros mobs hostis.
-
-## Tags
-
-Para manter compatibilidade com modpacks, o sistema deverá preferencialmente utilizar tags.
-
-Exemplo:
+Para manter compatibilidade com modpacks, o sistema deverá preferencialmente utilizar tags:
 
 ```text
 #rallyoftheguard:xp_targets
-```
-
-Também poderá existir uma categoria especial:
-
-```text
 #rallyoftheguard:xp_bosses
 ```
-
-Bosses poderão oferecer multiplicadores de experiência.
 
 Isso permitirá que outros mods adicionem seus próprios mobs ao sistema sem exigir compatibilidade hardcoded.
 
 ---
 
-# 6. Estatísticas de combate
+## 9. Estatísticas de combate
 
-O mesmo sistema usado para determinar kills e assists permitirá registrar o histórico de cada guarda.
+O mesmo sistema usado para determinar participação em combate permitirá registrar o histórico de cada guarda.
 
-Informações inicialmente planejadas:
+Inicialmente serão persistidos pelo menos:
 
 - kills;
 - assists;
 - nível;
 - XP atual;
-- patente;
-- possivelmente raids sobrevividas;
-- possivelmente tempo de serviço;
-- futuramente outras estatísticas.
+- patente.
+
+Possibilidades posteriores:
+
+- raids sobrevividas;
+- tempo de serviço;
+- outras estatísticas históricas.
 
 Exemplo:
 
@@ -323,32 +297,44 @@ Assists: 109
 Raids Survived: 14
 ```
 
-Essas estatísticas são importantes para criar identidade e apego.
-
 Um guarda veterano deve parecer um personagem que construiu uma história no mundo.
 
 ---
 
-# 7. Atributos naturais
+## 10. Progressão de atributos por nível
 
-Guardas poderão nascer com pequenas diferenças naturais de atributos.
+A progressão será deliberadamente moderada. Um Elite deve ser claramente superior a um Recruit sem se transformar em um boss.
 
-A intenção não é criar diferenças absurdas, mas fazer com que dois guardas da mesma patente não sejam necessariamente idênticos.
+Referência inicial:
 
-Exemplos de atributos que podem receber variação:
+| Nível | HP adicional | Attack adicional | Armor adicional |
+|---:|---:|---:|---:|
+| 1 | +0 | +0 | +0 |
+| 2 | +1 | +0 | +0 |
+| 3 | +1 | +0.25 | +0 |
+| 4 | +2 | +0.25 | +1 |
+| 5 | +2 | +0.50 | +1 |
+| 6 | +3 | +0.75 | +1 |
+| 7 | +4 | +1.00 | +2 |
+| 8 | +5 | +1.25 | +2 |
+| 9 | +6 | +1.50 | +3 |
+| 10 | +8 | +2.00 | +3 |
 
-- Max Health;
-- Attack Damage;
-- Armor;
-- Movement Speed.
+Os números ainda deverão ser testados.
 
-## Regra importante
+### Movement Speed
 
-O Rally of the Guard **não deverá substituir valores base do Guard Villagers por números hardcoded**.
+**Movement Speed não aumentará por nível.**
 
-Em vez disso, o mod deverá ler o valor atual do atributo fornecido pelo Guard Villagers e aplicar modificadores próprios.
+A velocidade poderá possuir pequena variação natural, mas não deverá escalar com progressão para preservar pathfinding, formações, combate e acompanhamento do jogador.
 
-Conceitualmente:
+---
+
+## 11. Não hardcodar atributos do Guard Villagers
+
+O Rally of the Guard não deverá substituir os valores base do Guard Villagers por números fixos próprios.
+
+Em vez disso:
 
 ```text
 Guard Villagers fornece:
@@ -358,89 +344,143 @@ Rally aplica:
 Natural Modifier
 +
 Level Modifier
-+
-Rank Modifier
 
 Resultado:
 Final Attribute
 ```
 
-Isso mantém compatibilidade caso o Guard Villagers altere seu balanceamento em versões futuras.
-
-Também facilita ports entre versões.
+Isso mantém compatibilidade caso o Guard Villagers altere seu balanceamento em versões futuras e facilita ports entre versões/loaders.
 
 ---
 
-# 8. Variação controlada
+## 12. Natural Quality
 
-A aleatoriedade deverá ser pequena.
+Cada guarda terá uma **Natural Quality** gerada uma única vez quando seu perfil for criado.
 
-Não queremos:
-
-- guardas extremamente lentos;
-- guardas rápidos demais para o pathfinding;
-- unidades de nível baixo melhores que unidades máximas em todos os atributos;
-- diferenças grandes o suficiente para quebrar o balanceamento do Guard Villagers.
-
-Exemplo conceitual de faixas:
-
-### Recruit
+Conceitualmente:
 
 ```text
-Health:       -10% → +5%
-Attack:       -10% → +5%
-Armor:        -1   → +1
-Movement:     -3%  → +3%
+0.0 → muito abaixo da média
+0.5 → normal
+1.0 → excepcional
 ```
 
-### Guard
+A Natural Quality influenciará a tendência geral dos atributos, mas não obrigará o guarda a ser melhor em tudo.
+
+Exemplos:
 
 ```text
-Health:       -5% → +10%
-Attack:       -5% → +10%
-Armor:         0  → +2
-Movement:     -2% → +3%
-```
+Robert
+Natural Quality: 0.35
 
-### Soldier
+Health: +3%
+Attack: -4%
+Armor: 0
+Speed: +1%
+```
 
 ```text
-Health:        0% → +15%
-Attack:        0% → +15%
-Armor:         0  → +3
-```
+William
+Natural Quality: 0.81
 
-### Veteran
+Health: +8%
+Attack: +5%
+Armor: +1
+Speed: -1%
+```
 
 ```text
-Health:       +10% → +25%
-Attack:        +5% → +20%
-Armor:         +1  → +4
+Henry
+
+Health: +10%
+Attack: -3%
+Armor: +2
+Speed: -2%
 ```
 
-Os números acima são apenas referências iniciais para discussão e balanceamento.
+Isso cria indivíduos naturalmente mais resistentes, ofensivos ou equilibrados sem exigir classes formais.
 
 ---
 
-# 9. Talento natural + progressão
+## 13. Representação por estrelas
 
-Os atributos finais do guarda deverão ser compostos por duas camadas principais.
+A Natural Quality poderá ser apresentada de forma resumida por estrelas:
 
-## Talento natural
+```text
+Quality: ★★★★☆
+```
 
-Gerado uma única vez quando o perfil do guarda é criado.
+As estrelas representam **talento natural**, não nível.
 
-Representa a qualidade original daquele indivíduo.
+Portanto, pode existir:
 
-Não muda durante sua vida.
+```text
+Level 2 Recruit
+★★★★★
+```
 
-## Progressão
+assim como:
 
-Recebida ao ganhar níveis.
+```text
+Level 7 Veteran
+★★☆☆☆
+```
 
-Permite que até um guarda inicialmente fraco se torne uma unidade valiosa depois de sobreviver e lutar por bastante tempo.
+Princípio central:
 
-Exemplo:
+> talento natural não é a mesma coisa que experiência.
+
+Ainda deverá ser decidido se a qualidade ficará totalmente visível, parcialmente visível, acessível apenas pelo Muster Roll ou escondida até a contratação.
+
+---
+
+## 14. Variações naturais de atributos
+
+As variações naturais deverão ser pequenas.
+
+Faixas iniciais:
+
+```text
+Health:
+-8% → +10%
+
+Attack:
+-8% → +10%
+
+Armor:
+-1 → +2
+
+Movement Speed:
+-2% → +2%
+```
+
+A aleatoriedade deve permanecer controlada para evitar guardas extremamente lentos, rápidos demais para o pathfinding ou unidades de nível baixo absurdamente superiores às unidades máximas.
+
+Os atributos finais resultarão de:
+
+```text
+Guard Villagers base stats
++
+Natural Stats
++
+Level Progression
+```
+
+---
+
+## 15. Talento natural + experiência
+
+Os atributos finais terão duas camadas principais.
+
+### Talento natural
+
+Gerado uma única vez quando o perfil é criado. Nunca muda.
+
+### Progressão
+
+Recebida ao ganhar níveis. Permite que até um guarda inicialmente fraco se torne valioso depois de sobreviver e lutar por bastante tempo.
+
+Exemplo conceitual:
 
 ```text
 Level 1
@@ -457,192 +497,212 @@ Level 5
 
 Level 10
 28 Health
-13 Attack
+12 Attack
 ```
 
-A progressão deverá ser moderada.
-
-Um guarda de nível máximo deve ser claramente melhor que um recruta, mas não deve se transformar em um boss.
+A experiência terá peso sem apagar completamente a individualidade natural do guarda.
 
 ---
 
-# 10. Guardas naturais de nível e patente superiores
+## 16. Nível inicial de guardas naturais
 
-Nem todos os guardas encontrados em vilas precisam começar no Level 1.
+Nem todos os guardas encontrados naturalmente precisam começar no Level 1.
 
-Alguns poderão receber perfis naturalmente superiores.
+Distribuição inicial para testes:
 
-Exemplo de uma vila com aproximadamente 20 guardas:
+| Level | Chance |
+|---:|---:|
+| 1 | 45% |
+| 2 | 25% |
+| 3 | 14% |
+| 4 | 8% |
+| 5 | 4% |
+| 6 | 2% |
+| 7 | 1% |
+| 8 | 0.6% |
+| 9 | 0.3% |
+| 10 | 0.1% |
+
+A intenção é que a maioria fique entre Lv.1 e Lv.4, encontrar Lv.5–6 seja interessante, Lv.7+ seja raro e um Lv.10 natural seja quase lendário.
+
+Isso cria valor real em explorar novas vilas.
+
+---
+
+## 17. Captains naturais
+
+Captain terá seu próprio roll.
+
+Referência inicial:
 
 ```text
-7 Recruits
-8 Guards
-3 Soldiers
-1 Veteran
-1 Captain
+Natural Captain Chance: 5%
+Minimum Captain Level: 5
 ```
 
-Essa distribuição não precisa ser garantida.
-
-Ela representa o tipo de resultado que queremos tornar possível.
-
-A intenção é criar momentos em que explorar uma vila revele um guarda raro e valioso.
+Caso um guarda sorteado como Captain tenha recebido nível inferior, o sistema poderá promovê-lo para uma faixa apropriada.
 
 Exemplo:
 
 ```text
 Captain Aldric
-Level 8
+Level 7
 Veteran
-
-Health: 30
-Attack: 13.5
-Armor: 15
 ```
 
-Encontrar um guarda assim deverá ser um pequeno evento para o jogador.
+Também deverá existir controle regional para impedir excesso de Captains.
 
----
-
-# 11. Capitães naturais
-
-Capitães deverão ser raros.
-
-A geração deverá evitar excesso de capitães em uma mesma região.
-
-Uma possibilidade futura:
+Objetivo aproximado:
 
 ```text
-Nenhum Captain próximo:
-chance maior
-
-1 Captain próximo:
-chance reduzida
-
-2 Captains próximos:
-chance zero
+Vila com ~20 guardas:
+normalmente 0–1 Captain
+ocasionalmente 2
+raramente mais que isso
 ```
 
-Também poderá existir um limite baseado em raio, vila ou outra forma de agrupamento.
+Uma possível regra:
 
-A implementação exata ainda deverá ser definida.
+```text
+0 Captains próximos → chance normal
+1 Captain próximo  → chance reduzida
+2 Captains próximos → chance zero
+```
+
+O raio e a lógica exata ainda serão definidos.
 
 ---
 
-# 12. Custo de contratação variável
+## 18. Custo de contratação variável
 
 A contratação deixará de ter necessariamente um valor idêntico para todos os guardas.
 
-O preço poderá considerar:
+O preço deverá resultar principalmente de:
 
-- configuração base;
-- nível;
-- patente;
-- qualidade natural;
-- atributos;
-- função especial;
-- Captain modifier.
+```text
+Patente
++
+Natural Quality
++
+Cargo
+```
 
-Exemplo de objetivo de balanceamento:
+Objetivo inicial de balanceamento:
 
-| Guarda | Faixa de preço aproximada |
+| Tipo | Faixa aproximada |
 |---|---:|
 | Recruit fraco | 1 |
 | Recruit bom | 2–3 |
-| Guard | 3–4 |
+| Guardsman | 2–4 |
 | Soldier | 4–6 |
 | Veteran | 6–9 |
-| Elite | 8–12 |
-| Captain raro | 10–15+ |
+| Elite | 9–13 |
+| Captain | +3 a +5 sobre o valor normal |
 
-Esses valores deverão respeitar o item de contratação configurado pelo jogador/modpack.
-
-Ou seja, o sistema deve continuar compatível com:
+Exemplo:
 
 ```text
-economy.hireItem
+Thomas
+Recruit · Level 1
+★☆☆☆☆
+
+Hire: 1 Emerald
 ```
 
-e não assumir que a moeda será sempre Emerald.
+```text
+Aldric
+Veteran · Level 8
+★★★★☆
+Captain
+
+Hire: 12 Emeralds
+```
+
+Isso cria uma decisão real entre contratar vários recrutas baratos ou investir em uma unidade excepcional.
+
+O sistema deverá continuar respeitando `economy.hireItem`; a moeda não deverá ser hardcoded como Emerald.
 
 ---
 
-# 13. Interface de perfil
+## 19. Muster Roll
 
 As informações de progressão **não deverão poluir o Commander's Ledger**.
 
 O Ledger continuará sendo principalmente uma ferramenta de comando.
 
-Uma nova interface será criada especificamente para consultar informações de guardas.
+O novo item/interface de perfil será chamado inicialmente de **Muster Roll**, funcionando como um registro militar.
 
-Possíveis nomes para o item:
-
-- Guard Registry;
-- Muster Roll;
-- Guard Roster;
-- outro nome a ser definido.
-
-O item poderá abrir o perfil do guarda selecionado.
-
-Exemplo conceitual:
+Descrição conceitual:
 
 ```text
-┌─────────────────────────────────────┐
-│              THOMAS                 │
-│         Veteran • Level 7           │
-│                                     │
-│            [Guard Model]            │
-│                                     │
-│ EXPERIENCE                          │
-│ █████████████░░░░   84 / 135        │
-│                                     │
-│ ATTRIBUTES                          │
-│ Health                   27 / 27    │
-│ Attack                    12.3      │
-│ Armor                     13        │
-│ Movement                  0.31      │
-│                                     │
-│ COMBAT                              │
-│ Kills                     43        │
-│ Assists                   28        │
-│                                     │
-│ Squad                     Alpha     │
-│ Role                      Infantry  │
-│                                     │
-│ Service                   12 days   │
-└─────────────────────────────────────┘
+A record of the guards under your command.
 ```
 
-Nem todos os campos acima precisam existir já na primeira versão.
+Na primeira versão, seu uso principal será inspecionar um guarda. No futuro, poderá evoluir para um registro completo das tropas.
 
-A interface deverá crescer junto com os sistemas futuros.
+Exemplo conceitual de interface:
+
+```text
+╔════════════════════════════════╗
+        WILLIAM
+       ★★★★☆
+
+   Veteran · Level 7
+       Captain
+
+   ████████████░░
+      94 / 135 XP
+
+        ATTRIBUTES
+
+   ♥ Health       27
+   ⚔ Attack       11.8
+   🛡 Armor        13
+   ➤ Speed         0.30
+
+         SERVICE
+
+   Kills           47
+   Assists         31
+
+   Squad           Alpha
+   Role             Melee
+
+   Hiring Value     9
+╚════════════════════════════════╝
+```
+
+Campos ligados a sistemas ainda não implementados, como `Squad`, poderão permanecer ocultos até suas respectivas atualizações.
 
 ---
 
-# 14. Qualidade do guarda
+## 20. Traits ficam para depois
 
-Além dos números individuais, poderá existir uma representação resumida da qualidade do guarda.
+Traits continuam sendo uma possibilidade futura, mas **não fazem parte da primeira implementação de Guard Profiles & Progression**.
 
-Exemplo:
+Possibilidades futuras:
 
 ```text
-Quality: ★★★★☆
+Strong
+Tough
+Swift
+Marksman
+Defender
 ```
 
-Essa classificação não precisa alterar atributos por si só.
+E eventualmente alguns negativos:
 
-Ela pode simplesmente resumir a qualidade natural gerada para facilitar a leitura pelo jogador.
+```text
+Weak
+Fragile
+Slow
+```
 
-Ainda deverá ser decidido se essa informação será:
-
-- completamente visível;
-- parcialmente visível;
-- descoberta após contratação;
-- exibida somente por meio do item de perfil.
+A arquitetura poderá ser preparada para suportá-los, mas eles não deverão atrasar a implementação principal.
 
 ---
 
-# 15. Configuração
+## 21. Configuração
 
 A progressão deverá ser altamente configurável para servidores e modpacks.
 
@@ -652,28 +712,29 @@ Possíveis opções:
 progression.enabled
 progression.maxLevel
 
-progression.assistXp
-progression.killXp
-progression.bossMultiplier
+progression.damageContributionShare
+progression.finalBlowShare
 
 progression.statGrowthEnabled
 progression.naturalVariationEnabled
+progression.naturalQualityEnabled
 
 progression.advancedNaturalGuardsEnabled
+
 progression.captainSpawnEnabled
+progression.captainSpawnChance
+progression.captainMinimumLevel
 
 economy.dynamicHireCostEnabled
 ```
 
-Também poderão existir configurações específicas de distribuição de níveis e patentes.
+Também poderão existir configurações específicas para distribuição de níveis naturais, XP por categoria de inimigo, multiplicadores de bosses, limites regionais de Captains e crescimento por nível.
 
 ---
 
-# 16. Compatibilidade com mundos existentes
+## 22. Compatibilidade com mundos existentes
 
-A atualização deverá ser projetada para funcionar em saves já existentes.
-
-Ao carregar um guarda antigo:
+A atualização deverá funcionar em saves já existentes.
 
 ```text
 Guard Villager existente
@@ -685,44 +746,37 @@ Sem perfil Rally
 Perfil criado uma única vez
 ```
 
-Isso significa que o jogador não precisará criar um mundo novo para utilizar a atualização.
+O jogador não precisará criar um mundo novo para utilizar a atualização.
 
 ---
 
-# 17. Possível evolução futura — Traits
+## 23. Especificação atual consolidada
 
-Traits não fazem parte obrigatoriamente da primeira implementação de Guard Profiles, mas o sistema deverá ser pensado para permitir sua adição posteriormente.
+A direção da próxima grande atualização está definida assim:
 
-Exemplos positivos:
+1. **Level 1–10**.
+2. **Recruit → Guardsman → Soldier → Veteran → Elite**.
+3. **Captain separado da patente**, como cargo.
+4. XP somente por inimigos hostis válidos.
+5. XP concedido somente quando o alvo morrer.
+6. XP dividido por contribuição de dano.
+7. Pequeno bônus para Final Blow.
+8. Aproximadamente **855 XP** até Lv.10.
+9. Progressão moderada de HP, Attack e Armor.
+10. Movement Speed não cresce por nível.
+11. Atributos sempre derivados dos valores atuais do Guard Villagers.
+12. Cada guarda recebe pequenas variações naturais permanentes.
+13. Cada guarda possui **Natural Quality**.
+14. Natural Quality poderá ser exibida em **1–5 estrelas**.
+15. Guardas naturais podem nascer acima do Lv.1.
+16. Níveis altos naturais serão raros.
+17. Captain terá roll próprio e controle regional.
+18. Preço de contratação dependerá de patente, qualidade e cargo.
+19. O novo item/interface de perfil será o **Muster Roll**.
+20. Inicialmente serão persistidos pelo menos **kills e assists**.
+21. Traits ficam para uma atualização posterior.
 
-```text
-Strong
-+ Attack
-
-Tough
-+ Health
-
-Swift
-+ Movement Speed
-
-Marksman
-+ Ranged effectiveness
-
-Defender
-+ Armor
-```
-
-Possíveis traits negativos:
-
-```text
-Weak
-Fragile
-Slow
-```
-
-Traits deverão ser sutis.
-
-O objetivo é adicionar personalidade, não transformar a escolha de guarda em um sistema excessivamente complexo de min-maxing.
+Essas definições formam a base de design para a implementação da atualização.
 
 ---
 
@@ -1352,13 +1406,15 @@ O objetivo final é que Rally of the Guard se torne o complemento natural para j
 - [x] Combat orders
 - [ ] **Guard Profiles & Progression — próxima grande atualização**
 - [ ] Guard levels
-- [ ] Guard ranks
-- [ ] XP from kills and assists
-- [ ] Combat statistics
+- [ ] Guard ranks (Recruit → Guardsman → Soldier → Veteran → Elite)
+- [ ] XP by damage contribution + Final Blow bonus
+- [ ] Combat statistics (kills / assists)
+- [ ] Natural Quality + star rating
 - [ ] Natural attribute variation
-- [ ] Advanced natural guards
+- [ ] Advanced natural guards / rare natural levels
+- [ ] Natural Captains
 - [ ] Dynamic hiring cost
-- [ ] Guard Profile GUI
+- [ ] Muster Roll profile GUI
 - [ ] Captains
 - [ ] Squads
 - [ ] Additional formations
