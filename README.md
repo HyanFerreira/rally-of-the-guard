@@ -86,6 +86,7 @@ O **Pergaminho do Rali** convoca guardas contratados próximos para perto do jog
 - Guardas em patrulha não são puxados.
 - Guardas aguardando não são puxados.
 - Enquanto o rali está ativo, guardas tentam manter seus slots de formação quando não estão em combate.
+- Se o comandante se afastar mais de 24 blocos durante um combate, os guardas abandonam o alvo e retornam por padrão.
 - Durante o rali, guardas contratados ficam protegidos contra dano causado pelo próprio comandante.
 
 ### Ordens de Combate
@@ -121,6 +122,9 @@ A patrulha fixa usa o comportamento nativo do Guard Villagers:
 ### Friendly Fire e Neutralidade
 
 - Guardas em rali ficam protegidos contra ataques do jogador dono.
+- Guardas contratados nunca atacam nem causam dano a animais, montarias ou outros guardas pertencentes ao mesmo comandante.
+- Entidades sem propriedade persistente, como o Happy Ghast, ficam protegidas enquanto forem montadas ou diretamente conduzidas pelo comandante.
+- Ordens de ataque contra uma entidade protegida são rejeitadas pelo servidor.
 - Ao atacar um guarda que não pertence ao jogador, os guardas contratados do jogador permanecem neutros.
 
 ---
@@ -188,6 +192,8 @@ Principais opções:
 - `rally.teleportMinDistance`: distância mínima para teleportar um guarda ao iniciar o rali.
 - `rally.formationEnabled`: liga ou desliga a formação Escolta.
 - `rally.protectRalliedGuardsFromOwner`: impede o comandante de acertar seus guardas durante o rali.
+- `rally.retreatEnabled`: controla a retirada automática de guardas em rali (`rallyRetreatEnabled` no arquivo MidnightLib).
+- `rally.retreatDistance`: distância para abandonar o combate e retornar, padrão de 24 blocos (`rallyRetreatDistance` no arquivo MidnightLib).
 - `formation.columnSpacing`: distância entre as duas colunas da formação.
 - `formation.rowSpacing`: distância entre fileiras.
 - `formation.returnSpeed`: velocidade usada para voltar ao slot.
