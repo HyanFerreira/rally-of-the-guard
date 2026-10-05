@@ -50,10 +50,21 @@ A living target is protected when at least one of the following is true:
 2. The target is a Rally guard whose owner UUID equals the commander UUID.
 3. The target is a tameable or ownable living entity whose owner UUID equals
    the commander UUID.
+4. The target has a direct, observable association with the commander that the
+   vanilla entity API exposes at that moment: the commander is riding it, or
+   the entity is leashed directly to the commander.
 
-This is an ownership rule, not a species allowlist. It is intended to cover
-wolves, cats, parrots, horses, donkeys, mules, llamas, Happy Ghasts, and future
-vanilla living entities that expose compatible ownership information.
+This is a relationship rule, not a species allowlist. Persistent ownership is
+intended to cover wolves, cats, parrots, horses, donkeys, mules, llamas, and
+future vanilla living entities that expose compatible ownership information.
+Transient riding/leash association covers entities such as Happy Ghasts while
+the commander is riding or directly leading them.
+
+Vanilla Happy Ghasts do not expose persistent player ownership merely because
+they wear a harness. A Happy Ghast that is neither ridden nor leashed therefore
+cannot be distinguished reliably from another player's Happy Ghast in this
+update. Persistently assigning such entities to a player would require a new
+Rally-owned data system and is deferred.
 
 Untamed entities and entities owned by another player are not protected by this
 policy. Protection for vanilla teams or shared commanders is deferred until the
@@ -262,6 +273,8 @@ Pure logic should cover at least:
 
 - commander's own guard is protected;
 - commander's own tameable/ownable entity is protected;
+- an entity currently ridden or directly leashed by the commander is
+  protected;
 - an entity owned by a different player is not protected;
 - an untamed entity is not protected;
 - retreat disabled preserves combat with valid targets;
@@ -303,8 +316,10 @@ On every supported Minecraft version, verify:
 12. Waiting, patrol, and route orders remain unaffected.
 
 Representative ownership tests should include a wolf, one rideable owned
-animal, and Happy Ghast when that entity is available in the target Minecraft
-version. Species absent from an older version are not required for that branch.
+animal, and a ridden or directly leashed Happy Ghast when that entity is
+available in the target Minecraft version. A harnessed Happy Ghast with no
+current rider or leash holder is explicitly expected to remain unclassified.
+Species absent from an older version are not required for that branch.
 
 ## Acceptance Criteria
 
