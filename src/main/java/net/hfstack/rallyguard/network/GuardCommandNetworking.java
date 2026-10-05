@@ -12,6 +12,8 @@ import net.hfstack.rallyguard.api.eligibility.GuardEligibilityOperation;
 import net.hfstack.rallyguard.api.presentation.GuardPresentation;
 import net.hfstack.rallyguard.api.presentation.GuardPresentationContext;
 import net.hfstack.rallyguard.api.presentation.GuardPresentationRegistry;
+import net.hfstack.rallyguard.combat.GuardCombatState;
+import net.hfstack.rallyguard.combat.ProtectedAllyPolicy;
 import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.network.payload.GuardActionC2SPayload;
@@ -142,12 +144,6 @@ public final class GuardCommandNetworking {
         }
     }
 
-    private static void stopGuardActions(GuardEntity guard) {
-        guard.setTarget(null);
-        guard.setAggressive(false);
-        guard.getNavigation().stop();
-    }
-
     private static void handleRouteUpdate(ServerPlayer player, GuardRouteUpdateC2SPayload payload) {
         ServerLevel world = player.level();
         Entity e = world.getEntity(payload.entityId());
@@ -179,7 +175,7 @@ public final class GuardCommandNetworking {
                 }
                 GuardRouteState route = new GuardRouteState(true, 0, waitTicks, 0, points);
                 GuardRoutes.applyToGuard(guard, route);
-                stopGuardActions(guard);
+                GuardCombatState.disengage(guard);
                 guard.setPatrolPos(route.currentPoint());
                 guard.setPatrolling(true);
                 player.sendOverlayMessage(Component.translatable("gui.rallyguard.route.started"));
@@ -191,7 +187,7 @@ public final class GuardCommandNetworking {
                 guard.setFollowing(false);
                 guard.setPatrolPos(null);
                 GuardOrders.setWaiting(guard, true);
-                stopGuardActions(guard);
+                GuardCombatState.disengage(guard);
                 player.sendOverlayMessage(Component.translatable("gui.rallyguard.route.paused"));
             }
             case NetworkConstants.ROUTE_CLEAR -> {
@@ -200,7 +196,7 @@ public final class GuardCommandNetworking {
                 guard.setFollowing(false);
                 guard.setPatrolPos(null);
                 GuardOrders.setWaiting(guard, true);
-                stopGuardActions(guard);
+                GuardCombatState.disengage(guard);
                 player.sendOverlayMessage(Component.translatable("gui.rallyguard.route.cleared"));
             }
             default -> {
@@ -219,7 +215,7 @@ public final class GuardCommandNetworking {
             player.sendOverlayMessage(Component.translatable("gui.rallyguard.combat.no_target"));
             return;
         }
-        if (target == player || GuardOwnership.isOwnedBy(target, player.getUUID())) {
+        if (ProtectedAllyPolicy.isProtectedAlly(player.getUUID(), target)) {
             player.sendOverlayMessage(Component.translatable("gui.rallyguard.combat.invalid_target"));
             return;
         }
