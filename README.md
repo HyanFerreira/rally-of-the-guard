@@ -35,9 +35,19 @@ Principais mudanças:
 
 - Clique com o botão direito em um guarda sem dono para abrir a tela de contratação.
 - O custo padrão é de **3 esmeraldas**, mas custo e item podem ser alterados na configuração.
+- Quando o custo dinâmico está ativo, nível, patente, qualidade natural e o cargo de Capitão influenciam a oferta.
 - Guardas contratados ficam vinculados ao UUID do jogador.
 - Guardas contratados recebem nome dourado e mensagem de apresentação.
 - Guardas contratados podem seguir o jogador sem depender do efeito Hero of the Village.
+
+### Perfis, progressão e Capitães naturais
+
+- Cada guarda possui um perfil persistente com nível, patente, qualidade, variações naturais, abates e assistências.
+- Guardas naturais podem surgir em níveis avançados e, quando habilitado, receber o cargo separado de **Capitão**.
+- A chance padrão de Capitão é de 5%, com nível mínimo 5.
+- O controle regional usa os guardas carregados em um raio configurável: sem Capitão próximo a chance é normal, com um ela é reduzida pela metade e, no limite regional, cai para zero.
+- Perfis antigos são migrados sem transformar guardas existentes em Capitães nem sortear novamente seus atributos.
+- O **Registro de Tropa (Muster Roll)** exibe o cargo de Capitão e aplica o bônus configurável ao preço de contratação.
 
 ### Livro de Comando
 
@@ -153,9 +163,34 @@ Empty   | Empty              | Empty
 
 ---
 
+## Comandos administrativos de progressão
+
+Com cheats habilitados ou permissão de operador, os comandos abaixo ajudam a testar níveis sem exigir combate repetitivo:
+
+```text
+/rallyguard xp get
+/rallyguard xp get <alvo>
+/rallyguard xp add <quantidade>
+/rallyguard xp add <alvos> <quantidade>
+```
+
+Sem um alvo explícito, o comando usa o guarda vivo mais próximo em até 8 blocos. `<alvo>` aceita o UUID de uma entidade carregada, e `<alvos>` também aceita seletores do Minecraft. A quantidade usa os mesmos pontos mostrados no Registro de Tropa; por exemplo, `20` leva um recruta sem XP ao nível 2.
+
+Exemplos:
+
+```text
+/rallyguard xp add 20
+/rallyguard xp add @e[type=guardvillagers:guard,sort=nearest,limit=1] 30
+/rallyguard xp get @e[type=guardvillagers:guard,sort=nearest,limit=1]
+```
+
+Os comandos usam o serviço normal de progressão, portanto respeitam a configuração, eventos de XP, mudança de patente e atualização de atributos.
+
+---
+
 ## Requisitos
 
-- **Minecraft:** 1.21.11
+- **Minecraft:** 26.1
 - **Loader:** Fabric
 - **Java:** 21 ou superior
 - **Fabric API**
@@ -186,6 +221,15 @@ Principais opções:
 
 - `economy.hireCost`: custo para contratar um guarda.
 - `economy.hireItem`: item usado na contratação, em formato de ID, por exemplo `minecraft:emerald`.
+- `economy.dynamicHireCostEnabled`: ativa o preço calculado a partir do perfil do guarda.
+- `economy.dynamicHireCostMultiplier`: multiplica o valor calculado antes dos limites finais.
+- `economy.dynamicHireCostMinimum` / `economy.dynamicHireCostMaximum`: limites do preço dinâmico.
+- `economy.captainHireCostBonus`: adicional fixo para Capitães, padrão de 4 itens.
+- `progression.captainSpawnEnabled`: permite o surgimento de Capitães naturais.
+- `progression.captainSpawnChance`: chance base por guarda natural, padrão de `0.05` (5%).
+- `progression.captainMinimumLevel`: nível mínimo de um Capitão natural, padrão 5.
+- `progression.captainRegionalRadius`: raio usado para contar Capitães carregados, padrão 128 blocos.
+- `progression.captainRegionalLimit`: quantidade que zera a chance regional, padrão 2.
 - `rally.radius`: raio usado para buscar guardas ao iniciar o rali.
 - `rally.maxGuards`: limite de guardas chamados pelo rali.
 - `rally.teleportEnabled`: permite ou bloqueia teleportes do rali/formação.

@@ -4,8 +4,8 @@ Rally exposes a small common-side API so integrations can issue tactical orders 
 
 ## Compatibility
 
-- Mod version: `1.3.1`
-- API contract version: `2`
+- Mod version: `1.4.0`
+- API contract version: `3`
 - Entry point: `net.hfstack.rallyguard.api.RallyGuardApi`
 
 Integrations should check `RallyGuardApi.apiVersion()` before relying on a newer contract. Additive changes may keep the same contract version; incompatible changes require a new integer version and a coordinated minimum mod dependency.
@@ -19,15 +19,83 @@ Optional<GuardProfileView> profile = RallyGuardApi.profiles().find(guard);
 ```
 
 `GuardProfileView` exposes schema and generation versions, origin, cumulative
-XP, natural quality and rolls, kills, and assists. XP uses integer thousandths
+XP, natural quality and rolls, kills, assists, and the persisted `captain()`
+flag. It also derives `level()`,
+`rank()`, `qualityStars()`, `xpIntoLevelMilli()`, and
+`xpForNextLevelMilli()` without mutating the guard. XP uses integer thousandths
 (`1000` XP milli equals `1` XP). Quality is bounded from `0` through `10,000`;
 each natural roll is bounded from `-10,000` through `10,000`; XP, kills, and
 assists are non-negative.
 
 The lookup is side-effect free: it never initializes, repairs, migrates, or
 persists a profile. It returns an empty result when no profile is attached or
-when the stored schema is newer than this version of Rally. Level, rank,
-stars, and other derived helpers will be added by the Natural Identity plan.
+when the stored schema is newer than this version of Rally. Rank values expose
+stable enum names and translation keys; localized display names remain a
+presentation concern.
+
+Profiles use schema version `2`; schema-1 profiles migrate once with
+`captain() == false`, so existing guards are never promoted by migration.
+`captain()` is a default API method returning `false`, preserving compatibility
+with existing third-party implementations of the view.
+
+Natural identities use generation version `3`. Generation version `1` denotes
+the neutral placeholder written by the earlier Profile Core milestone. Rally
+migrates that exact placeholder once using a deterministic UUID-derived seed,
+so old saves gain quality and natural rolls without changing again on reload.
+Generation version `2` identifies natural profiles created before the Captain
+roll was introduced; they remain non-Captains and are not rerolled.
+
+The built-in rank is also used as the fallback rank label in Rally guard lists.
+Captain is a separate persisted role, not a rank. Presentation providers still
+take precedence for command-list labels without changing either field.
+
+Natural and level attribute modifiers use stable `rallyguard:*` identifiers
+and are reconstructed from the profile. They are implementation details rather
+than a public mutation surface; integrations should continue treating
+`GuardProfileView` as read-only.
+
+## Guard progression
+
+Progression writes are available on the logical server through:
+
+```java
+GuardProgressionService progression = RallyGuardApi.progression();
+long awarded = progression.awardXp(guard, proposedXpMilli);
+progression.recordCombatStat(guard, CombatStat.ASSIST);
+progression.refreshAttributes(guard);
+```
+
+`awardXp` returns the amount actually persisted. `recordCombatStat` and
+`refreshAttributes` return `false` when the guard has no writable supported
+profile. Callers should never edit profile attachments directly.
+
+`GuardProgressionEvents.BEFORE_XP_AWARDED` receives the current proposed award
+in registration order. A listener may allow it, replace it with another
+non-negative milli-XP amount, or deny it. Listener failures are logged and
+isolated. The observational `AFTER_XP_AWARDED`, `LEVEL_CHANGED`, and
+`COMBAT_STAT_RECORDED` events run only after successful persistence; failures
+in one observer do not prevent later observers.
+
+Default combat XP eligibility and budgets are datapack-controlled through
+`#rallyguard:xp_targets`, `#rallyguard:no_xp`, and the six
+`#rallyguard:xp/*` category tags. `no_xp` takes precedence, and players and
+Guard Villagers are always excluded.
+
+## Muster Roll snapshots
+
+The built-in Muster Roll uses `GuardProfileSnapshotFactory` on the logical
+server to create a bounded, immutable display snapshot. It contains only the
+guard identity, derived level/rank/stars, Captain status, XP progress, effective attributes,
+kills, assists, viewer-relative service status, and an optional current hiring
+offer. Schema versions, origin, natural quality value, and attribute rolls are
+deliberately absent from the wire contract.
+
+Snapshots are refreshed at most once per second and sent only after their
+contents change. The inspection session requires the guard to remain alive,
+loaded, in the viewer's dimension and within eight blocks while the viewer
+continues holding a Muster Roll. Integrations that need raw read-only profile
+data should continue using `RallyGuardApi.profiles()` rather than depending on
+the screen payload.
 
 ## Guard commands
 
@@ -112,6 +180,32 @@ The shared recruitment service is available through:
 ```java
 GuardRecruitmentService recruitment = RallyGuardApi.guardRecruitment();
 ```
+
+API version 3 adds server-authoritative quotes:
+
+```java
+RecruitmentQuoteResult result = recruitment.quote(player, guard);
+if (result.available()) {
+    RecruitmentResult recruited = recruitment.recruit(
+        player,
+        guard,
+        result.quote().orElseThrow()
+    );
+}
+```
+
+A quote fingerprints the guard UUID, profile XP, payment item, and final
+policy-adjusted cost. Confirmation re-evaluates the current profile and every
+policy. A mismatch returns `OFFER_CHANGED` before inventory payment or
+transaction reservation. Callers should show the refreshed quote and require
+another confirmation. The two-argument `recruit` method remains available for
+trusted server-side flows that do not need an interactive confirmation gap.
+
+The default offer comes from `RallyGuardApi.hiringValues()`. Dynamic pricing
+uses rank, level position, and natural quality; disabling it restores the
+configured static cost. `GuardHiringValueEvents.CALCULATED` observes each
+calculation without replacing the offer. Recruitment BEFORE policies retain
+authority to deny or replace that default offer.
 
 `recruit(player, guard)` validates that the guard is alive, unowned, in the player's world and within interaction distance. Rally then builds the configured default `RecruitmentOffer`, runs every `GuardRecruitmentEvents.BEFORE` policy, reserves contributed transactions, collects the final personal inventory payment and assigns tactical ownership.
 

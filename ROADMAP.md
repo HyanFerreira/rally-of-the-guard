@@ -29,9 +29,10 @@ A partir daqui, a evolução do mod deve priorizar duas frentes:
 
 ---
 
-# Próxima grande atualização — Guard Profiles & Progression
+# Atualização concluída — Guard Profiles & Progression
 
-Esta será a **próxima grande atualização do Rally of the Guard** e terá prioridade sobre as demais expansões de gameplay.
+Este marco está concluído e estabelece a base necessária para a próxima frente:
+**Captains como líderes e Squads**.
 
 A proposta é fazer com que cada guarda deixe de ser apenas mais uma entidade idêntica às outras. Cada guarda passará a possuir um perfil persistente próprio, com nível, experiência, patente, atributos naturais, qualidade natural, progressão de atributos, estatísticas de combate, valor de contratação, possível função especial e histórico de progressão.
 
@@ -259,8 +260,14 @@ A progressão deve ocorrer através de combate real.
 Para manter compatibilidade com modpacks, o sistema deverá preferencialmente utilizar tags:
 
 ```text
-#rallyoftheguard:xp_targets
-#rallyoftheguard:xp_bosses
+#rallyguard:xp_targets
+#rallyguard:no_xp
+#rallyguard:xp/common
+#rallyguard:xp/dangerous
+#rallyguard:xp/raid
+#rallyguard:xp/elite
+#rallyguard:xp/raid_elite
+#rallyguard:xp/boss
 ```
 
 Isso permitirá que outros mods adicionem seus próprios mobs ao sistema sem exigir compatibilidade hardcoded.
@@ -561,7 +568,7 @@ ocasionalmente 2
 raramente mais que isso
 ```
 
-Uma possível regra:
+Regra implementada:
 
 ```text
 0 Captains próximos → chance normal
@@ -569,7 +576,10 @@ Uma possível regra:
 2 Captains próximos → chance zero
 ```
 
-O raio e a lógica exata ainda serão definidos.
+Por padrão, o controle considera Capitães vivos e carregados em um raio de 128
+blocos. A chance base é de 5%, cai pela metade com um Capitão próximo e chega a
+zero ao atingir o limite regional de dois. Chance, raio, limite e nível mínimo
+são configuráveis.
 
 ---
 
@@ -724,8 +734,11 @@ progression.advancedNaturalGuardsEnabled
 progression.captainSpawnEnabled
 progression.captainSpawnChance
 progression.captainMinimumLevel
+progression.captainRegionalRadius
+progression.captainRegionalLimit
 
 economy.dynamicHireCostEnabled
+economy.captainHireCostBonus
 ```
 
 Também poderão existir configurações específicas para distribuição de níveis naturais, XP por categoria de inimigo, multiplicadores de bosses, limites regionais de Captains e crescimento por nível.
@@ -752,7 +765,7 @@ O jogador não precisará criar um mundo novo para utilizar a atualização.
 
 ## 23. Especificação atual consolidada
 
-A direção da próxima grande atualização está definida assim:
+A direção desta atualização foi definida assim:
 
 1. **Level 1–10**.
 2. **Recruit → Guardsman → Soldier → Veteran → Elite**.
@@ -1404,17 +1417,20 @@ O objetivo final é que Rally of the Guard se torne o complemento natural para j
 - [x] Patrol routes
 - [x] Escort formation
 - [x] Combat orders
-- [ ] **Guard Profiles & Progression — próxima grande atualização**
-- [ ] Guard levels
-- [ ] Guard ranks (Recruit → Guardsman → Soldier → Veteran → Elite)
-- [ ] XP by damage contribution + Final Blow bonus
-- [ ] Combat statistics (kills / assists)
-- [ ] Natural Quality + star rating
-- [ ] Natural attribute variation
-- [ ] Advanced natural guards / rare natural levels
-- [ ] Natural Captains
-- [ ] Dynamic hiring cost
-- [ ] Muster Roll profile GUI
+- [x] **Guard Profiles & Progression**
+- [x] Profile Core — persistência versionada, migração e API somente leitura
+- [x] Natural Identity — qualidade, estrelas, rolls e origem de spawn
+- [x] Guard levels
+- [x] Guard ranks (Recruit → Guardsman → Soldier → Veteran → Elite)
+- [x] XP by damage contribution + Final Blow bonus
+- [x] Combat statistics (kills / assists)
+- [x] Natural Quality + star rating
+- [x] Natural attribute variation
+- [x] Advanced natural guards / rare natural levels
+- [x] Attribute progression — modificadores idempotentes e configuráveis
+- [x] Natural Captains
+- [x] Dynamic hiring cost
+- [x] Muster Roll profile GUI
 - [ ] Captains
 - [ ] Squads
 - [ ] Additional formations
