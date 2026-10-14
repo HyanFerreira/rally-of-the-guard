@@ -793,21 +793,13 @@ Essas definições formam a base de design para a implementação da atualizaç�
 
 ---
 
-# Atualizações futuras
+# Atualização concluída — Squads & Officers
 
-As versões abaixo são direções planejadas.
-
-Nomes, números de versão, conteúdo e ordem ainda podem mudar.
-
----
-
-# Squads & Officers
-
-Depois que cada guarda possuir identidade própria, o próximo passo natural será organizar esses indivíduos em unidades.
+Com a identidade individual estabelecida, os guardas agora podem ser organizados em unidades persistentes e comandados coletivamente.
 
 ## Squads
 
-O jogador poderá criar grupos personalizados.
+O jogador pode criar, renomear e excluir grupos personalizados.
 
 Exemplos:
 
@@ -820,9 +812,9 @@ Village Patrol
 Royal Guard
 ```
 
-Cada guarda poderá ser atribuído a um squad.
+Cada guarda carregado pode ser atribuído a um squad, com reparo seguro de associações antigas ou excluídas.
 
-O Commander's Ledger deverá permitir selecionar:
+O Commander's Ledger permite selecionar:
 
 ```text
 All Guards
@@ -836,7 +828,7 @@ e então enviar ordens para aquele grupo.
 
 ## Officers
 
-Captains poderão assumir papel real no sistema.
+Captains podem assumir o papel de Officer de um squad. O servidor exige que o Officer esteja vivo, carregado, pertença ao jogador, seja membro do squad e possua o cargo de Captain.
 
 Exemplo:
 
@@ -856,6 +848,14 @@ Possíveis regras futuras:
 - Capitains naturais já podem possuir experiência elevada;
 - Capitains podem funcionar como referência para determinadas formações;
 - pequenos bônus de liderança podem ser avaliados posteriormente.
+
+---
+
+# Atualizações futuras
+
+As versões abaixo são direções planejadas.
+
+Nomes, números de versão, conteúdo e ordem ainda podem mudar.
 
 ---
 
@@ -1431,8 +1431,8 @@ O objetivo final é que Rally of the Guard se torne o complemento natural para j
 - [x] Natural Captains
 - [x] Dynamic hiring cost
 - [x] Muster Roll profile GUI
-- [ ] Captains
-- [ ] Squads
+- [x] Captains como Officers de Squad
+- [x] **Squads & Officers**
 - [ ] Additional formations
 - [ ] Move Here
 - [ ] Defend Area

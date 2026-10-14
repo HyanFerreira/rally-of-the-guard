@@ -11,9 +11,14 @@ rotas de patrulha em loop usando o Livro de Comando.
 
 ## Versão Atual
 
-### 1.3.1
+### 1.5.0
 
 Principais mudanças:
+
+- Pelotões persistentes com nomes personalizados, filtros e ordens coletivas no Livro de Comando.
+- Um Capitão existente pode atuar como Oficial de cada Pelotão.
+- Criação, renomeação, exclusão e atribuição de guardas pela nova tela de gerenciamento.
+- Perfis, progressão, Capitães naturais, custo dinâmico e Registro de Tropa da versão 1.4.0.
 
 - Adicionadas posturas no Livro de Comando: seguir, aguardar, patrulhar e rota.
 - Adicionada tela de rota de patrulha.
@@ -63,6 +68,19 @@ Pelo painel, o jogador pode:
 - Definir uma patrulha fixa na posição atual.
 - Parar uma patrulha.
 - Criar, iniciar, pausar, limpar e editar rotas de patrulha.
+- Filtrar a lista por todos os guardas, guardas sem Pelotão ou um Pelotão específico.
+- Enviar ordens coletivas de convocar, seguir, aguardar e patrulhar ao escopo selecionado.
+- Restringir ordens de combate ao escopo selecionado.
+
+### Pelotões e Oficiais
+
+- O jogador pode criar, renomear e excluir Pelotões com nomes personalizados.
+- Cada guarda contratado pode pertencer a no máximo um Pelotão.
+- Um Capitão que já pertença ao Pelotão pode ser definido como seu único Oficial.
+- Trocar ou remover o Oficial não retira o cargo persistente de Capitão do guarda.
+- Excluir um Pelotão mantém seus guardas e suas ordens atuais; eles passam a aparecer como `Sem Pelotão`.
+- O gerenciamento e os comandos consideram apenas guardas carregados na dimensão atual.
+- Associações de guardas descarregados são preservadas; referências a Pelotões excluídos são reparadas quando o guarda volta a ser carregado.
 
 Estados exibidos:
 
@@ -192,7 +210,7 @@ Os comandos usam o serviço normal de progressão, portanto respeitam a configur
 
 - **Minecraft:** 26.1
 - **Loader:** Fabric
-- **Java:** 21 ou superior
+- **Java:** 25 ou superior
 - **Fabric API**
 - **Guard Villagers (Fabric/Quilt)**
 
@@ -206,6 +224,8 @@ Os comandos usam o serviço normal de progressão, portanto respeitam a configur
 - O sistema de rota atual não substitui a IA do Guard Villagers; ele apenas atualiza dinamicamente o `patrolPos`.
 - A formação do rali não usa `patrolling`; ela usa slots relativos ao jogador e navegação.
 - Ordens de combate atuam sobre guardas em rali/seguindo no mundo atual.
+- Pelotões são definidos no jogador, enquanto cada guarda persiste apenas o UUID de sua associação.
+- Listagem e ordens de Pelotão atuam apenas sobre membros carregados na dimensão do comandante.
 - A proteção contra friendly fire se aplica ao contexto de rali.
 
 ---
@@ -251,6 +271,10 @@ Principais opções:
 - `route.moveSpeed`: velocidade ao mover entre pontos.
 - `route.teleportIfStuck`: permite teleportar guardas de rota que ficaram presos/longe.
 - `route.teleportDistance`: distância mínima para considerar teleporte de rota.
+- `squads.enabled`: ativa o gerenciamento de Pelotões e as ordens coletivas sem apagar dados quando desativado.
+- `squads.maxSquadsPerPlayer`: máximo de Pelotões personalizados por jogador, padrão 16.
+- `squads.maxMembersPerSquad`: máximo de membros carregados por Pelotão, padrão 32.
+- `squads.maxSquadNameLength`: máximo de caracteres Unicode no nome, padrão 24.
 
 ---
 

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -77,6 +78,36 @@ class ResourceSchemaTest {
         assertTrue(portuguese.has("rallyguard.midnightconfig.captainSpawnEnabled"));
         assertTrue(english.has("rallyguard.midnightconfig.captainHireCostBonus"));
         assertTrue(portuguese.has("rallyguard.midnightconfig.captainHireCostBonus"));
+    }
+
+    @Test
+    void squadLabelsAndConfigurationExistInBothSupportedLanguages() throws IOException {
+        JsonObject english = readJson(RESOURCES.resolve("assets/rallyguard/lang/en_us.json"));
+        JsonObject portuguese = readJson(RESOURCES.resolve("assets/rallyguard/lang/pt_br.json"));
+        Set<String> keys = Set.of(
+                "rallyguard.midnightconfig.category.squads",
+                "rallyguard.midnightconfig.squadsEnabled",
+                "rallyguard.midnightconfig.maxSquadsPerPlayer",
+                "rallyguard.midnightconfig.maxMembersPerSquad",
+                "rallyguard.midnightconfig.maxSquadNameLength",
+                "gui.rallyguard.squad.manage",
+                "gui.rallyguard.squad.manage_title",
+                "gui.rallyguard.squad.scope_all",
+                "gui.rallyguard.squad.scope_unassigned",
+                "gui.rallyguard.squad.create",
+                "gui.rallyguard.squad.rename",
+                "gui.rallyguard.squad.delete",
+                "gui.rallyguard.squad.assign",
+                "gui.rallyguard.squad.unassign",
+                "gui.rallyguard.squad.make_officer",
+                "gui.rallyguard.squad.clear_officer",
+                "gui.rallyguard.squad.batch_result",
+                "gui.rallyguard.squad.officer_not_captain"
+        );
+        for (String key : keys) {
+            assertTrue(english.has(key), () -> "Missing English Squad key: " + key);
+            assertTrue(portuguese.has(key), () -> "Missing Portuguese Squad key: " + key);
+        }
     }
 
     private static void assertRecipeResult(String recipeName, String expectedItemId) throws IOException {

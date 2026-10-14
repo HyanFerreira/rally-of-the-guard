@@ -4,8 +4,8 @@ Rally exposes a small common-side API so integrations can issue tactical orders 
 
 ## Compatibility
 
-- Mod version: `1.4.0`
-- API contract version: `3`
+- Mod version: `1.5.0`
+- API contract version: `4`
 - Entry point: `net.hfstack.rallyguard.api.RallyGuardApi`
 
 Integrations should check `RallyGuardApi.apiVersion()` before relying on a newer contract. Additive changes may keep the same contract version; incompatible changes require a new integer version and a coordinated minimum mod dependency.
@@ -116,6 +116,33 @@ The first contract exposes:
 Every method must run on the logical server thread. The service validates that the guard is alive, loaded in the commander's world and tactically owned by that commander. It returns a `GuardCommandResult` with a machine-readable outcome and localized player feedback.
 
 Rally's own packet receiver uses this same service. Integrations must call the service directly on the server and must not construct Rally network payloads.
+
+## Squads and Officers
+
+API version 4 exposes Squad operations through:
+
+```java
+SquadService squads = RallyGuardApi.squads();
+List<SquadView> definitions = squads.list(player);
+GuardSquadView assignment = squads.find(player, guard);
+```
+
+`SquadView` is immutable and contains the stable Squad UUID, display name, and
+optional Officer guard UUID. `GuardSquadView` contains the guard's effective
+Squad and whether that guard is its Officer. A stale assignment whose Squad no
+longer exists is returned as Unassigned and is repaired when writable.
+
+Mutations use `create`, `rename`, `delete`, `assign`, and `setOfficer`. They must
+run on the logical server thread and return `SquadMutationResult`; callers must
+not edit Fabric attachments directly. The default service enforces tactical
+ownership, unique case-insensitive names, configured limits, supported schemas,
+and the rule that an Officer is a living loaded Captain already assigned to the
+same Squad.
+
+Squad definitions persist on the player. A guard persists only its optional
+Squad UUID, so this API does not provide a global member registry. `list` and
+Ledger commands operate on guards currently loaded in the commander's dimension.
+Deleting a Squad never deletes guards or changes their active tactical orders.
 
 ### Tactical-order events
 
