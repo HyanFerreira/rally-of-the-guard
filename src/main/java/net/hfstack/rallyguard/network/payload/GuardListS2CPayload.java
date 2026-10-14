@@ -18,7 +18,8 @@ import net.hfstack.rallyguard.network.codec.MoreCodecs;
 /**
  * S2C: servidor envia lista de guardas (id, nome, patrulhando).
  */
-public record GuardListS2CPayload(List<SquadEntry> squads, List<Entry> entries) implements CustomPacketPayload {
+public record GuardListS2CPayload(boolean squadsEnabled, List<SquadEntry> squads, List<Entry> entries)
+        implements CustomPacketPayload {
     public record Point(int x, int y, int z) {
     }
 
@@ -49,6 +50,7 @@ public record GuardListS2CPayload(List<SquadEntry> squads, List<Entry> entries) 
             new StreamCodec<>() {
                 @Override
                 public void encode(RegistryFriendlyByteBuf buf, GuardListS2CPayload value) {
+                    buf.writeBoolean(value.squadsEnabled());
                     buf.writeVarInt(value.squads().size());
                     for (SquadEntry squad : value.squads()) {
                         MoreCodecs.UUID_CODEC.encode(buf, squad.id());
@@ -80,6 +82,7 @@ public record GuardListS2CPayload(List<SquadEntry> squads, List<Entry> entries) 
 
                 @Override
                 public GuardListS2CPayload decode(RegistryFriendlyByteBuf buf) {
+                    boolean squadsEnabled = buf.readBoolean();
                     int squadCount = buf.readVarInt();
                     if (squadCount < 0 || squadCount > 64) throw new IllegalArgumentException("Invalid squad count");
                     List<SquadEntry> squads = new ArrayList<>(squadCount);
@@ -125,7 +128,7 @@ public record GuardListS2CPayload(List<SquadEntry> squads, List<Entry> entries) 
                                 captain
                         ));
                     }
-                    return new GuardListS2CPayload(squads, list);
+                    return new GuardListS2CPayload(squadsEnabled, squads, list);
                 }
             };
 

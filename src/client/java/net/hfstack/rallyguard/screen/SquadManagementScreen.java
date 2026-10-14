@@ -37,6 +37,10 @@ public final class SquadManagementScreen extends Screen {
     }
 
     void acceptSnapshot(GuardListS2CPayload updated) {
+        if (!updated.squadsEnabled()) {
+            Minecraft.getInstance().setScreen(new GuardCommandScreen(updated));
+            return;
+        }
         UUID selectedId = selected().map(GuardListS2CPayload.SquadEntry::id).orElse(null);
         this.snapshot = updated;
         selectedSquad = 0;

@@ -15,7 +15,8 @@ public final class SquadScreenModel {
     public SquadScreenModel(GuardListS2CPayload snapshot, GuardCommandScope requestedScope) {
         this.snapshot = Objects.requireNonNull(snapshot, "snapshot");
         GuardCommandScope requested = Objects.requireNonNull(requestedScope, "requestedScope");
-        this.scope = requested.squadId().isPresent() && snapshot.squads().stream()
+        this.scope = !snapshot.squadsEnabled()
+                || requested.squadId().isPresent() && snapshot.squads().stream()
                 .noneMatch(squad -> squad.id().equals(requested.squadId().orElseThrow()))
                 ? GuardCommandScope.all()
                 : requested;
@@ -26,7 +27,7 @@ public final class SquadScreenModel {
     }
 
     public List<GuardListS2CPayload.SquadEntry> squads() {
-        return snapshot.squads();
+        return snapshot.squadsEnabled() ? snapshot.squads() : List.of();
     }
 
     public List<GuardListS2CPayload.Entry> allGuards() {

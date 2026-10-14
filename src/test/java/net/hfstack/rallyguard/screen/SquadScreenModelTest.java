@@ -45,8 +45,20 @@ class SquadScreenModelTest {
         assertEquals(2, new SquadScreenModel(snapshot(), GuardCommandScope.all()).pageCount(2));
     }
 
+    @Test
+    void disabledSquadsForceTheAllScopeAndHideSquadData() {
+        GuardListS2CPayload enabled = snapshot();
+        GuardListS2CPayload disabled = new GuardListS2CPayload(false, enabled.squads(), enabled.entries());
+        SquadScreenModel model = new SquadScreenModel(disabled, GuardCommandScope.squad(ALPHA));
+
+        assertEquals(GuardCommandScope.all(), model.scope());
+        assertEquals(List.of(), model.squads());
+        assertEquals(3, model.filteredGuards().size());
+    }
+
     private static GuardListS2CPayload snapshot() {
         return new GuardListS2CPayload(
+                true,
                 List.of(
                         new GuardListS2CPayload.SquadEntry(ALPHA, "Alpha", Optional.of(CAPTAIN)),
                         new GuardListS2CPayload.SquadEntry(BRAVO, "Bravo", Optional.empty())

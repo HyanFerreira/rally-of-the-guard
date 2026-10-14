@@ -12,6 +12,7 @@ import net.hfstack.rallyguard.api.presentation.GuardPresentationRegistry;
 import net.hfstack.rallyguard.api.profile.GuardProfileView;
 import net.hfstack.rallyguard.api.squad.GuardSquadView;
 import net.hfstack.rallyguard.contract.GuardOwnership;
+import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.network.payload.GuardListS2CPayload;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRouteState;
@@ -71,6 +72,6 @@ public final class GuardLedgerSnapshotFactory {
                     captain
             ));
         }
-        return new GuardListS2CPayload(squads, guards);
+        return new GuardListS2CPayload(RallyConfig.squadsEnabled(), squads, guards);
     }
 }

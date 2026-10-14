@@ -152,6 +152,10 @@ public final class GuardCommandNetworking {
     }
 
     private static void handleScopedAction(ServerPlayer player, ScopedGuardActionC2SPayload payload) {
+        if (!RallyConfig.squadsEnabled()) {
+            player.sendOverlayMessage(Component.translatable("gui.rallyguard.squad.disabled"));
+            return;
+        }
         if (!validScope(player, payload.scope())) {
             player.sendOverlayMessage(Component.translatable("gui.rallyguard.squad.not_found"));
             return;
@@ -170,6 +174,7 @@ public final class GuardCommandNetworking {
     }
 
     private static boolean validScope(ServerPlayer player, GuardCommandScope scope) {
+        if (!RallyConfig.squadsEnabled()) return scope.equals(GuardCommandScope.all());
         return scope.squadId().isEmpty() || RallyGuardApi.squads().list(player).stream()
                 .anyMatch(squad -> squad.id().equals(scope.squadId().orElseThrow()));
     }

@@ -29,8 +29,9 @@ class SquadPayloadContractTest {
                 7, GUARD_ID, "Aldric", false, 0, false, 30, List.of(),
                 Optional.empty(), Optional.empty(), Optional.of(SQUAD_ID), true
         );
-        GuardListS2CPayload payload = new GuardListS2CPayload(List.of(squad), List.of(guard));
+        GuardListS2CPayload payload = new GuardListS2CPayload(true, List.of(squad), List.of(guard));
 
+        assertTrue(payload.squadsEnabled());
         assertEquals(SQUAD_ID, payload.squads().getFirst().id());
         assertEquals(GUARD_ID, payload.entries().getFirst().guardId());
         assertEquals(Optional.of(SQUAD_ID), payload.entries().getFirst().squadId());

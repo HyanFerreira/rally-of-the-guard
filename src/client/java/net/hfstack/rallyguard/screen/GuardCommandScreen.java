@@ -131,8 +131,10 @@ public class GuardCommandScreen extends Screen {
         int actionsRight = x + panelW - MARGIN_R;
         int actionsLeft = actionsRight - groupWidth;
 
-        this.addRenderableWidget(Button.builder(scopeLabel(), b -> cycleScope())
-                .bounds(x + 12, y + 20, 150, BTN_H).build());
+        if (snapshot.squadsEnabled()) {
+            this.addRenderableWidget(Button.builder(scopeLabel(), b -> cycleScope())
+                    .bounds(x + 12, y + 20, 150, BTN_H).build());
+        }
 
         for (int i = start; i < end; i++) {
             final int idx = i;
@@ -239,17 +241,19 @@ public class GuardCommandScreen extends Screen {
         ).bounds(x + 38, y + PANEL_H - 28, 76, 20).build();
         this.addRenderableWidget(combat);
 
-        this.addRenderableWidget(Button.builder(
-                Component.translatable("gui.rallyguard.squad.manage"),
-                b -> Minecraft.getInstance().setScreen(new SquadManagementScreen(snapshot, scope))
-        ).bounds(x + 118, y + PANEL_H - 28, 76, 20).build());
+        if (snapshot.squadsEnabled()) {
+            this.addRenderableWidget(Button.builder(
+                    Component.translatable("gui.rallyguard.squad.manage"),
+                    b -> Minecraft.getInstance().setScreen(new SquadManagementScreen(snapshot, scope))
+            ).bounds(x + 118, y + PANEL_H - 28, 76, 20).build());
 
-        int batchY = y + PANEL_H - 56;
-        int batchX = x + 12;
-        addBatchButton(batchX, batchY, 62, "gui.rallyguard.command.summon", NetworkConstants.ACTION_SUMMON);
-        addBatchButton(batchX + 66, batchY, 62, "gui.rallyguard.command.follow", NetworkConstants.ACTION_FOLLOW);
-        addBatchButton(batchX + 132, batchY, 62, "gui.rallyguard.command.wait", NetworkConstants.ACTION_WAIT);
-        addBatchButton(batchX + 198, batchY, 62, "gui.rallyguard.command.patrol", NetworkConstants.ACTION_TOGGLE_PATROL);
+            int batchY = y + PANEL_H - 56;
+            int batchX = x + 12;
+            addBatchButton(batchX, batchY, 62, "gui.rallyguard.command.summon", NetworkConstants.ACTION_SUMMON);
+            addBatchButton(batchX + 66, batchY, 62, "gui.rallyguard.command.follow", NetworkConstants.ACTION_FOLLOW);
+            addBatchButton(batchX + 132, batchY, 62, "gui.rallyguard.command.wait", NetworkConstants.ACTION_WAIT);
+            addBatchButton(batchX + 198, batchY, 62, "gui.rallyguard.command.patrol", NetworkConstants.ACTION_TOGGLE_PATROL);
+        }
     }
 
     private void addBatchButton(int x, int y, int width, String key, int action) {
