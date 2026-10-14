@@ -23,6 +23,7 @@ import net.hfstack.rallyguard.profile.GuardProfileLifecycle;
 import net.hfstack.rallyguard.profile.GuardProfileRepository;
 import net.hfstack.rallyguard.progression.CombatProgressionHandler;
 import net.hfstack.rallyguard.screen.ModScreenHandlers;
+import net.hfstack.rallyguard.squad.SquadAttachments;
 import net.hfstack.rallyguard.util.GuardVillagersConfigPatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,7 @@ public class RallyOfTheGuard implements ModInitializer {
 
         ModComponents.initialize();
         GuardProfileAttachments.initialize();
+        SquadAttachments.initialize();
         GuardProfileLifecycle.register(GuardProfileRepository.instance());
         ModItems.registerModItems();
         ModEffects.registerModEffects();
