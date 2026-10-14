@@ -342,7 +342,10 @@ public class GuardCommandScreen extends Screen {
             int rowMidY = rowTop + (ROW_HEIGHT / 2);
             int rowBot = rowTop + ROW_HEIGHT;
             Optional<Component> presentation = presentationComponent(e);
-            int textY = presentation.isPresent() ? rowTop + 3 : rowMidY - (fontH / 2);
+            int textY = presentation.isPresent()
+                    ? rowTop + 3
+                    : ScreenLayout.centeredLineY(rowTop, ROW_HEIGHT, fontH);
+            int statusY = ScreenLayout.centeredLineY(rowTop, ROW_HEIGHT, fontH);
 
             ctx.fill(x + 6, rowBot - 1, x + panelW - 6, rowBot, 0x22FFFFFF);
 
@@ -362,7 +365,7 @@ public class GuardCommandScreen extends Screen {
 
             int maxStatusW = (actionsLeft - 12) - (x + COL_STATUS_X);
             String status = trimToWidth(statusComponent(e.status()).getString(), maxStatusW);
-            ctx.text(this.font, Component.literal(status), x + COL_STATUS_X, textY, MUTED);
+            ctx.text(this.font, Component.literal(status), x + COL_STATUS_X, statusY, MUTED);
         }
 
         drawPageIndicator(ctx, x, y);
