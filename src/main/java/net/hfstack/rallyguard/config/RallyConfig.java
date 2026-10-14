@@ -143,6 +143,18 @@ public final class RallyConfig extends MidnightConfig {
     @Entry(category = "route", min = 2.0, max = 512.0)
     public static double routeTeleportDistance = 30.0;
 
+    @Entry(category = "squads")
+    public static boolean squadsEnabled = true;
+
+    @Entry(category = "squads", min = 1, max = 64)
+    public static int maxSquadsPerPlayer = 16;
+
+    @Entry(category = "squads", min = 1, max = 256)
+    public static int maxMembersPerSquad = 32;
+
+    @Entry(category = "squads", min = 1, max = 48)
+    public static int maxSquadNameLength = 24;
+
     public static void load() {
         MidnightConfig.init(RallyOfTheGuard.MOD_ID, RallyConfig.class);
     }
@@ -329,6 +341,22 @@ public final class RallyConfig extends MidnightConfig {
 
     public static double routeTeleportDistance() {
         return clamp(routeTeleportDistance, 2.0, 512.0);
+    }
+
+    public static boolean squadsEnabled() {
+        return squadsEnabled;
+    }
+
+    public static int maxSquadsPerPlayer() {
+        return clamp(maxSquadsPerPlayer, 1, 64);
+    }
+
+    public static int maxMembersPerSquad() {
+        return clamp(maxMembersPerSquad, 1, 256);
+    }
+
+    public static int maxSquadNameLength() {
+        return clamp(maxSquadNameLength, 1, 48);
     }
 
     private static int clamp(int value, int min, int max) {

@@ -5,6 +5,8 @@ import net.hfstack.rallyguard.api.profile.GuardProfileAccess;
 import net.hfstack.rallyguard.api.progression.GuardProgressionService;
 import net.hfstack.rallyguard.api.recruitment.GuardRecruitmentService;
 import net.hfstack.rallyguard.api.recruitment.GuardHiringValueService;
+import net.hfstack.rallyguard.api.squad.SquadService;
+import net.hfstack.rallyguard.squad.DefaultSquadService;
 import net.hfstack.rallyguard.service.DefaultGuardHiringValueService;
 import net.hfstack.rallyguard.service.DefaultGuardCommandService;
 import net.hfstack.rallyguard.service.DefaultGuardRecruitmentService;
@@ -13,11 +15,12 @@ import net.hfstack.rallyguard.service.DefaultGuardRecruitmentService;
  * Stable entry point for integrations with Rally of the Guard.
  */
 public final class RallyGuardApi {
-    public static final int API_VERSION = 3;
+    public static final int API_VERSION = 4;
 
     private static final GuardHiringValueService HIRING_VALUES = new DefaultGuardHiringValueService();
     private static final GuardCommandService GUARD_COMMANDS = new DefaultGuardCommandService();
     private static final GuardRecruitmentService GUARD_RECRUITMENT = new DefaultGuardRecruitmentService();
+    private static final SquadService SQUADS = new DefaultSquadService();
 
     private RallyGuardApi() {
     }
@@ -44,5 +47,9 @@ public final class RallyGuardApi {
 
     public static GuardProgressionService progression() {
         return net.hfstack.rallyguard.progression.GuardProgressionService.instance();
+    }
+
+    public static SquadService squads() {
+        return SQUADS;
     }
 }

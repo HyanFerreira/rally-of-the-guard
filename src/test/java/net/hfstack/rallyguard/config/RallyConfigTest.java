@@ -8,6 +8,32 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RallyConfigTest {
     @Test
+    void squadSettingsDefaultAndClampToSupportedRanges() {
+        boolean originalEnabled = RallyConfig.squadsEnabled;
+        int originalSquads = RallyConfig.maxSquadsPerPlayer;
+        int originalMembers = RallyConfig.maxMembersPerSquad;
+        int originalName = RallyConfig.maxSquadNameLength;
+        try {
+            assertTrue(RallyConfig.squadsEnabled());
+            assertEquals(16, RallyConfig.maxSquadsPerPlayer());
+            assertEquals(32, RallyConfig.maxMembersPerSquad());
+            assertEquals(24, RallyConfig.maxSquadNameLength());
+
+            RallyConfig.maxSquadsPerPlayer = 100;
+            RallyConfig.maxMembersPerSquad = 0;
+            RallyConfig.maxSquadNameLength = 99;
+            assertEquals(64, RallyConfig.maxSquadsPerPlayer());
+            assertEquals(1, RallyConfig.maxMembersPerSquad());
+            assertEquals(48, RallyConfig.maxSquadNameLength());
+        } finally {
+            RallyConfig.squadsEnabled = originalEnabled;
+            RallyConfig.maxSquadsPerPlayer = originalSquads;
+            RallyConfig.maxMembersPerSquad = originalMembers;
+            RallyConfig.maxSquadNameLength = originalName;
+        }
+    }
+
+    @Test
     void retreatDefaultsAndDistanceClampsToSupportedRange() {
         boolean originalEnabled = RallyConfig.rallyRetreatEnabled;
         double originalDistance = RallyConfig.rallyRetreatDistance;
