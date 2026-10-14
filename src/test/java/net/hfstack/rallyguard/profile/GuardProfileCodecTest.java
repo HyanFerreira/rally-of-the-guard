@@ -151,6 +151,34 @@ class GuardProfileCodecTest {
     }
 
     @Test
+    void floatingPointFutureSchemasRemainUnavailableAndUntouched() {
+        CompoundTag doubleTag = new CompoundTag();
+        doubleTag.putDouble("schema_version", 2.0D);
+        doubleTag.putString("future_field", "double");
+        CompoundTag floatTag = new CompoundTag();
+        floatTag.putFloat("schema_version", 2.0F);
+        floatTag.putString("future_field", "float");
+        CompoundTag doubleBefore = doubleTag.copy();
+        CompoundTag floatBefore = floatTag.copy();
+
+        GuardProfileReadResult.FutureSchema doubleResult = assertInstanceOf(
+                GuardProfileReadResult.FutureSchema.class,
+                GuardProfileCodec.decode(doubleTag)
+        );
+        GuardProfileReadResult.FutureSchema floatResult = assertInstanceOf(
+                GuardProfileReadResult.FutureSchema.class,
+                GuardProfileCodec.decode(floatTag)
+        );
+
+        assertEquals(2, doubleResult.schemaVersion());
+        assertEquals(2, floatResult.schemaVersion());
+        assertEquals(doubleBefore, doubleTag);
+        assertEquals(floatBefore, floatTag);
+        assertFalse(GuardProfilePersistencePolicy.canWrite(doubleResult));
+        assertFalse(GuardProfilePersistencePolicy.canWrite(floatResult));
+    }
+
+    @Test
     void oversizedLongIntFieldsClampWithoutWrapping() {
         CompoundTag tag = fullTag();
         tag.putLong("natural_quality", Long.MAX_VALUE);

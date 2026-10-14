@@ -45,7 +45,7 @@ public final class GuardProfileCodec {
         if (tag == null) return new GuardProfileReadResult.Absent();
 
         RepairTracker repairs = new RepairTracker();
-        int schemaVersion = readInt(tag, SCHEMA_VERSION, GuardProfile.CURRENT_SCHEMA_VERSION, repairs);
+        int schemaVersion = readSchemaVersion(tag, repairs);
         if (schemaVersion > GuardProfile.CURRENT_SCHEMA_VERSION) {
             return new GuardProfileReadResult.FutureSchema(schemaVersion);
         }
@@ -111,6 +111,32 @@ public final class GuardProfileCodec {
             repairs.mark();
         }
         return origin;
+    }
+
+    private static int readSchemaVersion(CompoundTag tag, RepairTracker repairs) {
+        Tag stored = tag.get(SCHEMA_VERSION);
+        if (!(stored instanceof NumericTag numeric)) {
+            repairs.mark();
+            return GuardProfile.CURRENT_SCHEMA_VERSION;
+        }
+
+        if (isIntegral(stored)) {
+            long value = numeric.longValue();
+            if (stored.getId() != Tag.TAG_INT || value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
+                repairs.mark();
+            }
+            if (value < Integer.MIN_VALUE) return Integer.MIN_VALUE;
+            if (value > Integer.MAX_VALUE) return Integer.MAX_VALUE;
+            return (int) value;
+        }
+
+        repairs.mark();
+        double value = numeric.doubleValue();
+        if (Double.isNaN(value)) return GuardProfile.CURRENT_SCHEMA_VERSION;
+        if (value > Integer.MAX_VALUE) return Integer.MAX_VALUE;
+        if (value < Integer.MIN_VALUE) return Integer.MIN_VALUE;
+        if (value > GuardProfile.CURRENT_SCHEMA_VERSION) return (int) Math.ceil(value);
+        return (int) value;
     }
 
     private static int readInt(CompoundTag tag, String key, int fallback, RepairTracker repairs) {
