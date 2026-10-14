@@ -1,7 +1,29 @@
 # Changelog
 
-## Unreleased
+## Unreleased — planned 1.4.0
 
+- Added deterministic natural quality, attribute rolls, initial levels, ranks, and star ratings for guards.
+- Added persistent Natural Captains with configurable spawn chance, minimum level, loaded-region control, Muster Roll display, and hiring-cost bonus.
+- Fixed village guard batches evaluating Captain limits before earlier guards had entered the world.
+- Migrated schema-1 profiles to schema 2 as non-Captains without rerolling existing identities.
+- Migrated Profile Core neutral placeholders once without rerolling identities on later reloads.
+- Classified trustworthy natural and structure spawns separately from commands, spawn items, and spawners.
+- Applied stable natural and level attribute modifiers without replacing Guard Villagers base values.
+- Added progression toggles and health-preserving attribute refresh behavior.
+- Added server-side combat contribution XP with final-blow weighting, kill and assist statistics, and timeout cleanup.
+- Added datapack-controlled XP target and threat-category tags plus configurable XP and assist thresholds.
+- Added public progression operations and isolated XP/stat/level events for integrations.
+- Added rank-, level-, and quality-based dynamic hiring costs with configurable multiplier and bounds.
+- Added server-authoritative recruitment quotes that detect changed offers before charging the player.
+- Updated the hiring screen to display the synchronized server quote instead of local static configuration.
+- Added the permanent Muster Roll item, recipe, and read-only guard profile screen.
+- Added bounded server snapshots with live level, rank, stars, XP, attributes, combat record, service status, and hiring offer.
+- Added one-second change-only profile updates and automatic session closure when inspection becomes invalid.
+- Added operator-only `/rallyguard xp add` and `/rallyguard xp get` commands for testing nearby or explicitly selected guards without combat grinding.
+- Refined profile and command screen alignment, including a wider Muster Roll, centered hiring offer, and vertically centered guard status.
+- Fixed Guard Villagers melee guards continuously backpedaling when fighting without a shield while preserving shield-based retreat behavior.
+- Corrected Guard Villagers crossbow projectile speed to the vanilla mob value so guards can hit shorter targets reliably.
+- Kept guards immobile during Rally hiring and Muster Roll interactions, releasing them safely when the last viewer closes or disconnects.
 - Prevented hired guards from targeting or damaging companions owned by the same commander.
 - Rejected manual combat orders against commander-owned companions.
 - Added automatic Rally retreat when a fighting guard moves more than 24 blocks from the commander.
