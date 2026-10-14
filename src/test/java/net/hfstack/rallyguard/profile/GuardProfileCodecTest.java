@@ -22,12 +22,13 @@ class GuardProfileCodecTest {
             "armor_roll",
             "speed_roll",
             "kills",
-            "assists"
+            "assists",
+            "captain"
     );
 
     @Test
-    void roundTripPreservesEverySchemaV1Field() {
-        GuardProfile original = GuardProfile.createV1(
+    void roundTripPreservesEverySchemaV2Field() {
+        GuardProfile original = GuardProfile.createV2(
                 GuardProfileOrigin.NATURAL,
                 155_750,
                 7_350,
@@ -36,7 +37,8 @@ class GuardProfileCodecTest {
                 6_100,
                 900,
                 14,
-                9
+                9,
+                true
         );
 
         GuardProfileReadResult.Available result = available(GuardProfileCodec.decode(
@@ -44,17 +46,47 @@ class GuardProfileCodecTest {
         ));
 
         assertEquals(original, result.profile());
+        assertTrue(result.profile().captain());
         assertFalse(result.repaired());
     }
 
     @Test
-    void missingSchemaIsRepairedAsVersionOne() {
+    void schemaOneMigratesWithoutRetroactivelyCreatingCaptain() {
         CompoundTag tag = fullTag();
-        tag.remove("schema_version");
+        tag.putInt("schema_version", 1);
+        tag.remove("captain");
 
         GuardProfileReadResult.Available result = available(GuardProfileCodec.decode(tag));
 
-        assertEquals(1, result.profile().schemaVersion());
+        assertEquals(2, result.profile().schemaVersion());
+        assertFalse(result.profile().captain());
+        assertTrue(result.repaired());
+    }
+
+    @Test
+    void roundTripPreservesPlaceholderGenerationForOneTimeMigration() {
+        GuardProfile original = GuardProfile.legacyNeutral();
+
+        GuardProfileReadResult.Available result = available(GuardProfileCodec.decode(
+                GuardProfileCodec.encode(original)
+        ));
+
+        assertEquals(GuardProfile.PROFILE_CORE_PLACEHOLDER_GENERATION_VERSION,
+                result.profile().generationVersion());
+        assertFalse(result.repaired());
+        assertTrue(NaturalIdentityMigration.isProfileCorePlaceholder(result.profile()));
+    }
+
+    @Test
+    void missingSchemaAndCaptainAreRepairedConservatively() {
+        CompoundTag tag = fullTag();
+        tag.remove("schema_version");
+        tag.remove("captain");
+
+        GuardProfileReadResult.Available result = available(GuardProfileCodec.decode(tag));
+
+        assertEquals(2, result.profile().schemaVersion());
+        assertFalse(result.profile().captain());
         assertTrue(result.repaired());
     }
 
@@ -121,9 +153,20 @@ class GuardProfileCodecTest {
     }
 
     @Test
+    void malformedCaptainValueCannotPromoteAnExistingGuard() {
+        CompoundTag tag = fullTag();
+        tag.putByte("captain", (byte) 2);
+
+        GuardProfileReadResult.Available result = available(GuardProfileCodec.decode(tag));
+
+        assertFalse(result.profile().captain());
+        assertTrue(result.repaired());
+    }
+
+    @Test
     void futureSchemaReturnsFutureResultWithoutProfile() {
         CompoundTag tag = new CompoundTag();
-        tag.putInt("schema_version", 2);
+        tag.putInt("schema_version", 3);
         tag.putString("future_field", "keep-me");
 
         GuardProfileReadResult.FutureSchema result = assertInstanceOf(
@@ -131,7 +174,7 @@ class GuardProfileCodecTest {
                 GuardProfileCodec.decode(tag)
         );
 
-        assertEquals(2, result.schemaVersion());
+        assertEquals(3, result.schemaVersion());
     }
 
     @Test
@@ -153,10 +196,10 @@ class GuardProfileCodecTest {
     @Test
     void floatingPointFutureSchemasRemainUnavailableAndUntouched() {
         CompoundTag doubleTag = new CompoundTag();
-        doubleTag.putDouble("schema_version", 2.0D);
+        doubleTag.putDouble("schema_version", 3.0D);
         doubleTag.putString("future_field", "double");
         CompoundTag floatTag = new CompoundTag();
-        floatTag.putFloat("schema_version", 2.0F);
+        floatTag.putFloat("schema_version", 3.0F);
         floatTag.putString("future_field", "float");
         CompoundTag doubleBefore = doubleTag.copy();
         CompoundTag floatBefore = floatTag.copy();
@@ -170,8 +213,8 @@ class GuardProfileCodecTest {
                 GuardProfileCodec.decode(floatTag)
         );
 
-        assertEquals(2, doubleResult.schemaVersion());
-        assertEquals(2, floatResult.schemaVersion());
+        assertEquals(3, doubleResult.schemaVersion());
+        assertEquals(3, floatResult.schemaVersion());
         assertEquals(doubleBefore, doubleTag);
         assertEquals(floatBefore, floatTag);
         assertFalse(GuardProfilePersistencePolicy.canWrite(doubleResult));
@@ -206,7 +249,7 @@ class GuardProfileCodecTest {
     @Test
     void futureSchemaDecodeDoesNotMutateOriginalCompound() {
         CompoundTag tag = new CompoundTag();
-        tag.putInt("schema_version", 2);
+        tag.putInt("schema_version", 3);
         tag.putString("future_field", "keep-me");
         CompoundTag before = tag.copy();
 
@@ -232,7 +275,7 @@ class GuardProfileCodecTest {
     }
 
     private static CompoundTag fullTag() {
-        return GuardProfileCodec.encode(GuardProfile.createV1(
+        return GuardProfileCodec.encode(GuardProfile.createV2(
                 GuardProfileOrigin.NATURAL,
                 155_750,
                 7_350,
@@ -241,7 +284,8 @@ class GuardProfileCodecTest {
                 6_100,
                 900,
                 14,
-                9
+                9,
+                true
         ));
     }
 }

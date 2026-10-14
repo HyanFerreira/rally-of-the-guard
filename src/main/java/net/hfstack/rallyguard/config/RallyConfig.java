@@ -17,6 +17,66 @@ public final class RallyConfig extends MidnightConfig {
     @Entry(category = "economy")
     public static String hireItem = "minecraft:emerald";
 
+    @Entry(category = "economy")
+    public static boolean dynamicHireCostEnabled = true;
+
+    @Entry(category = "economy", min = 0.0, max = 100.0)
+    public static double dynamicHireCostMultiplier = 1.0;
+
+    @Entry(category = "economy", min = 0, max = 999)
+    public static int dynamicHireCostMinimum = 1;
+
+    @Entry(category = "economy", min = 0, max = 999)
+    public static int dynamicHireCostMaximum = 999;
+
+    @Entry(category = "economy", min = 0, max = 999)
+    public static int captainHireCostBonus = 4;
+
+    @Entry(category = "progression")
+    public static boolean progressionEnabled = true;
+
+    @Entry(category = "progression")
+    public static boolean naturalVariationEnabled = true;
+
+    @Entry(category = "progression")
+    public static boolean statGrowthEnabled = true;
+
+    @Entry(category = "progression")
+    public static boolean advancedNaturalGuardsEnabled = true;
+
+    @Entry(category = "progression")
+    public static boolean captainSpawnEnabled = true;
+
+    @Entry(category = "progression", min = 0.0, max = 1.0)
+    public static double captainSpawnChance = 0.05;
+
+    @Entry(category = "progression", min = 1, max = 10)
+    public static int captainMinimumLevel = 5;
+
+    @Entry(category = "progression", min = 1.0, max = 512.0)
+    public static double captainRegionalRadius = 128.0;
+
+    @Entry(category = "progression", min = 0, max = 32)
+    public static int captainRegionalLimit = 2;
+
+    @Entry(category = "progression", min = 0.0, max = 100.0)
+    public static double xpMultiplier = 1.0;
+
+    @Entry(category = "progression", min = 1, max = 600)
+    public static int combatTimeoutSeconds = 30;
+
+    @Entry(category = "progression", min = 0.0, max = 1.0)
+    public static double damageContributionShare = 0.80;
+
+    @Entry(category = "progression", min = 0.0, max = 1.0)
+    public static double finalBlowShare = 0.20;
+
+    @Entry(category = "progression", min = 0.0, max = 1000.0)
+    public static double assistMinimumDamage = 1.0;
+
+    @Entry(category = "progression", min = 0.0, max = 1.0)
+    public static double assistMinimumShare = 0.05;
+
     @Entry(category = "rally", min = 1, max = 512)
     public static int rallyRadius = 50;
 
@@ -101,6 +161,86 @@ public final class RallyConfig extends MidnightConfig {
 
     public static String hireItemId() {
         return hireItem;
+    }
+
+    public static boolean dynamicHireCostEnabled() {
+        return dynamicHireCostEnabled;
+    }
+
+    public static double dynamicHireCostMultiplier() {
+        return finiteClamp(dynamicHireCostMultiplier, 0.0, 100.0, 1.0);
+    }
+
+    public static int dynamicHireCostMinimum() {
+        return clamp(dynamicHireCostMinimum, 0, 999);
+    }
+
+    public static int dynamicHireCostMaximum() {
+        return Math.max(dynamicHireCostMinimum(), clamp(dynamicHireCostMaximum, 0, 999));
+    }
+
+    public static int captainHireCostBonus() {
+        return clamp(captainHireCostBonus, 0, 999);
+    }
+
+    public static boolean progressionEnabled() {
+        return progressionEnabled;
+    }
+
+    public static boolean naturalVariationEnabled() {
+        return naturalVariationEnabled;
+    }
+
+    public static boolean statGrowthEnabled() {
+        return statGrowthEnabled;
+    }
+
+    public static boolean advancedNaturalGuardsEnabled() {
+        return advancedNaturalGuardsEnabled;
+    }
+
+    public static boolean naturalCaptainsEnabled() {
+        return advancedNaturalGuardsEnabled() && captainSpawnEnabled;
+    }
+
+    public static double captainSpawnChance() {
+        return finiteClamp(captainSpawnChance, 0.0, 1.0, 0.05);
+    }
+
+    public static int captainMinimumLevel() {
+        return clamp(captainMinimumLevel, 1, 10);
+    }
+
+    public static double captainRegionalRadius() {
+        return finiteClamp(captainRegionalRadius, 1.0, 512.0, 128.0);
+    }
+
+    public static int captainRegionalLimit() {
+        return clamp(captainRegionalLimit, 0, 32);
+    }
+
+    public static double xpMultiplier() {
+        return finiteClamp(xpMultiplier, 0.0, 100.0, 1.0);
+    }
+
+    public static int combatTimeoutTicks() {
+        return clamp(combatTimeoutSeconds, 1, 600) * 20;
+    }
+
+    public static double damageContributionShare() {
+        return finiteClamp(damageContributionShare, 0.0, 1.0, 0.80);
+    }
+
+    public static double finalBlowShare() {
+        return finiteClamp(finalBlowShare, 0.0, 1.0, 0.20);
+    }
+
+    public static double assistMinimumDamage() {
+        return finiteClamp(assistMinimumDamage, 0.0, 1000.0, 1.0);
+    }
+
+    public static double assistMinimumShare() {
+        return finiteClamp(assistMinimumShare, 0.0, 1.0, 0.05);
     }
 
     public static int rallyRadius() {
@@ -197,5 +337,9 @@ public final class RallyConfig extends MidnightConfig {
 
     private static double clamp(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));
+    }
+
+    private static double finiteClamp(double value, double min, double max, double fallback) {
+        return Double.isFinite(value) ? clamp(value, min, max) : fallback;
     }
 }

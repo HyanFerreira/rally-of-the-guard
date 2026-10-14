@@ -30,10 +30,17 @@ public final class GuardProfileLifecycle {
 
             try {
                 GuardProfileReadResult current = repository.read(guard);
-                if (GuardProfileInitializationPolicy.shouldInitialize(true, current)) {
-                    repository.getOrCreateLegacy(guard);
-                    RallyOfTheGuard.LOGGER.debug("Initialized legacy profile for guard {}", guard.getUUID());
-                    return;
+                var spawnReason = GuardSpawnContextTracker.consume(guard.getUUID());
+                boolean initialized = spawnReason.isPresent()
+                        ? GuardProfileInitializer.initializeSpawn(
+                                guard,
+                                spawnReason.orElseThrow(),
+                                repository
+                        )
+                        : GuardProfileInitializer.initializeOrMigrateLegacy(guard, current, repository);
+                if (initialized) {
+                    RallyOfTheGuard.LOGGER.debug("Initialized guard profile for {}", guard.getUUID());
+                    current = repository.read(guard);
                 }
 
                 if (GuardProfilePersistencePolicy.shouldCanonicalize(current)) {
@@ -47,11 +54,23 @@ public final class GuardProfileLifecycle {
                             guard.getUUID(),
                             future.schemaVersion());
                 }
+                if (current instanceof GuardProfileReadResult.Available available) {
+                    GuardAttributeApplier.apply(
+                            guard,
+                            available.profile(),
+                            initialized
+                                    ? GuardAttributeApplicationCause.INITIALIZATION
+                                    : GuardAttributeApplicationCause.LOAD
+                    );
+                }
             } catch (Exception exception) {
                 RallyOfTheGuard.LOGGER.error("Failed to initialize profile for guard {}", guard.getUUID(), exception);
             }
         });
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> clearFutureSchemaWarnings());
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+            clearFutureSchemaWarnings();
+            GuardSpawnContextTracker.clear();
+        });
         registered = true;
     }
 

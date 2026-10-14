@@ -34,7 +34,9 @@ class GuardProfileAccessTest {
 
     @Test
     void futureSchemaReturnsEmpty() {
-        assertTrue(GuardProfileAccess.viewOf(new GuardProfileReadResult.FutureSchema(2)).isEmpty());
+        assertTrue(GuardProfileAccess.viewOf(new GuardProfileReadResult.FutureSchema(
+                GuardProfile.CURRENT_SCHEMA_VERSION + 1
+        )).isEmpty());
     }
 
     @Test
@@ -50,7 +52,13 @@ class GuardProfileAccessTest {
                 "armorRoll",
                 "speedRoll",
                 "kills",
-                "assists");
+                "assists",
+                "captain",
+                "level",
+                "rank",
+                "qualityStars",
+                "xpIntoLevelMilli",
+                "xpForNextLevelMilli");
         Method[] methods = GuardProfileView.class.getDeclaredMethods();
         Set<String> actualMethods = Arrays.stream(methods)
                 .map(Method::getName)
@@ -58,5 +66,10 @@ class GuardProfileAccessTest {
 
         assertEquals(expectedAccessors, actualMethods);
         assertTrue(Arrays.stream(methods).allMatch(method -> method.getParameterCount() == 0));
+    }
+
+    @Test
+    void captainAccessorKeepsExistingImplementationsSourceCompatible() throws NoSuchMethodException {
+        assertTrue(GuardProfileView.class.getMethod("captain").isDefault());
     }
 }

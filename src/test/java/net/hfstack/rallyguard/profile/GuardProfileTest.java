@@ -6,14 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GuardProfileTest {
     @Test
-    void createV1ClampsQualityToZeroThroughTenThousand() {
+    void createV2ClampsQualityToZeroThroughTenThousand() {
         assertEquals(0, profileWithQuality(-1).naturalQuality());
         assertEquals(10_000, profileWithQuality(10_001).naturalQuality());
     }
 
     @Test
-    void createV1ClampsEveryRollToSignedTenThousand() {
-        GuardProfile profile = GuardProfile.createV1(
+    void createV2ClampsEveryRollToSignedTenThousand() {
+        GuardProfile profile = GuardProfile.createV2(
                 GuardProfileOrigin.NATURAL,
                 0,
                 5_000,
@@ -22,7 +22,8 @@ class GuardProfileTest {
                 Integer.MIN_VALUE,
                 Integer.MAX_VALUE,
                 0,
-                0
+                0,
+                false
         );
 
         assertEquals(-10_000, profile.healthRoll());
@@ -32,8 +33,8 @@ class GuardProfileTest {
     }
 
     @Test
-    void createV1ClampsNegativeXpKillsAndAssistsToZero() {
-        GuardProfile profile = GuardProfile.createV1(
+    void createV2ClampsNegativeXpKillsAndAssistsToZero() {
+        GuardProfile profile = GuardProfile.createV2(
                 GuardProfileOrigin.COMMAND,
                 -1,
                 5_000,
@@ -42,7 +43,8 @@ class GuardProfileTest {
                 0,
                 0,
                 -2,
-                -3
+                -3,
+                false
         );
 
         assertEquals(0, profile.totalXpMilli());
@@ -51,8 +53,8 @@ class GuardProfileTest {
     }
 
     @Test
-    void createV1HandlesLongMinValueWithoutOverflow() {
-        GuardProfile profile = GuardProfile.createV1(
+    void createV2HandlesLongMinValueWithoutOverflow() {
+        GuardProfile profile = GuardProfile.createV2(
                 GuardProfileOrigin.OTHER,
                 Long.MIN_VALUE,
                 5_000,
@@ -61,7 +63,8 @@ class GuardProfileTest {
                 0,
                 0,
                 Long.MIN_VALUE,
-                Long.MIN_VALUE
+                Long.MIN_VALUE,
+                false
         );
 
         assertEquals(0, profile.totalXpMilli());
@@ -70,10 +73,10 @@ class GuardProfileTest {
     }
 
     @Test
-    void legacyNeutralUsesV1LegacyLevelOneDefaults() {
+    void legacyNeutralUsesSchemaTwoLegacyLevelOneDefaults() {
         GuardProfile profile = GuardProfile.legacyNeutral();
 
-        assertEquals(1, profile.schemaVersion());
+        assertEquals(2, profile.schemaVersion());
         assertEquals(1, profile.generationVersion());
         assertEquals(GuardProfileOrigin.LEGACY, profile.originType());
         assertEquals("legacy", profile.origin());
@@ -85,6 +88,7 @@ class GuardProfileTest {
         assertEquals(0, profile.speedRoll());
         assertEquals(0, profile.kills());
         assertEquals(0, profile.assists());
+        assertEquals(false, profile.captain());
     }
 
     @Test
@@ -94,7 +98,7 @@ class GuardProfileTest {
     }
 
     private static GuardProfile profileWithQuality(int quality) {
-        return GuardProfile.createV1(
+        return GuardProfile.createV2(
                 GuardProfileOrigin.NATURAL,
                 0,
                 quality,
@@ -103,7 +107,8 @@ class GuardProfileTest {
                 0,
                 0,
                 0,
-                0
+                0,
+                false
         );
     }
 }

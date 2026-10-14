@@ -28,7 +28,11 @@ public final class GuardProfileRepository {
             return current;
         }
 
-        GuardProfile profile = GuardProfile.legacyNeutral();
+        GuardProfile profile = GuardProfileGenerator.generate(
+                guard.getUUID(),
+                GuardProfileOrigin.LEGACY,
+                false
+        );
         guard.setAttached(GuardProfileAttachments.PROFILE, GuardProfileCodec.encode(profile));
         return new GuardProfileReadResult.Available(profile, false);
     }

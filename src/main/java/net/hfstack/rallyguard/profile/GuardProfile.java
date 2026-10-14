@@ -5,6 +5,7 @@ import net.hfstack.rallyguard.api.profile.GuardProfileView;
 import java.util.Objects;
 
 public record GuardProfile(
+        int generationVersion,
         GuardProfileOrigin originType,
         long totalXpMilli,
         int naturalQuality,
@@ -13,16 +14,19 @@ public record GuardProfile(
         int armorRoll,
         int speedRoll,
         long kills,
-        long assists
+        long assists,
+        boolean captain
 ) implements GuardProfileView {
-    public static final int CURRENT_SCHEMA_VERSION = 1;
-    public static final int CURRENT_GENERATION_VERSION = 1;
+    public static final int CURRENT_SCHEMA_VERSION = 2;
+    public static final int PROFILE_CORE_PLACEHOLDER_GENERATION_VERSION = 1;
+    public static final int CURRENT_GENERATION_VERSION = 3;
     public static final int QUALITY_MIN = 0;
     public static final int QUALITY_MAX = 10_000;
     public static final int ROLL_MIN = -10_000;
     public static final int ROLL_MAX = 10_000;
 
     public GuardProfile {
+        generationVersion = Math.max(PROFILE_CORE_PLACEHOLDER_GENERATION_VERSION, generationVersion);
         originType = Objects.requireNonNull(originType, "originType");
         totalXpMilli = nonNegative(totalXpMilli);
         naturalQuality = clamp(naturalQuality, QUALITY_MIN, QUALITY_MAX);
@@ -34,7 +38,7 @@ public record GuardProfile(
         assists = nonNegative(assists);
     }
 
-    public static GuardProfile createV1(
+    public static GuardProfile createV2(
             GuardProfileOrigin originType,
             long totalXpMilli,
             int naturalQuality,
@@ -43,9 +47,11 @@ public record GuardProfile(
             int armorRoll,
             int speedRoll,
             long kills,
-            long assists
+            long assists,
+            boolean captain
     ) {
         return new GuardProfile(
+                CURRENT_GENERATION_VERSION,
                 originType,
                 totalXpMilli,
                 naturalQuality,
@@ -54,22 +60,74 @@ public record GuardProfile(
                 armorRoll,
                 speedRoll,
                 kills,
-                assists
+                assists,
+                captain
+        );
+    }
+
+    static GuardProfile restoreV2(
+            int generationVersion,
+            GuardProfileOrigin originType,
+            long totalXpMilli,
+            int naturalQuality,
+            int healthRoll,
+            int attackRoll,
+            int armorRoll,
+            int speedRoll,
+            long kills,
+            long assists,
+            boolean captain
+    ) {
+        return new GuardProfile(
+                generationVersion,
+                originType,
+                totalXpMilli,
+                naturalQuality,
+                healthRoll,
+                attackRoll,
+                armorRoll,
+                speedRoll,
+                kills,
+                assists,
+                captain
         );
     }
 
     public static GuardProfile legacyNeutral() {
-        return createV1(GuardProfileOrigin.LEGACY, 0, 5_000, 0, 0, 0, 0, 0, 0);
+        return restoreV2(
+                PROFILE_CORE_PLACEHOLDER_GENERATION_VERSION,
+                GuardProfileOrigin.LEGACY,
+                0,
+                5_000,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                false
+        );
+    }
+
+    public GuardProfile withProgress(long xpAwardMilli, boolean recordKill, boolean recordAssist) {
+        return restoreV2(
+                generationVersion,
+                originType,
+                saturatedAdd(totalXpMilli, Math.max(0, xpAwardMilli)),
+                naturalQuality,
+                healthRoll,
+                attackRoll,
+                armorRoll,
+                speedRoll,
+                recordKill ? saturatedAdd(kills, 1) : kills,
+                recordAssist ? saturatedAdd(assists, 1) : assists,
+                captain
+        );
     }
 
     @Override
     public int schemaVersion() {
         return CURRENT_SCHEMA_VERSION;
-    }
-
-    @Override
-    public int generationVersion() {
-        return CURRENT_GENERATION_VERSION;
     }
 
     @Override
@@ -83,5 +141,12 @@ public record GuardProfile(
 
     private static long nonNegative(long value) {
         return Math.max(0, value);
+    }
+
+    private static long saturatedAdd(long left, long right) {
+        if (right > 0 && left > Long.MAX_VALUE - right) {
+            return Long.MAX_VALUE;
+        }
+        return left + right;
     }
 }

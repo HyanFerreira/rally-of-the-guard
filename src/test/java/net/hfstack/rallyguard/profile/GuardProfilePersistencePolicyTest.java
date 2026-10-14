@@ -26,7 +26,9 @@ class GuardProfilePersistencePolicyTest {
 
     @Test
     void futureSchemaCannotBeOverwritten() {
-        GuardProfileReadResult result = new GuardProfileReadResult.FutureSchema(2);
+        GuardProfileReadResult result = new GuardProfileReadResult.FutureSchema(
+                GuardProfile.CURRENT_SCHEMA_VERSION + 1
+        );
 
         assertFalse(GuardProfilePersistencePolicy.canWrite(result));
         assertFalse(GuardProfilePersistencePolicy.shouldCanonicalize(result));

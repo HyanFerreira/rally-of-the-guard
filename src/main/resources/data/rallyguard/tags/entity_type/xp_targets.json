@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "#rallyguard:xp/common",
+    "#rallyguard:xp/dangerous",
+    "#rallyguard:xp/raid",
+    "#rallyguard:xp/elite",
+    "#rallyguard:xp/raid_elite",
+    "#rallyguard:xp/boss"
+  ]
+}

@@ -19,6 +19,7 @@ public final class GuardProfileCodec {
     private static final String SPEED_ROLL = "speed_roll";
     private static final String KILLS = "kills";
     private static final String ASSISTS = "assists";
+    private static final String CAPTAIN = "captain";
 
     private GuardProfileCodec() {
     }
@@ -38,6 +39,7 @@ public final class GuardProfileCodec {
         tag.putInt(SPEED_ROLL, profile.speedRoll());
         tag.putLong(KILLS, profile.kills());
         tag.putLong(ASSISTS, profile.assists());
+        tag.putBoolean(CAPTAIN, profile.captain());
         return tag;
     }
 
@@ -56,11 +58,12 @@ public final class GuardProfileCodec {
         int generationVersion = readInt(
                 tag,
                 GENERATION_VERSION,
-                GuardProfile.CURRENT_GENERATION_VERSION,
+                GuardProfile.PROFILE_CORE_PLACEHOLDER_GENERATION_VERSION,
                 repairs
         );
-        if (generationVersion != GuardProfile.CURRENT_GENERATION_VERSION) {
+        if (generationVersion < GuardProfile.PROFILE_CORE_PLACEHOLDER_GENERATION_VERSION) {
             repairs.mark();
+            generationVersion = GuardProfile.PROFILE_CORE_PLACEHOLDER_GENERATION_VERSION;
         }
 
         GuardProfileOrigin origin = readOrigin(tag, repairs);
@@ -72,8 +75,10 @@ public final class GuardProfileCodec {
         int speedRoll = readInt(tag, SPEED_ROLL, 0, repairs);
         long kills = readLong(tag, KILLS, 0, repairs);
         long assists = readLong(tag, ASSISTS, 0, repairs);
+        boolean captain = schemaVersion >= 2 && readBoolean(tag, CAPTAIN, false, repairs);
 
-        GuardProfile profile = GuardProfile.createV1(
+        GuardProfile profile = GuardProfile.restoreV2(
+                generationVersion,
                 origin,
                 totalXpMilli,
                 naturalQuality,
@@ -82,7 +87,8 @@ public final class GuardProfileCodec {
                 armorRoll,
                 speedRoll,
                 kills,
-                assists
+                assists,
+                captain
         );
         if (profile.totalXpMilli() != totalXpMilli
                 || profile.naturalQuality() != naturalQuality
@@ -166,6 +172,21 @@ public final class GuardProfileCodec {
             repairs.mark();
         }
         return numeric.longValue();
+    }
+
+    private static boolean readBoolean(CompoundTag tag, String key, boolean fallback, RepairTracker repairs) {
+        Tag stored = tag.get(key);
+        if (!(stored instanceof NumericTag numeric) || !isIntegral(stored)) {
+            repairs.mark();
+            return fallback;
+        }
+
+        long value = numeric.longValue();
+        if (stored.getId() != Tag.TAG_BYTE || (value != 0 && value != 1)) {
+            repairs.mark();
+            return fallback;
+        }
+        return value != 0;
     }
 
     private static boolean isIntegral(Tag tag) {
