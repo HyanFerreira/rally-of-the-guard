@@ -5,6 +5,8 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.hfstack.rallyguard.api.RallyGuardApi;
 import net.hfstack.rallyguard.api.command.GuardCommandResult;
 import net.hfstack.rallyguard.api.command.GuardCommandService;
+import net.hfstack.rallyguard.api.command.GuardBatchCommandResult;
+import net.hfstack.rallyguard.api.command.GuardCommandScope;
 import net.hfstack.rallyguard.api.eligibility.GuardEligibility;
 import net.hfstack.rallyguard.api.eligibility.GuardEligibilityContext;
 import net.hfstack.rallyguard.api.eligibility.GuardEligibilityDecision;
@@ -14,6 +16,7 @@ import net.hfstack.rallyguard.api.presentation.GuardPresentationContext;
 import net.hfstack.rallyguard.api.presentation.GuardPresentationRegistry;
 import net.hfstack.rallyguard.combat.GuardCombatState;
 import net.hfstack.rallyguard.combat.ProtectedAllyPolicy;
+import net.hfstack.rallyguard.combat.ScopedAttackPolicy;
 import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.network.payload.GuardActionC2SPayload;
@@ -21,9 +24,14 @@ import net.hfstack.rallyguard.network.payload.GuardAttackTargetC2SPayload;
 import net.hfstack.rallyguard.network.payload.GuardListS2CPayload;
 import net.hfstack.rallyguard.network.payload.GuardRouteUpdateC2SPayload;
 import net.hfstack.rallyguard.network.payload.OpenGuardCommandC2SPayload;
+import net.hfstack.rallyguard.network.payload.GuardSquadAssignmentC2SPayload;
+import net.hfstack.rallyguard.network.payload.ScopedGuardActionC2SPayload;
+import net.hfstack.rallyguard.network.payload.SquadDefinitionC2SPayload;
+import net.hfstack.rallyguard.network.payload.SquadOfficerC2SPayload;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRouteState;
 import net.hfstack.rallyguard.order.GuardRoutes;
+import net.hfstack.rallyguard.service.GuardBatchCommandExecutor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Monster;
@@ -75,46 +83,108 @@ public final class GuardCommandNetworking {
             ServerPlayer player = context.player();
             context.server().execute(() -> handleAttackTarget(player, payload));
         });
+
+        ServerPlayNetworking.registerGlobalReceiver(SquadDefinitionC2SPayload.ID, (payload, context) -> {
+            ServerPlayer player = context.player();
+            context.server().execute(() -> handleSquadDefinition(player, payload));
+        });
+        ServerPlayNetworking.registerGlobalReceiver(GuardSquadAssignmentC2SPayload.ID, (payload, context) -> {
+            ServerPlayer player = context.player();
+            context.server().execute(() -> handleSquadAssignment(player, payload));
+        });
+        ServerPlayNetworking.registerGlobalReceiver(SquadOfficerC2SPayload.ID, (payload, context) -> {
+            ServerPlayer player = context.player();
+            context.server().execute(() -> handleSquadOfficer(player, payload));
+        });
+        ServerPlayNetworking.registerGlobalReceiver(ScopedGuardActionC2SPayload.ID, (payload, context) -> {
+            ServerPlayer player = context.player();
+            context.server().execute(() -> handleScopedAction(player, payload));
+        });
     }
 
     private static void sendGuardList(ServerPlayer player) {
-        ServerLevel world = player.level();
-        Identifier guardTypeId = Identifier.fromNamespaceAndPath("guardvillagers", "guard");
+        ServerPlayNetworking.send(player, GuardLedgerSnapshotFactory.create(player));
+    }
 
-        List<? extends Entity> guards = world.getEntities(
-                BuiltInRegistries.ENTITY_TYPE.getValue(guardTypeId),
-                e -> GuardOwnership.isOwnedBy(e, player.getUUID())
-        );
-
-        List<GuardListS2CPayload.Entry> list = new ArrayList<>(guards.size());
-        for (Entity g : guards) {
-            if (!(g instanceof GuardEntity guard)) continue;
-            GuardEligibilityDecision visibility = GuardEligibility.evaluate(
-                    GuardEligibilityContext.of(player, guard, GuardEligibilityOperation.SHOW_IN_COMMAND_LIST)
-            );
-            if (visibility instanceof GuardEligibilityDecision.Deny) continue;
-
-            boolean patrolling = guard.isPatrolling();
-            GuardRouteState route = GuardRoutes.get(guard);
-            GuardPresentation presentation = GuardPresentationRegistry.resolve(
-                    new GuardPresentationContext(player, guard, world)
-            );
-            list.add(new GuardListS2CPayload.Entry(
-                    g.getId(),
-                    g.getName().getString(),
-                    patrolling,
-                    GuardOrders.statusOf(guard),
-                    route.active(),
-                    Math.max(0, route.waitTicks() / 20),
-                    route.points().stream()
-                            .map(p -> new GuardListS2CPayload.Point(p.getX(), p.getY(), p.getZ()))
-                            .toList(),
-                    presentation.rank(),
-                    presentation.settlement()
-            ));
+    private static void handleSquadDefinition(ServerPlayer player, SquadDefinitionC2SPayload payload) {
+        var result = switch (payload.action()) {
+            case NetworkConstants.SQUAD_CREATE -> RallyGuardApi.squads().create(player, payload.name());
+            case NetworkConstants.SQUAD_RENAME -> payload.squadId()
+                    .map(id -> RallyGuardApi.squads().rename(player, id, payload.name()))
+                    .orElse(null);
+            case NetworkConstants.SQUAD_DELETE -> payload.squadId()
+                    .map(id -> RallyGuardApi.squads().delete(player, id))
+                    .orElse(null);
+            default -> null;
+        };
+        if (result == null) {
+            player.sendOverlayMessage(Component.translatable("gui.rallyguard.squad.invalid_request"));
+            return;
         }
+        player.sendOverlayMessage(result.feedback());
+        if (result.succeeded()) sendGuardList(player);
+    }
 
-        ServerPlayNetworking.send(player, new GuardListS2CPayload(list));
+    private static void handleSquadAssignment(ServerPlayer player, GuardSquadAssignmentC2SPayload payload) {
+        Entity entity = player.level().getEntity(payload.entityId());
+        if (!(entity instanceof GuardEntity guard)) {
+            player.sendOverlayMessage(Component.translatable("gui.rallyguard.command.not_found"));
+            return;
+        }
+        var result = RallyGuardApi.squads().assign(player, guard, payload.squadId());
+        player.sendOverlayMessage(result.feedback());
+        if (result.succeeded()) sendGuardList(player);
+    }
+
+    private static void handleSquadOfficer(ServerPlayer player, SquadOfficerC2SPayload payload) {
+        Optional<GuardEntity> officer = Optional.empty();
+        if (!payload.clearsOfficer()) {
+            Entity entity = player.level().getEntity(payload.officerEntityId());
+            if (!(entity instanceof GuardEntity guard)) {
+                player.sendOverlayMessage(Component.translatable("gui.rallyguard.command.not_found"));
+                return;
+            }
+            officer = Optional.of(guard);
+        }
+        var result = RallyGuardApi.squads().setOfficer(player, payload.squadId(), officer);
+        player.sendOverlayMessage(result.feedback());
+        if (result.succeeded()) sendGuardList(player);
+    }
+
+    private static void handleScopedAction(ServerPlayer player, ScopedGuardActionC2SPayload payload) {
+        if (!validScope(player, payload.scope())) {
+            player.sendOverlayMessage(Component.translatable("gui.rallyguard.squad.not_found"));
+            return;
+        }
+        List<GuardEntity> guards = loadedScopedGuards(player, payload.scope());
+        GuardBatchCommandResult result = GuardBatchCommandExecutor.executeCandidates(guards, guard -> switch (payload.action()) {
+            case NetworkConstants.ACTION_SUMMON -> COMMANDS.summon(player, guard);
+            case NetworkConstants.ACTION_FOLLOW -> COMMANDS.follow(player, guard);
+            case NetworkConstants.ACTION_WAIT -> COMMANDS.wait(player, guard);
+            case NetworkConstants.ACTION_TOGGLE_PATROL -> COMMANDS.patrol(player, guard, player.blockPosition());
+            default -> GuardCommandResult.invalidGuard();
+        });
+        player.sendOverlayMessage(Component.translatable(
+                "gui.rallyguard.squad.batch_result", result.succeeded(), result.rejected(), result.unavailable()
+        ));
+    }
+
+    private static boolean validScope(ServerPlayer player, GuardCommandScope scope) {
+        return scope.squadId().isEmpty() || RallyGuardApi.squads().list(player).stream()
+                .anyMatch(squad -> squad.id().equals(scope.squadId().orElseThrow()));
+    }
+
+    private static List<GuardEntity> loadedScopedGuards(ServerPlayer player, GuardCommandScope scope) {
+        Identifier guardTypeId = Identifier.fromNamespaceAndPath("guardvillagers", "guard");
+        return player.level().getEntities(
+                BuiltInRegistries.ENTITY_TYPE.getValue(guardTypeId),
+                entity -> entity instanceof GuardEntity guard
+                        && GuardOwnership.isOwnedBy(guard, player.getUUID())
+                        && net.hfstack.rallyguard.squad.GuardScopeMatcher.matches(
+                                scope,
+                                RallyGuardApi.squads().find(player, guard).squad().map(value -> value.id())
+                        )
+        ).stream().filter(GuardEntity.class::isInstance).map(GuardEntity.class::cast).toList();
     }
 
     private static void handleAction(ServerPlayer player, int entityId, int action) {
@@ -232,6 +302,10 @@ public final class GuardCommandNetworking {
             return;
         }
 
+        if (!validScope(player, payload.scope())) {
+            player.sendOverlayMessage(Component.translatable("gui.rallyguard.squad.not_found"));
+            return;
+        }
         Identifier guardTypeId = Identifier.fromNamespaceAndPath("guardvillagers", "guard");
         List<? extends Entity> guards = world.getEntities(
                 BuiltInRegistries.ENTITY_TYPE.getValue(guardTypeId),
@@ -241,7 +315,17 @@ public final class GuardCommandNetworking {
                         && !guard.isPatrolling()
                         && !GuardOrders.isWaiting(guard)
                         && !GuardRoutes.get(guard).active()
-                        && e.distanceToSqr(player) <= RallyConfig.combatGuardSearchRadius() * RallyConfig.combatGuardSearchRadius()
+                        && ScopedAttackPolicy.mayReceiveOrder(
+                                payload.scope(),
+                                RallyGuardApi.squads().find(player, guard).squad().map(value -> value.id()),
+                                true,
+                                (guard.isFollowing() || GuardOrders.isRallied(guard))
+                                        && !guard.isPatrolling()
+                                        && !GuardOrders.isWaiting(guard)
+                                        && !GuardRoutes.get(guard).active(),
+                                e.distanceToSqr(player) <= RallyConfig.combatGuardSearchRadius()
+                                        * RallyConfig.combatGuardSearchRadius()
+                        )
         );
 
         int ordered = 0;

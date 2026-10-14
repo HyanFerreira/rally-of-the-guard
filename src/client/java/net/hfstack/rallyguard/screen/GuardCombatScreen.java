@@ -3,6 +3,7 @@ package net.hfstack.rallyguard.screen;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.hfstack.rallyguard.network.NetworkConstants;
 import net.hfstack.rallyguard.network.payload.GuardAttackTargetC2SPayload;
+import net.hfstack.rallyguard.api.command.GuardCommandScope;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
@@ -23,11 +24,17 @@ public class GuardCombatScreen extends Screen {
 
     private final Screen parent;
     private final Entity target;
+    private final GuardCommandScope scope;
 
     public GuardCombatScreen(Screen parent) {
+        this(parent, GuardCommandScope.all());
+    }
+
+    public GuardCombatScreen(Screen parent, GuardCommandScope scope) {
         super(Component.translatable("gui.rallyguard.combat.title"));
         this.parent = parent;
         this.target = currentTarget();
+        this.scope = scope;
     }
 
     @Override
@@ -73,7 +80,7 @@ public class GuardCombatScreen extends Screen {
 
     private void sendAttack(int mode) {
         int targetId = target != null ? target.getId() : -1;
-        ClientPlayNetworking.send(new GuardAttackTargetC2SPayload(targetId, mode));
+        ClientPlayNetworking.send(new GuardAttackTargetC2SPayload(targetId, mode, scope));
         closeToParent();
     }
 

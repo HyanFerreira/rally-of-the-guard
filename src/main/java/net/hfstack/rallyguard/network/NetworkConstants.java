@@ -28,4 +28,8 @@ public final class NetworkConstants {
     public static final int ATTACK_ALL = 1;
     public static final int ATTACK_INFANTRY = 2;
     public static final int ATTACK_RANGED = 3;
+
+    public static final int SQUAD_CREATE = 1;
+    public static final int SQUAD_RENAME = 2;
+    public static final int SQUAD_DELETE = 3;
 }
