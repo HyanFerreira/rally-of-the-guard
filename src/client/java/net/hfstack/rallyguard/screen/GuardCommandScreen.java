@@ -4,6 +4,9 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.hfstack.rallyguard.network.NetworkConstants;
 import net.hfstack.rallyguard.network.payload.GuardActionC2SPayload;
 import net.hfstack.rallyguard.network.payload.GuardListS2CPayload;
+import net.hfstack.rallyguard.network.payload.ScopedGuardActionC2SPayload;
+import net.hfstack.rallyguard.api.command.GuardCommandScope;
+import net.hfstack.rallyguard.api.command.GuardCommandScopeKind;
 import net.hfstack.rallyguard.order.GuardOrderStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -14,31 +17,35 @@ import net.minecraft.network.chat.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public class GuardCommandScreen extends Screen {
     private static final int WHITE = 0xFFFFFFFF;
     private static final int MUTED = 0xFFCCCCCC;
     private static final int EMPTY_TEXT = 0xFFAAAAAA;
 
-    public static record Entry(int entityId, String name, boolean patrolling, int status, boolean routeActive,
+    public static record Entry(int entityId, UUID guardId, String name, boolean patrolling, int status, boolean routeActive,
                                int routeWaitSeconds, List<GuardListS2CPayload.Point> routePoints,
-                               Optional<Component> rank, Optional<Component> settlement) {
+                               Optional<Component> rank, Optional<Component> settlement,
+                               Optional<UUID> squadId, boolean captain) {
     }
 
     private final List<Entry> all = new ArrayList<>();
+    private GuardListS2CPayload snapshot;
+    private GuardCommandScope scope;
     private int page = 0;
 
     private static final int PER_PAGE = 4;
     private static final int MAX_PANEL_W = 540;
-    private static final int PANEL_H = 200;
+    private static final int PANEL_H = 238;
     private static final int SCREEN_PAD = 12;
 
     private static final int MARGIN_L = 16;
     private static final int MARGIN_R = 16;
 
-    private static final int HEADER_Y = 24;
-    private static final int HEADER_LINE_Y = 38;
-    private static final int ROW_TOP = 38;
+    private static final int HEADER_Y = 48;
+    private static final int HEADER_LINE_Y = 62;
+    private static final int ROW_TOP = 62;
     private static final int ROW_HEIGHT = 28;
 
     private static final int COL_NAME_X = MARGIN_L;
@@ -52,16 +59,44 @@ public class GuardCommandScreen extends Screen {
     private static final int BTN_H = 18;
     private static final int BTN_GAP = 2;
 
-    public GuardCommandScreen(List<Entry> entries) {
+    public GuardCommandScreen(GuardListS2CPayload snapshot) {
+        this(snapshot, GuardCommandScope.all());
+    }
+
+    GuardCommandScreen(GuardListS2CPayload snapshot, GuardCommandScope scope) {
         super(Component.translatable("gui.rallyguard.command.title"));
-        this.all.addAll(entries);
+        this.snapshot = snapshot;
+        this.scope = scope;
+        rebuildEntries();
     }
 
     public static void openFromPayload(GuardListS2CPayload payload) {
-        List<Entry> list = new ArrayList<>(payload.entries().size());
-        for (GuardListS2CPayload.Entry e : payload.entries()) {
-            list.add(new Entry(
+        Minecraft.getInstance().execute(() -> {
+            Screen current = Minecraft.getInstance().screen;
+            if (current instanceof GuardCommandScreen command) {
+                command.acceptSnapshot(payload);
+            } else if (current instanceof SquadManagementScreen management) {
+                management.acceptSnapshot(payload);
+            } else {
+                Minecraft.getInstance().setScreen(new GuardCommandScreen(payload));
+            }
+        });
+    }
+
+    private void acceptSnapshot(GuardListS2CPayload payload) {
+        this.snapshot = payload;
+        this.scope = new SquadScreenModel(payload, scope).scope();
+        rebuildEntries();
+        page = Math.min(page, Math.max(0, (all.size() - 1) / PER_PAGE));
+        rebuildButtons();
+    }
+
+    private void rebuildEntries() {
+        all.clear();
+        for (GuardListS2CPayload.Entry e : new SquadScreenModel(snapshot, scope).filteredGuards()) {
+            all.add(new Entry(
                     e.entityId(),
+                    e.guardId(),
                     e.name(),
                     e.patrolling(),
                     e.status(),
@@ -69,12 +104,11 @@ public class GuardCommandScreen extends Screen {
                     e.routeWaitSeconds(),
                     e.routePoints(),
                     e.rank(),
-                    e.settlement()
+                    e.settlement(),
+                    e.squadId(),
+                    e.captain()
             ));
         }
-        Minecraft.getInstance().execute(() ->
-                Minecraft.getInstance().setScreen(new GuardCommandScreen(list))
-        );
     }
 
     @Override
@@ -96,6 +130,9 @@ public class GuardCommandScreen extends Screen {
         int groupWidth = actionGroupWidth();
         int actionsRight = x + panelW - MARGIN_R;
         int actionsLeft = actionsRight - groupWidth;
+
+        this.addRenderableWidget(Button.builder(scopeLabel(), b -> cycleScope())
+                .bounds(x + 12, y + 20, 150, BTN_H).build());
 
         for (int i = start; i < end; i++) {
             final int idx = i;
@@ -151,6 +188,7 @@ public class GuardCommandScreen extends Screen {
                 int status = curr.patrolling() ? GuardOrderStatus.WAITING : GuardOrderStatus.PATROLLING;
                 all.set(idx, new Entry(
                         curr.entityId(),
+                        curr.guardId(),
                         curr.name(),
                         !curr.patrolling(),
                         status,
@@ -158,7 +196,9 @@ public class GuardCommandScreen extends Screen {
                         curr.routeWaitSeconds(),
                         curr.routePoints(),
                         curr.rank(),
-                        curr.settlement()
+                        curr.settlement(),
+                        curr.squadId(),
+                        curr.captain()
                 ));
                 rebuildButtons();
             }).bounds(btnX, btnY, BTN_PATROL_W, BTN_H).build();
@@ -195,9 +235,54 @@ public class GuardCommandScreen extends Screen {
 
         Button combat = Button.builder(
                 Component.translatable("gui.rallyguard.combat.button"),
-                b -> Minecraft.getInstance().setScreen(new GuardCombatScreen(this))
+                b -> Minecraft.getInstance().setScreen(new GuardCombatScreen(this, scope))
         ).bounds(x + 38, y + PANEL_H - 28, 76, 20).build();
         this.addRenderableWidget(combat);
+
+        this.addRenderableWidget(Button.builder(
+                Component.translatable("gui.rallyguard.squad.manage"),
+                b -> Minecraft.getInstance().setScreen(new SquadManagementScreen(snapshot, scope))
+        ).bounds(x + 118, y + PANEL_H - 28, 76, 20).build());
+
+        int batchY = y + PANEL_H - 56;
+        int batchX = x + 12;
+        addBatchButton(batchX, batchY, 62, "gui.rallyguard.command.summon", NetworkConstants.ACTION_SUMMON);
+        addBatchButton(batchX + 66, batchY, 62, "gui.rallyguard.command.follow", NetworkConstants.ACTION_FOLLOW);
+        addBatchButton(batchX + 132, batchY, 62, "gui.rallyguard.command.wait", NetworkConstants.ACTION_WAIT);
+        addBatchButton(batchX + 198, batchY, 62, "gui.rallyguard.command.patrol", NetworkConstants.ACTION_TOGGLE_PATROL);
+    }
+
+    private void addBatchButton(int x, int y, int width, String key, int action) {
+        this.addRenderableWidget(Button.builder(
+                Component.translatable(key),
+                button -> ClientPlayNetworking.send(new ScopedGuardActionC2SPayload(action, scope))
+        ).bounds(x, y, width, BTN_H).build());
+    }
+
+    private Component scopeLabel() {
+        if (scope.kind() == GuardCommandScopeKind.ALL) {
+            return Component.translatable("gui.rallyguard.squad.scope_all");
+        }
+        if (scope.kind() == GuardCommandScopeKind.UNASSIGNED) {
+            return Component.translatable("gui.rallyguard.squad.scope_unassigned");
+        }
+        return snapshot.squads().stream()
+                .filter(squad -> squad.id().equals(scope.squadId().orElseThrow()))
+                .findFirst()
+                .map(squad -> Component.literal(squad.name()))
+                .orElseGet(() -> Component.translatable("gui.rallyguard.squad.scope_all"));
+    }
+
+    private void cycleScope() {
+        List<GuardCommandScope> options = new ArrayList<>();
+        options.add(GuardCommandScope.all());
+        options.add(GuardCommandScope.unassigned());
+        snapshot.squads().forEach(squad -> options.add(GuardCommandScope.squad(squad.id())));
+        int current = options.indexOf(scope);
+        scope = options.get((current + 1) % options.size());
+        page = 0;
+        rebuildEntries();
+        rebuildButtons();
     }
 
     private void sendAction(int entityId, int action) {
@@ -208,6 +293,7 @@ public class GuardCommandScreen extends Screen {
         Entry curr = all.get(idx);
         all.set(idx, new Entry(
                 curr.entityId(),
+                curr.guardId(),
                 curr.name(),
                 status == GuardOrderStatus.PATROLLING,
                 status,
@@ -215,7 +301,9 @@ public class GuardCommandScreen extends Screen {
                 curr.routeWaitSeconds(),
                 curr.routePoints(),
                 curr.rank(),
-                curr.settlement()
+                curr.settlement(),
+                curr.squadId(),
+                curr.captain()
         ));
         rebuildButtons();
     }
@@ -224,8 +312,8 @@ public class GuardCommandScreen extends Screen {
         Entry curr = all.get(idx);
         int status = active ? GuardOrderStatus.ROUTING : GuardOrderStatus.WAITING;
         all.set(idx, new Entry(
-                curr.entityId(), curr.name(), active, status, active, waitSeconds, List.copyOf(points),
-                curr.rank(), curr.settlement()
+                curr.entityId(), curr.guardId(), curr.name(), active, status, active, waitSeconds, List.copyOf(points),
+                curr.rank(), curr.settlement(), curr.squadId(), curr.captain()
         ));
     }
 
@@ -233,6 +321,7 @@ public class GuardCommandScreen extends Screen {
         Entry curr = all.get(idx);
         all.set(idx, new Entry(
                 curr.entityId(),
+                curr.guardId(),
                 curr.name(),
                 curr.patrolling(),
                 curr.status(),
@@ -240,7 +329,9 @@ public class GuardCommandScreen extends Screen {
                 waitSeconds,
                 List.copyOf(points),
                 curr.rank(),
-                curr.settlement()
+                curr.settlement(),
+                curr.squadId(),
+                curr.captain()
         ));
     }
 
