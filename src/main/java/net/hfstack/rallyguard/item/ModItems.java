@@ -18,6 +18,9 @@ public class ModItems {
     public static final Item COMMANDERS_LEDGER = registerItem("commanders_ledger",
             new CommandersLedgerItem(settings("commanders_ledger").stacksTo(1)));
 
+    public static final Item MUSTER_ROLL = registerItem("muster_roll",
+            new MusterRollItem(settings("muster_roll").stacksTo(1)));
+
     private static Item.Properties settings(String name) {
         Identifier id = Identifier.fromNamespaceAndPath(RallyOfTheGuard.MOD_ID, name);
         ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
@@ -34,6 +37,7 @@ public class ModItems {
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.TOOLS_AND_UTILITIES).register(entries -> {
             entries.accept(SCROLL_OF_RALLYING);
             entries.accept(COMMANDERS_LEDGER);
+            entries.accept(MUSTER_ROLL);
         });
     }
 }

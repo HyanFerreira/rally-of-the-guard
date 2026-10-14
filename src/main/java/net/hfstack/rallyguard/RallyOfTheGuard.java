@@ -2,6 +2,7 @@ package net.hfstack.rallyguard;
 
 import net.fabricmc.api.ModInitializer;
 import net.hfstack.rallyguard.component.ModComponents;
+import net.hfstack.rallyguard.command.RallyGuardCommands;
 import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.effect.ModEffects;
 import net.hfstack.rallyguard.event.GuardVillagersSpawnEggFix;
@@ -12,11 +13,15 @@ import net.hfstack.rallyguard.event.InteractGuardHandler;
 import net.hfstack.rallyguard.event.RallyFormationTicker;
 import net.hfstack.rallyguard.event.RallyFriendlyFireHandler;
 import net.hfstack.rallyguard.item.ModItems;
+import net.hfstack.rallyguard.interaction.GuardInteractionLocks;
 import net.hfstack.rallyguard.network.GuardCommandNetworking;
 import net.hfstack.rallyguard.network.NetworkBootstrap;
+import net.hfstack.rallyguard.network.MusterRollNetworking;
+import net.hfstack.rallyguard.muster.MusterRollSessions;
 import net.hfstack.rallyguard.profile.GuardProfileAttachments;
 import net.hfstack.rallyguard.profile.GuardProfileLifecycle;
 import net.hfstack.rallyguard.profile.GuardProfileRepository;
+import net.hfstack.rallyguard.progression.CombatProgressionHandler;
 import net.hfstack.rallyguard.screen.ModScreenHandlers;
 import net.hfstack.rallyguard.util.GuardVillagersConfigPatcher;
 import org.slf4j.Logger;
@@ -37,17 +42,22 @@ public class RallyOfTheGuard implements ModInitializer {
         ModItems.registerModItems();
         ModEffects.registerModEffects();
         ModScreenHandlers.init();
+        RallyGuardCommands.register();
+        GuardInteractionLocks.register();
 
         GuardVillagersSpawnEggFix.register();
         InteractGuardHandler.register();
         RallyFriendlyFireHandler.register();
         GuardAllySafetyHandler.register();
+        CombatProgressionHandler.register();
         HiredGuardsNeutralityHandler.register();
         GuardRouteTicker.register();
         RallyFormationTicker.register();
 
         // ✅ Registra codecs uma vez por lado (client e server)
         NetworkBootstrap.registerTypesOnce();
+        MusterRollNetworking.registerServer();
+        MusterRollSessions.register();
 
         // ✅ Depois registra só os receivers do servidor
         GuardCommandNetworking.registerServer();

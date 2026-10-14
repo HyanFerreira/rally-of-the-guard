@@ -19,12 +19,18 @@ class ResourceSchemaTest {
     void recipesProduceRegisteredRallyItems() throws IOException {
         assertRecipeResult("scroll_of_rallying", "rallyguard:scroll_of_rallying");
         assertRecipeResult("commanders_ledger", "rallyguard:commanders_ledger");
+
+        JsonObject muster = readJson(RESOURCES.resolve("data/rallyguard/recipe/muster_roll.json"));
+        assertEquals("minecraft:crafting_shapeless", muster.get("type").getAsString());
+        assertEquals("rallyguard:muster_roll", muster.getAsJsonObject("result").get("id").getAsString());
+        assertEquals(3, muster.getAsJsonArray("ingredients").size());
     }
 
     @Test
     void itemDefinitionsResolveToExistingModelsAndTextures() throws IOException {
         assertItemResources("scroll_of_rallying", "rallyguard:item/scroll_of_rallying");
         assertItemResources("commanders_ledger", "rallyguard:item/commanders_ledger");
+        assertItemResources("muster_roll", "rallyguard:item/muster_roll");
     }
 
     @Test
@@ -32,6 +38,45 @@ class ResourceSchemaTest {
         assertTrue(Files.isRegularFile(RESOURCES.resolve(
                 "assets/guardvillagers/models/item/guard_spawn_egg.json"
         )));
+    }
+
+    @Test
+    void commonMixinConfigurationIsDeclaredAndPackaged() throws IOException {
+        JsonObject metadata = readJson(RESOURCES.resolve("fabric.mod.json"));
+        assertTrue(metadata.getAsJsonArray("mixins").asList().stream()
+                .anyMatch(element -> "rallyguard.mixins.json".equals(element.getAsString())));
+        JsonObject mixins = readJson(RESOURCES.resolve("rallyguard.mixins.json"));
+        assertEquals("net.hfstack.rallyguard.mixin", mixins.get("package").getAsString());
+        assertTrue(mixins.getAsJsonArray("mixins").asList().stream()
+                .anyMatch(element -> "GuardEntityMixin".equals(element.getAsString())));
+    }
+
+    @Test
+    void combatProgressionEntityTagsArePackaged() throws IOException {
+        Path tags = RESOURCES.resolve("data/rallyguard/tags/entity_type");
+        JsonObject targets = readJson(tags.resolve("xp_targets.json"));
+        assertEquals(6, targets.getAsJsonArray("values").size());
+        assertTrue(targets.getAsJsonArray("values").asList().stream()
+                .allMatch(value -> value.getAsString().startsWith("#rallyguard:xp/")));
+
+        assertEquals(0, readJson(tags.resolve("no_xp.json")).getAsJsonArray("values").size());
+        for (String category : new String[]{"common", "dangerous", "raid", "elite", "raid_elite", "boss"}) {
+            assertTrue(readJson(tags.resolve("xp/" + category + ".json"))
+                    .getAsJsonArray("values").size() > 0);
+        }
+    }
+
+    @Test
+    void naturalCaptainLabelsExistInBothSupportedLanguages() throws IOException {
+        JsonObject english = readJson(RESOURCES.resolve("assets/rallyguard/lang/en_us.json"));
+        JsonObject portuguese = readJson(RESOURCES.resolve("assets/rallyguard/lang/pt_br.json"));
+
+        assertEquals("Captain", english.get("gui.rallyguard.muster.captain").getAsString());
+        assertEquals("Capitão", portuguese.get("gui.rallyguard.muster.captain").getAsString());
+        assertTrue(english.has("rallyguard.midnightconfig.captainSpawnEnabled"));
+        assertTrue(portuguese.has("rallyguard.midnightconfig.captainSpawnEnabled"));
+        assertTrue(english.has("rallyguard.midnightconfig.captainHireCostBonus"));
+        assertTrue(portuguese.has("rallyguard.midnightconfig.captainHireCostBonus"));
     }
 
     private static void assertRecipeResult(String recipeName, String expectedItemId) throws IOException {
