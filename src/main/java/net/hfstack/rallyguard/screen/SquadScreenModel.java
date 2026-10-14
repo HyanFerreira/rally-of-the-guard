@@ -6,6 +6,7 @@ import net.hfstack.rallyguard.squad.GuardScopeMatcher;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 public final class SquadScreenModel {
@@ -38,6 +39,14 @@ public final class SquadScreenModel {
         return snapshot.entries().stream()
                 .filter(guard -> GuardScopeMatcher.matches(scope, guard.squadId()))
                 .toList();
+    }
+
+    public Optional<String> squadName(Optional<UUID> squadId) {
+        if (squadId == null || squadId.isEmpty()) return Optional.empty();
+        return snapshot.squads().stream()
+                .filter(squad -> squad.id().equals(squadId.get()))
+                .map(GuardListS2CPayload.SquadEntry::name)
+                .findFirst();
     }
 
     public List<GuardListS2CPayload.Entry> officerCandidates(UUID squadId) {

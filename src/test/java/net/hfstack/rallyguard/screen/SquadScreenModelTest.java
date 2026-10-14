@@ -46,6 +46,14 @@ class SquadScreenModelTest {
     }
 
     @Test
+    void resolvesTheSquadNameShownInTheLedgerColumn() {
+        SquadScreenModel model = new SquadScreenModel(snapshot(), GuardCommandScope.all());
+
+        assertEquals(Optional.of("Alpha"), model.squadName(model.allGuards().getFirst().squadId()));
+        assertEquals(Optional.empty(), model.squadName(model.allGuards().getLast().squadId()));
+    }
+
+    @Test
     void disabledSquadsForceTheAllScopeAndHideSquadData() {
         GuardListS2CPayload enabled = snapshot();
         GuardListS2CPayload disabled = new GuardListS2CPayload(false, enabled.squads(), enabled.entries());

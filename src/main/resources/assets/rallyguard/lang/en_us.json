@@ -179,6 +179,7 @@
   "gui.rallyguard.command.title": "Command Panel",
   "gui.rallyguard.command.empty": "No hired guards loaded in this world.",
   "gui.rallyguard.command.name": "Guard",
+  "gui.rallyguard.command.squad": "Squad",
   "gui.rallyguard.command.status": "Status",
   "gui.rallyguard.command.actions": "Actions",
   "gui.rallyguard.command.summon": "Summon",

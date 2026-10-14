@@ -36,7 +36,7 @@ public class GuardCommandScreen extends Screen {
     private int page = 0;
 
     private static final int PER_PAGE = 4;
-    private static final int MAX_PANEL_W = 540;
+    private static final int MAX_PANEL_W = 650;
     private static final int PANEL_H = 238;
     private static final int SCREEN_PAD = 12;
 
@@ -49,7 +49,8 @@ public class GuardCommandScreen extends Screen {
     private static final int ROW_HEIGHT = 28;
 
     private static final int COL_NAME_X = MARGIN_L;
-    private static final int COL_STATUS_X = 120;
+    private static final int COL_SQUAD_X = 126;
+    private static final int COL_STATUS_X = 226;
 
     private static final int BTN_SUMMON_W = 54;
     private static final int BTN_FOLLOW_W = 48;
@@ -250,7 +251,15 @@ public class GuardCommandScreen extends Screen {
             int batchY = y + PANEL_H - 56;
             int batchX = x + 12;
             addBatchButton(batchX, batchY, 62, "gui.rallyguard.command.summon", NetworkConstants.ACTION_SUMMON);
-            addBatchButton(batchX + 66, batchY, 62, "gui.rallyguard.command.follow", NetworkConstants.ACTION_FOLLOW);
+            boolean allFollowing = !all.isEmpty() && all.stream()
+                    .allMatch(entry -> entry.status() == GuardOrderStatus.FOLLOWING);
+            addBatchButton(
+                    batchX + 66,
+                    batchY,
+                    62,
+                    allFollowing ? "gui.rallyguard.command.stop" : "gui.rallyguard.command.follow",
+                    allFollowing ? NetworkConstants.ACTION_WAIT : NetworkConstants.ACTION_FOLLOW
+            );
             addBatchButton(batchX + 132, batchY, 62, "gui.rallyguard.command.wait", NetworkConstants.ACTION_WAIT);
             addBatchButton(batchX + 198, batchY, 62, "gui.rallyguard.command.patrol", NetworkConstants.ACTION_TOGGLE_PATROL);
         }
@@ -395,6 +404,10 @@ public class GuardCommandScreen extends Screen {
                 x + COL_NAME_X, y + HEADER_Y, MUTED);
 
         ctx.text(this.font,
+                Component.translatable("gui.rallyguard.command.squad"),
+                x + COL_SQUAD_X, y + HEADER_Y, MUTED);
+
+        ctx.text(this.font,
                 Component.translatable("gui.rallyguard.command.status"),
                 x + COL_STATUS_X, y + HEADER_Y, MUTED);
 
@@ -429,6 +442,7 @@ public class GuardCommandScreen extends Screen {
         int fontH = this.font.lineHeight;
         int actionsRight = x + panelW - MARGIN_R;
         int actionsLeft = actionsRight - actionGroupWidth();
+        SquadScreenModel screenModel = new SquadScreenModel(snapshot, scope);
 
         for (int i = start; i < end; i++) {
             Entry e = all.get(i);
@@ -444,7 +458,7 @@ public class GuardCommandScreen extends Screen {
 
             ctx.fill(x + 6, rowBot - 1, x + panelW - 6, rowBot, 0x22FFFFFF);
 
-            int maxNameW = (x + COL_STATUS_X - 12) - (x + COL_NAME_X);
+            int maxNameW = (x + COL_SQUAD_X - 12) - (x + COL_NAME_X);
             String name = trimToWidth(e.name(), maxNameW);
             ctx.text(this.font, Component.literal(name), x + COL_NAME_X, textY, WHITE);
             presentation.ifPresent(label -> {
@@ -457,6 +471,12 @@ public class GuardCommandScreen extends Screen {
                         EMPTY_TEXT
                 );
             });
+
+            int maxSquadW = (x + COL_STATUS_X - 12) - (x + COL_SQUAD_X);
+            String squad = screenModel.squadName(e.squadId())
+                    .orElseGet(() -> Component.translatable("gui.rallyguard.squad.scope_unassigned").getString());
+            ctx.text(this.font, Component.literal(trimToWidth(squad, maxSquadW)),
+                    x + COL_SQUAD_X, statusY, MUTED);
 
             int maxStatusW = (actionsLeft - 12) - (x + COL_STATUS_X);
             String status = trimToWidth(statusComponent(e.status()).getString(), maxStatusW);

@@ -92,6 +92,7 @@ class ResourceSchemaTest {
                 "rallyguard.midnightconfig.maxSquadNameLength",
                 "gui.rallyguard.squad.manage",
                 "gui.rallyguard.squad.manage_title",
+                "gui.rallyguard.command.squad",
                 "gui.rallyguard.squad.scope_all",
                 "gui.rallyguard.squad.scope_unassigned",
                 "gui.rallyguard.squad.create",

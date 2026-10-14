@@ -179,6 +179,7 @@
   "gui.rallyguard.command.title": "Painel de Comando",
   "gui.rallyguard.command.empty": "Nenhum guarda dispon\u00edvel neste mundo.",
   "gui.rallyguard.command.name": "Guarda",
+  "gui.rallyguard.command.squad": "Pelotão",
   "gui.rallyguard.command.status": "Estado",
   "gui.rallyguard.command.actions": "A\u00e7\u00f5es",
   "gui.rallyguard.command.summon": "Convocar",

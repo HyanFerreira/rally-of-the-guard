@@ -9,6 +9,7 @@
 - Added configurable Squad, loaded-member, and Unicode name-length limits.
 - Added read-only Squad views and server-side Squad mutation service in API contract version 4.
 - Added English and Brazilian Portuguese Squad management text.
+- Added a Squad column to the Ledger and immediate server-authoritative state refresh after individual or collective orders.
 
 ## 1.4.0
 

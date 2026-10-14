@@ -171,6 +171,7 @@ public final class GuardCommandNetworking {
         player.sendOverlayMessage(Component.translatable(
                 "gui.rallyguard.squad.batch_result", result.succeeded(), result.rejected(), result.unavailable()
         ));
+        sendGuardList(player);
     }
 
     private static boolean validScope(ServerPlayer player, GuardCommandScope scope) {
@@ -216,6 +217,7 @@ public final class GuardCommandNetworking {
 
         if (result != null) {
             player.sendOverlayMessage(result.feedback());
+            sendGuardList(player);
         }
     }
 
