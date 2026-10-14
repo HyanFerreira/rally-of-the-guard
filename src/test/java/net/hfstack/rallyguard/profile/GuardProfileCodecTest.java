@@ -135,6 +135,35 @@ class GuardProfileCodecTest {
     }
 
     @Test
+    void oversizedLongSchemaRemainsFutureInsteadOfNarrowingToVersionOne() {
+        CompoundTag tag = new CompoundTag();
+        tag.putLong("schema_version", 4_294_967_297L);
+        tag.putString("future_field", "keep-me");
+        CompoundTag before = tag.copy();
+
+        GuardProfileReadResult.FutureSchema result = assertInstanceOf(
+                GuardProfileReadResult.FutureSchema.class,
+                GuardProfileCodec.decode(tag)
+        );
+
+        assertEquals(Integer.MAX_VALUE, result.schemaVersion());
+        assertEquals(before, tag);
+    }
+
+    @Test
+    void oversizedLongIntFieldsClampWithoutWrapping() {
+        CompoundTag tag = fullTag();
+        tag.putLong("natural_quality", Long.MAX_VALUE);
+        tag.putLong("health_roll", Long.MIN_VALUE);
+
+        GuardProfileReadResult.Available result = available(GuardProfileCodec.decode(tag));
+
+        assertEquals(10_000, result.profile().naturalQuality());
+        assertEquals(-10_000, result.profile().healthRoll());
+        assertTrue(result.repaired());
+    }
+
+    @Test
     void encodeWritesOnlyTheApprovedSchemaFields() {
         CompoundTag encoded = GuardProfileCodec.encode(GuardProfile.legacyNeutral());
 

@@ -2,11 +2,16 @@ package net.hfstack.rallyguard.profile;
 
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.hfstack.rallyguard.RallyOfTheGuard;
 
 import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class GuardProfileLifecycle {
+    private static final Set<FutureSchemaWarning> FUTURE_SCHEMA_WARNINGS = ConcurrentHashMap.newKeySet();
     private static boolean registered;
 
     private GuardProfileLifecycle() {
@@ -31,10 +36,12 @@ public final class GuardProfileLifecycle {
                     return;
                 }
 
-                if (current instanceof GuardProfileReadResult.Available available && available.repaired()) {
+                if (GuardProfilePersistencePolicy.shouldCanonicalize(current)) {
+                    GuardProfileReadResult.Available available = (GuardProfileReadResult.Available) current;
                     repository.save(guard, available.profile());
                     RallyOfTheGuard.LOGGER.warn("Repaired guard profile for {}", guard.getUUID());
-                } else if (current instanceof GuardProfileReadResult.FutureSchema future) {
+                } else if (current instanceof GuardProfileReadResult.FutureSchema future
+                        && shouldWarnFutureSchema(guard.getUUID(), future.schemaVersion())) {
                     RallyOfTheGuard.LOGGER.warn(
                             "Guard {} uses unsupported future profile schema {}; profile left unchanged",
                             guard.getUUID(),
@@ -44,6 +51,19 @@ public final class GuardProfileLifecycle {
                 RallyOfTheGuard.LOGGER.error("Failed to initialize profile for guard {}", guard.getUUID(), exception);
             }
         });
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> clearFutureSchemaWarnings());
         registered = true;
+    }
+
+    static boolean shouldWarnFutureSchema(UUID guardId, int schemaVersion) {
+        Objects.requireNonNull(guardId, "guardId");
+        return FUTURE_SCHEMA_WARNINGS.add(new FutureSchemaWarning(guardId, schemaVersion));
+    }
+
+    static void clearFutureSchemaWarnings() {
+        FUTURE_SCHEMA_WARNINGS.clear();
+    }
+
+    private record FutureSchemaWarning(UUID guardId, int schemaVersion) {
     }
 }

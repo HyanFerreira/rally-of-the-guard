@@ -1,6 +1,8 @@
 package net.hfstack.rallyguard.profile;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NumericTag;
+import net.minecraft.nbt.Tag;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -112,17 +114,39 @@ public final class GuardProfileCodec {
     }
 
     private static int readInt(CompoundTag tag, String key, int fallback, RepairTracker repairs) {
-        Optional<Integer> stored = tag.getInt(key);
-        if (stored.isPresent()) return stored.get();
-        repairs.mark();
-        return fallback;
+        Tag stored = tag.get(key);
+        if (!(stored instanceof NumericTag numeric) || !isIntegral(stored)) {
+            repairs.mark();
+            return fallback;
+        }
+
+        long value = numeric.longValue();
+        if (stored.getId() != Tag.TAG_INT || value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
+            repairs.mark();
+        }
+        if (value < Integer.MIN_VALUE) return Integer.MIN_VALUE;
+        if (value > Integer.MAX_VALUE) return Integer.MAX_VALUE;
+        return (int) value;
     }
 
     private static long readLong(CompoundTag tag, String key, long fallback, RepairTracker repairs) {
-        Optional<Long> stored = tag.getLong(key);
-        if (stored.isPresent()) return stored.get();
-        repairs.mark();
-        return fallback;
+        Tag stored = tag.get(key);
+        if (!(stored instanceof NumericTag numeric) || !isIntegral(stored)) {
+            repairs.mark();
+            return fallback;
+        }
+
+        if (stored.getId() != Tag.TAG_LONG) {
+            repairs.mark();
+        }
+        return numeric.longValue();
+    }
+
+    private static boolean isIntegral(Tag tag) {
+        return switch (tag.getId()) {
+            case Tag.TAG_BYTE, Tag.TAG_SHORT, Tag.TAG_INT, Tag.TAG_LONG -> true;
+            default -> false;
+        };
     }
 
     private static final class RepairTracker {
