@@ -5,10 +5,29 @@ Rally exposes a small common-side API so integrations can issue tactical orders 
 ## Compatibility
 
 - Mod version: `1.3.1`
-- API contract version: `1`
+- API contract version: `2`
 - Entry point: `net.hfstack.rallyguard.api.RallyGuardApi`
 
 Integrations should check `RallyGuardApi.apiVersion()` before relying on a newer contract. Additive changes may keep the same contract version; incompatible changes require a new integer version and a coordinated minimum mod dependency.
+
+## Guard profiles
+
+Obtain the read-only profile facade and look up a loaded guard with:
+
+```java
+Optional<GuardProfileView> profile = RallyGuardApi.profiles().find(guard);
+```
+
+`GuardProfileView` exposes schema and generation versions, origin, cumulative
+XP, natural quality and rolls, kills, and assists. XP uses integer thousandths
+(`1000` XP milli equals `1` XP). Quality is bounded from `0` through `10,000`;
+each natural roll is bounded from `-10,000` through `10,000`; XP, kills, and
+assists are non-negative.
+
+The lookup is side-effect free: it never initializes, repairs, migrates, or
+persists a profile. It returns an empty result when no profile is attached or
+when the stored schema is newer than this version of Rally. Level, rank,
+stars, and other derived helpers will be added by the Natural Identity plan.
 
 ## Guard commands
 

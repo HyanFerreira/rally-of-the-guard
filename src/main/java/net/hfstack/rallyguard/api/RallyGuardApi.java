@@ -1,6 +1,7 @@
 package net.hfstack.rallyguard.api;
 
 import net.hfstack.rallyguard.api.command.GuardCommandService;
+import net.hfstack.rallyguard.api.profile.GuardProfileAccess;
 import net.hfstack.rallyguard.api.recruitment.GuardRecruitmentService;
 import net.hfstack.rallyguard.service.DefaultGuardCommandService;
 import net.hfstack.rallyguard.service.DefaultGuardRecruitmentService;
@@ -27,5 +28,9 @@ public final class RallyGuardApi {
 
     public static GuardRecruitmentService guardRecruitment() {
         return GUARD_RECRUITMENT;
+    }
+
+    public static GuardProfileAccess profiles() {
+        return GuardProfileAccess.instance();
     }
 }
