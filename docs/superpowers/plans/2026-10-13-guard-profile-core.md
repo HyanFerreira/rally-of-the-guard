@@ -8,6 +8,10 @@
 
 **Tech Stack:** Java 25, Fabric Loader 0.18.4, Fabric API 0.144.3+26.1 Data Attachment API, Minecraft 26.1, Guard Villagers, JUnit 5.11.4, Gradle 9.5.1.
 
+**Status:** Completed on branch `feature/guard-profile-core`. The checkboxes
+below are retained as the historical execution sequence; automated tests,
+build verification, and the dedicated-server persistence matrix all passed.
+
 **Spec:** `docs/superpowers/specs/2026-10-13-guard-profiles-progression-design.md`
 
 ## Global Constraints

@@ -104,6 +104,11 @@ Constraints:
 - `schema_version` governs structural migrations;
 - `generation_version` identifies the natural-generation algorithm.
 
+Profile Core temporarily wrote generation version `1` with neutral quality
+and rolls. Natural Identity uses generation version `2`. The exact untouched
+generation-1 legacy placeholder is upgraded once with UUID-seeded generation;
+all other profiles preserve their stored natural values.
+
 Level, rank, stars, attributes, XP-to-next-level, and hiring price are derived
 and are not persisted. The entity UUID is already the profile identity and is
 not duplicated in the compound.
@@ -299,6 +304,11 @@ are additive.
 Applying a profile first removes every Rally modifier and then installs the
 current set. Repeated application is idempotent. Guard Villagers base values
 are never replaced.
+
+The derived modifiers are stored as permanent entity attribute modifiers with
+stable IDs, then rebuilt from the profile on load. Persisting the previous
+maximum health lets the load callback preserve the guard's health percentage;
+the profile remains authoritative and stale Rally modifiers are replaced.
 
 Health adjustment depends on the cause:
 
