@@ -1,6 +1,5 @@
 package net.hfstack.rallyguard.screen;
 
-import net.hfstack.rallyguard.config.RallyConfig;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.components.Button;
@@ -48,6 +47,7 @@ public class HireGuardScreen extends AbstractContainerScreen<HireGuardScreenHand
      */
     @Override
     public void extractBackground(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
+        this.hireButton.active = this.menu.hasQuote();
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;
 
@@ -70,8 +70,8 @@ public class HireGuardScreen extends AbstractContainerScreen<HireGuardScreenHand
         // Mensagem com suporte a \n e wrap
         Component body = Component.translatable(
                 "gui.rallyguard.hire.body",
-                RallyConfig.hireCost(),
-                RallyConfig.hireItem().getName(RallyConfig.hireItem().getDefaultInstance())
+                this.menu.quotedCost(),
+                this.menu.quotedItem().getName(this.menu.quotedItem().getDefaultInstance())
         );
 
         int maxComponentWidth = this.imageWidth - 24; // margem interna

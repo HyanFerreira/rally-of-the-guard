@@ -45,6 +45,7 @@ public record RecruitmentResult(Outcome outcome, Component feedback, Recruitment
         NOT_ENOUGH_PAYMENT,
         INVALID_OFFER,
         POLICY_ERROR,
-        OWNERSHIP_ERROR
+        OWNERSHIP_ERROR,
+        OFFER_CHANGED
     }
 }
