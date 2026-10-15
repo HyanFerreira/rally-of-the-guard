@@ -1,6 +1,7 @@
 package net.hfstack.rallyguard.order;
 
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
+import net.hfstack.rallyguard.order.move.MoveOrders;
 import net.minecraft.world.entity.Entity;
 
 public final class GuardOrders {
@@ -39,11 +40,12 @@ public final class GuardOrders {
     }
 
     public static int statusOf(GuardEntity guard) {
-        if (GuardRoutes.get(guard).active()) return GuardOrderStatus.ROUTING;
-        if (guard.isPatrolling()) return GuardOrderStatus.PATROLLING;
-        if (isWaiting(guard)) return GuardOrderStatus.WAITING;
-        if (isRallied(guard)) return GuardOrderStatus.FOLLOWING;
-        if (guard.isFollowing()) return GuardOrderStatus.FOLLOWING;
-        return GuardOrderStatus.IDLE;
+        return GuardOrderStatus.resolve(
+                MoveOrders.active(guard).isPresent(),
+                GuardRoutes.get(guard).active(),
+                guard.isPatrolling(),
+                isWaiting(guard),
+                isRallied(guard) || guard.isFollowing()
+        );
     }
 }
