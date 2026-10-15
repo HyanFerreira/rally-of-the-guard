@@ -946,6 +946,8 @@ progression.captainPromotionMinimumLevel
 economy.captainPromotionCost
 ```
 
+O custo padrão inicial será de **4 unidades** de `economy.hireItem`.
+
 ---
 
 # Tactical Orders
