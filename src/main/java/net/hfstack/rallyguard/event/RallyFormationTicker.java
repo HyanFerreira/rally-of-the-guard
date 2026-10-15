@@ -9,6 +9,8 @@ import net.hfstack.rallyguard.combat.RallyCombatPolicy;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.effect.ModEffects;
 import net.hfstack.rallyguard.formation.RallyFormation;
+import net.hfstack.rallyguard.formation.FormationMovementPlan;
+import net.hfstack.rallyguard.formation.FormationMovementPolicy;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRoutes;
 import net.hfstack.rallyguard.order.RallyFormationSlots;
@@ -19,7 +21,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.Identifier;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -35,15 +36,16 @@ public final class RallyFormationTicker {
 
     private static final Identifier GUARD_ID = Identifier.fromNamespaceAndPath("guardvillagers", "guard");
     private static final int TICK_INTERVAL = 2;
-    private static final double HOLD_DISTANCE_SQUARED = 0.75 * 0.75;
-    private static final double FORMATION_DISTANCE_SQUARED = 1.2 * 1.2;
+    private static final double COMMANDER_MOVEMENT_SQUARED = 0.02 * 0.02;
     private static final Map<UUID, FormationAnchor> ANCHORS = new HashMap<>();
 
     private record FormationAnchor(
-            BlockPos block,
+            Vec3 position,
             float yaw,
             boolean inFront,
-            RallyFormation formation
+            RallyFormation formation,
+            Vec3 movement,
+            boolean moving
     ) {
     }
 
@@ -61,16 +63,25 @@ public final class RallyFormationTicker {
     public static void startRally(ServerPlayer player, RallyFormation formation) {
         ANCHORS.put(
                 player.getUUID(),
-                new FormationAnchor(player.blockPosition(), player.getYRot(), true, formation)
+                new FormationAnchor(
+                        player.position(),
+                        player.getYRot(),
+                        true,
+                        formation,
+                        new Vec3(0.0, 0.0, 0.0),
+                        false
+                )
         );
     }
 
     public static void updateFormation(ServerPlayer player, RallyFormation formation) {
         ANCHORS.computeIfPresent(player.getUUID(), (ignored, anchor) -> new FormationAnchor(
-                anchor.block(),
+                anchor.position(),
                 anchor.yaw(),
                 anchor.inFront(),
-                formation
+                formation,
+                anchor.movement(),
+                anchor.moving()
         ));
     }
 
@@ -128,7 +139,7 @@ public final class RallyFormationTicker {
                 continue;
             }
 
-            Vec3 slot = RallyFormationSlots.safeFormationSlot(
+            Vec3 baseSlot = RallyFormationSlots.safeFormationSlot(
                     world,
                     player,
                     anchor.formation(),
@@ -137,7 +148,33 @@ public final class RallyFormationTicker {
                     anchor.yaw(),
                     anchor.inFront()
             );
+            double baseDistance = guard.distanceToSqr(baseSlot.x, baseSlot.y, baseSlot.z);
+            FormationMovementPlan plan = FormationMovementPolicy.plan(
+                    anchor.moving(),
+                    player.isSprinting(),
+                    baseDistance,
+                    RallyConfig.formationReturnSpeed()
+            );
+            Vec3 lead = anchor.movement().scale(plan.leadMultiplier());
+            Vec3 slot = plan.leadMultiplier() == 0.0
+                    ? baseSlot
+                    : RallyFormationSlots.safeFormationSlot(
+                            world,
+                            player,
+                            anchor.formation(),
+                            i,
+                            guards.size(),
+                            anchor.yaw(),
+                            anchor.inFront(),
+                            lead
+                    );
             double distance = guard.distanceToSqr(slot.x, slot.y, slot.z);
+            plan = FormationMovementPolicy.plan(
+                    anchor.moving(),
+                    player.isSprinting(),
+                    distance,
+                    RallyConfig.formationReturnSpeed()
+            );
             guard.setFollowing(false);
             guard.setPatrolling(false);
 
@@ -149,16 +186,10 @@ public final class RallyFormationTicker {
                 continue;
             }
 
-            if (distance <= HOLD_DISTANCE_SQUARED) {
-                holdSlot(guard, player);
-                continue;
-            }
-
-            if (distance > FORMATION_DISTANCE_SQUARED) {
-                guard.getNavigation().moveTo(slot.x, slot.y, slot.z, RallyConfig.formationReturnSpeed());
+            if (plan.navigate()) {
+                guard.getNavigation().moveTo(slot.x, slot.y, slot.z, plan.speed());
             } else {
-                guard.getNavigation().stop();
-                guard.setDeltaMovement(0.0, guard.getDeltaMovement().y, 0.0);
+                holdSlot(guard, player);
             }
         }
     }
@@ -170,27 +201,41 @@ public final class RallyFormationTicker {
     }
 
     private static FormationAnchor anchorFor(ServerPlayer player) {
-        BlockPos current = player.blockPosition();
+        Vec3 current = player.position();
         FormationAnchor anchor = ANCHORS.get(player.getUUID());
         if (anchor == null) {
-            anchor = new FormationAnchor(current, player.getYRot(), true, RallyFormation.ESCORT);
+            anchor = new FormationAnchor(
+                    current,
+                    player.getYRot(),
+                    true,
+                    RallyFormation.ESCORT,
+                    new Vec3(0.0, 0.0, 0.0),
+                    false
+            );
             ANCHORS.put(player.getUUID(), anchor);
             return anchor;
         }
 
-        if (current.equals(anchor.block())) {
-            return anchor;
-        }
-
-        int dx = current.getX() - anchor.block().getX();
-        int dz = current.getZ() - anchor.block().getZ();
-        float yaw = movementYaw(dx, dz, anchor.yaw());
-        FormationAnchor moved = new FormationAnchor(current, yaw, false, anchor.formation());
-        ANCHORS.put(player.getUUID(), moved);
-        return moved;
+        Vec3 movement = new Vec3(
+                current.x - anchor.position().x,
+                0.0,
+                current.z - anchor.position().z
+        );
+        boolean moving = movement.horizontalDistanceSqr() > COMMANDER_MOVEMENT_SQUARED;
+        float yaw = moving ? movementYaw(movement.x, movement.z, anchor.yaw()) : anchor.yaw();
+        FormationAnchor updated = new FormationAnchor(
+                current,
+                yaw,
+                moving ? false : anchor.inFront(),
+                anchor.formation(),
+                movement,
+                moving
+        );
+        ANCHORS.put(player.getUUID(), updated);
+        return updated;
     }
 
-    private static float movementYaw(int dx, int dz, float fallback) {
+    private static float movementYaw(double dx, double dz, float fallback) {
         if (dx == 0 && dz == 0) return fallback;
         return (float) Math.toDegrees(Math.atan2(-dx, dz));
     }

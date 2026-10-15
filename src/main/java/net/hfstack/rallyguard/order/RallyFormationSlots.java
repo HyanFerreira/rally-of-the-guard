@@ -72,7 +72,30 @@ public final class RallyFormationSlots {
             float yawDegrees,
             boolean inFront
     ) {
-        Vec3 raw = formationSlot(player, formation, index, total, yawDegrees, inFront);
+        return safeFormationSlot(
+                world,
+                player,
+                formation,
+                index,
+                total,
+                yawDegrees,
+                inFront,
+                new Vec3(0.0, 0.0, 0.0)
+        );
+    }
+
+    public static Vec3 safeFormationSlot(
+            ServerLevel world,
+            Player player,
+            RallyFormation formation,
+            int index,
+            int total,
+            float yawDegrees,
+            boolean inFront,
+            Vec3 horizontalLead
+    ) {
+        Vec3 raw = formationSlot(player, formation, index, total, yawDegrees, inFront)
+                .add(horizontalLead.x, 0.0, horizontalLead.z);
         BlockPos base = BlockPos.containing(raw.x, player.getY(), raw.z);
 
         for (int dy = 1; dy >= -3; dy--) {
