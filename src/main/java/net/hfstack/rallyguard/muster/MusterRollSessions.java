@@ -52,6 +52,41 @@ public final class MusterRollSessions {
         }
     }
 
+    public static Optional<GuardEntity> guardFor(ServerPlayer player) {
+        Session session = SESSIONS.get(player.getUUID());
+        if (session == null) return Optional.empty();
+        GuardEntity guard = findGuard(player, session.guardId());
+        if (guard == null
+                || guard.getId() != session.snapshot().entityId()
+                || !isValid(player, guard)) {
+            return Optional.empty();
+        }
+        return Optional.of(guard);
+    }
+
+    public static void refresh(ServerPlayer player) {
+        Optional<GuardEntity> guard = guardFor(player);
+        if (guard.isEmpty()) {
+            closeAndNotify(player);
+            return;
+        }
+        Optional<GuardProfileSnapshot> current = GuardProfileSnapshotFactory.create(player, guard.orElseThrow());
+        if (current.isEmpty()) {
+            closeAndNotify(player);
+            return;
+        }
+        GuardProfileSnapshot snapshot = current.orElseThrow();
+        SESSIONS.put(player.getUUID(), new Session(guard.orElseThrow().getUUID(), snapshot));
+        ServerPlayNetworking.send(player, new MusterRollSnapshotS2CPayload(false, snapshot));
+    }
+
+    static void closeAndNotify(ServerPlayer player) {
+        if (SESSIONS.containsKey(player.getUUID())) {
+            ServerPlayNetworking.send(player, new CloseMusterRollS2CPayload());
+        }
+        close(player);
+    }
+
     private static void tick(MinecraftServer server) {
         Iterator<Map.Entry<UUID, Session>> iterator = SESSIONS.entrySet().iterator();
         while (iterator.hasNext()) {
