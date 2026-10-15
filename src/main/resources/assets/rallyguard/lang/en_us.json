@@ -127,7 +127,9 @@
   "alert.rallyguard.scroll_of_rallying.strength_gained": "You started a Rally! Your guards within %s blocks answered the call.",
   "alert.rallyguard.scroll_of_rallying.strength_lost": "You ended the Rally! Your guards will wander around again.",
 
-  "tooltip.rallyguard.scroll_of_rallying.tooltip_desc": "SHIFT + right-click to toggle",
+  "tooltip.rallyguard.scroll_of_rallying.tooltip_desc": "Right-click: formation · SHIFT + right-click: toggle Rally",
+  "tooltip.rallyguard.scroll_of_rallying.formation": "Formation: %s",
+  "alert.rallyguard.scroll_of_rallying.formation_changed": "Rally formation: %s",
   "tooltip.rallyguard.scroll_of_rallying.tooltip_shift": "Hold SHIFT for more information",
   "tooltip.rallyguard.scroll_of_rallying.tooltip_hold": "SHIFT + right-click to toggle",
 
@@ -293,6 +295,14 @@
   "gui.rallyguard.squad.unsupported_data": "Squad data was created by a newer mod version and was left unchanged.",
   "gui.rallyguard.squad.invalid_request": "Invalid Squad request.",
   "gui.rallyguard.squad.batch_result": "Orders: %s succeeded, %s rejected, %s unavailable.",
+
+  "formation.rallyguard.escort": "Escort",
+  "formation.rallyguard.column": "Column",
+  "formation.rallyguard.line": "Line",
+  "formation.rallyguard.wedge": "Wedge",
+  "formation.rallyguard.square": "Square",
+  "formation.rallyguard.circle": "Circle",
+  "formation.rallyguard.shield_wall": "Shield Wall",
 
   "rank.rallyguard.recruit": "Recruit",
   "rank.rallyguard.guardsman": "Guardsman",

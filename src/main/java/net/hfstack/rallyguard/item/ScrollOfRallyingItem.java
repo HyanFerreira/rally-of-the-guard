@@ -10,6 +10,7 @@ import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.effect.ModEffects;
 import net.hfstack.rallyguard.event.RallyFormationTicker;
+import net.hfstack.rallyguard.formation.RallyFormation;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.RallyFormationSlots;
 import net.minecraft.world.item.component.TooltipDisplay;
@@ -49,6 +50,17 @@ public class ScrollOfRallyingItem extends Item {
         stack.set(ModComponents.ACTIVE, v);
     }
 
+    private static RallyFormation selectedFormation(ItemStack stack) {
+        return RallyFormation.fromId(stack.getOrDefault(
+                ModComponents.FORMATION,
+                RallyFormation.ESCORT.id()
+        ));
+    }
+
+    private static void setSelectedFormation(ItemStack stack, RallyFormation formation) {
+        stack.set(ModComponents.FORMATION, formation.id());
+    }
+
     private static boolean isPatrolling(Entity e) {
         return e instanceof GuardEntity guard && guard.isPatrolling();
     }
@@ -86,8 +98,21 @@ public class ScrollOfRallyingItem extends Item {
     public InteractionResult use(Level world, Player user, InteractionHand hand) {
         ItemStack stack = user.getItemInHand(hand);
         if (world.isClientSide()) return InteractionResult.SUCCESS;
-        if (!user.isShiftKeyDown()) return InteractionResult.PASS;
         if (!(user instanceof ServerPlayer sp)) return InteractionResult.PASS;
+
+        if (!user.isShiftKeyDown()) {
+            RallyFormation formation = selectedFormation(stack).next();
+            setSelectedFormation(stack, formation);
+            if (isActive(stack) && user.hasEffect(ModEffects.RALLY_COMMANDER)) {
+                RallyFormationTicker.updateFormation(sp, formation);
+            }
+            user.sendSystemMessage(Component.translatable(
+                    "alert.rallyguard.scroll_of_rallying.formation_changed",
+                    Component.translatable(formation.translationKey())
+            ));
+            user.getCooldowns().addCooldown(stack, 10);
+            return InteractionResult.SUCCESS_SERVER;
+        }
 
         boolean rallyOn = user.hasEffect(ModEffects.RALLY_COMMANDER);
         EntityType<?> guardType = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.fromNamespaceAndPath("guardvillagers", "guard"));
@@ -111,9 +136,10 @@ public class ScrollOfRallyingItem extends Item {
                 GuardOrders.setRallied(g, false);
             }
         } else {
+            RallyFormation formation = selectedFormation(stack);
             user.addEffect(new MobEffectInstance(
                     ModEffects.RALLY_COMMANDER, RallyConfig.rallyEffectTimerSeconds() * 20, 0, false, false, true));
-            RallyFormationTicker.startRally(sp);
+            RallyFormationTicker.startRally(sp, formation);
             setActive(stack, true);
             user.sendSystemMessage(Component.translatable("alert.rallyguard.scroll_of_rallying.strength_gained", RallyConfig.rallyRadius())
                     .withStyle(s -> s.withColor(0x00FF00)));
@@ -138,7 +164,15 @@ public class ScrollOfRallyingItem extends Item {
             int total = Math.min(joiners.size(), RallyConfig.rallyMaxGuards());
             for (int i = 0; i < total; i++) {
                 Entity g = joiners.get(i);
-                Vec3 slot = RallyFormationSlots.safeEscortSlot(sw, user, i, user.getYRot(), true);
+                Vec3 slot = RallyFormationSlots.safeFormationSlot(
+                        sw,
+                        user,
+                        formation,
+                        i,
+                        total,
+                        user.getYRot(),
+                        true
+                );
 
                 rallyGuardToPlayer(g, user, slot.x, slot.y, slot.z);
             }
@@ -157,6 +191,10 @@ public class ScrollOfRallyingItem extends Item {
     public void appendHoverText(ItemStack stack, Item.TooltipContext ctx, TooltipDisplay displayComponent,
                               Consumer<Component> textConsumer, TooltipFlag type) {
         textConsumer.accept(Component.translatable("tooltip.rallyguard.scroll_of_rallying.tooltip_desc"));
+        textConsumer.accept(Component.translatable(
+                "tooltip.rallyguard.scroll_of_rallying.formation",
+                Component.translatable(selectedFormation(stack).translationKey())
+        ));
         super.appendHoverText(stack, ctx, displayComponent, textConsumer, type);
     }
 }

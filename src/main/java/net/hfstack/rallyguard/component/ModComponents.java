@@ -21,6 +21,12 @@ public final class ModComponents {
             DataComponentType.<Boolean>builder().persistent(Codec.BOOL).build()
     );
 
+    public static final DataComponentType<String> FORMATION = Registry.register(
+            BuiltInRegistries.DATA_COMPONENT_TYPE,
+            Identifier.fromNamespaceAndPath(RallyOfTheGuard.MOD_ID, "formation"),
+            DataComponentType.<String>builder().persistent(Codec.STRING).build()
+    );
+
     public static void initialize() {
         // Somente para garantir que a classe seja carregada.
         RallyOfTheGuard.LOGGER.info("[{}] Data Components registrados.", RallyOfTheGuard.MOD_ID);
