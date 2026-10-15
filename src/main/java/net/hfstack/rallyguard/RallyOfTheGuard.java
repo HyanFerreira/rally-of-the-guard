@@ -19,6 +19,7 @@ import net.hfstack.rallyguard.network.NetworkBootstrap;
 import net.hfstack.rallyguard.network.MusterRollNetworking;
 import net.hfstack.rallyguard.network.FormationSelectionNetworking;
 import net.hfstack.rallyguard.muster.MusterRollSessions;
+import net.hfstack.rallyguard.order.move.MoveOrderAttachments;
 import net.hfstack.rallyguard.profile.GuardProfileAttachments;
 import net.hfstack.rallyguard.profile.GuardProfileLifecycle;
 import net.hfstack.rallyguard.profile.GuardProfileRepository;
@@ -40,6 +41,7 @@ public class RallyOfTheGuard implements ModInitializer {
 
         ModComponents.initialize();
         GuardProfileAttachments.initialize();
+        MoveOrderAttachments.initialize();
         SquadAttachments.initialize();
         GuardProfileLifecycle.register(GuardProfileRepository.instance());
         ModItems.registerModItems();
