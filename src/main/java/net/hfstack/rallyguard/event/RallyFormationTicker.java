@@ -155,8 +155,8 @@ public final class RallyFormationTicker {
                     baseDistance,
                     RallyConfig.formationReturnSpeed()
             );
-            Vec3 lead = anchor.movement().scale(plan.leadMultiplier());
-            Vec3 slot = plan.leadMultiplier() == 0.0
+            Vec3 lead = headingLead(anchor.heading().yawDegrees(), plan.leadDistance());
+            Vec3 slot = plan.leadDistance() == 0.0
                     ? baseSlot
                     : RallyFormationSlots.safeFormationSlot(
                             world,
@@ -169,12 +169,6 @@ public final class RallyFormationTicker {
                             lead
                     );
             double distance = guard.distanceToSqr(slot.x, slot.y, slot.z);
-            plan = FormationMovementPolicy.plan(
-                    anchor.moving(),
-                    player.isSprinting(),
-                    distance,
-                    RallyConfig.formationReturnSpeed()
-            );
             guard.setFollowing(false);
             guard.setPatrolling(false);
 
@@ -238,6 +232,14 @@ public final class RallyFormationTicker {
         );
         ANCHORS.put(player.getUUID(), updated);
         return updated;
+    }
+
+    private static Vec3 headingLead(float yawDegrees, double distance) {
+        if (distance == 0.0) {
+            return Vec3.ZERO;
+        }
+        double yaw = Math.toRadians(yawDegrees);
+        return new Vec3(-Math.sin(yaw) * distance, 0.0, Math.cos(yaw) * distance);
     }
 
     private static List<GuardEntity> ralliedGuards(ServerLevel world, ServerPlayer player) {

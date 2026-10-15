@@ -8,6 +8,7 @@
 - Refined Square into a stable grid and increased Circle's configurable minimum protection radius to 3.25 blocks.
 - Smoothed moving formations with continuous navigation, short look-ahead, and bounded sprint catch-up speeds.
 - Added a configurable lateral heading margin and gradual turning so minor commander drift no longer abruptly rotates the formation.
+- Replaced moving-slot speed steps with continuous catch-up and a forward navigation target to prevent guards from repeatedly walking and pausing.
 - Added bounded sprint assistance to the native Follow order while leaving walking, combat, Rally, and mounted travel behavior untouched.
 
 - Added server-authoritative promotion of owned Level 7 Veteran guards to the persistent Captain role.

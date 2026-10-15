@@ -983,6 +983,11 @@ Pequenos desvios laterais do comandante agora são absorvidos por uma margem
 configurável de 1,25 blocos. Ao ultrapassá-la, a formação realinha sua direção
 gradualmente em vez de girar todos os slots de forma brusca.
 
+Durante a marcha, cada slot usa um alvo de navegação projetado adiante e uma
+recuperação de velocidade contínua conforme o atraso. Isso evita o ciclo de
+acelerar, alcançar o ponto móvel, parar e voltar a andar sem desfazer a
+geometria da formação.
+
 Esta etapa não adiciona bônus de combate ou comportamento especial por
 formação. Ela estabelece uma base determinística e testável para futuras ordens
 táticas e para a revisão posterior da interface.

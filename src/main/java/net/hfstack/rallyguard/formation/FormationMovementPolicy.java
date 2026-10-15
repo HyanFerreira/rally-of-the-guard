@@ -2,14 +2,12 @@ package net.hfstack.rallyguard.formation;
 
 public final class FormationMovementPolicy {
     private static final double HOLD_DISTANCE_SQUARED = 0.75 * 0.75;
-    private static final double SMALL_CATCH_UP_DISTANCE_SQUARED = 1.5 * 1.5;
-    private static final double CATCH_UP_DISTANCE_SQUARED = 4.0 * 4.0;
     private static final double WALKING_SPEED_FLOOR = 1.0;
     private static final double SPRINTING_SPEED_FLOOR = 1.2;
-    private static final double SMALL_CATCH_UP_SPEED_FLOOR = 1.15;
-    private static final double CATCH_UP_SPEED_FLOOR = 1.35;
-    private static final double WALKING_LEAD_MULTIPLIER = 1.0;
-    private static final double SPRINTING_LEAD_MULTIPLIER = 1.5;
+    private static final double MAX_MOVING_SPEED_FLOOR = 1.35;
+    private static final double CATCH_UP_GAIN = 0.12;
+    private static final double WALKING_LEAD_DISTANCE = 1.5;
+    private static final double SPRINTING_LEAD_DISTANCE = 2.0;
 
     private FormationMovementPolicy() {
     }
@@ -37,15 +35,13 @@ public final class FormationMovementPolicy {
         double speedFloor = commanderSprinting
                 ? SPRINTING_SPEED_FLOOR
                 : WALKING_SPEED_FLOOR;
-        if (distanceSquared > CATCH_UP_DISTANCE_SQUARED) {
-            speedFloor = CATCH_UP_SPEED_FLOOR;
-        } else if (distanceSquared > SMALL_CATCH_UP_DISTANCE_SQUARED) {
-            speedFloor = Math.max(speedFloor, SMALL_CATCH_UP_SPEED_FLOOR);
-        }
+        double distance = Math.sqrt(distanceSquared);
+        double catchUp = Math.max(0.0, distance - Math.sqrt(HOLD_DISTANCE_SQUARED)) * CATCH_UP_GAIN;
+        speedFloor = Math.min(MAX_MOVING_SPEED_FLOOR, speedFloor + catchUp);
         return new FormationMovementPlan(
                 true,
                 Math.max(configuredSpeed, speedFloor),
-                commanderSprinting ? SPRINTING_LEAD_MULTIPLIER : WALKING_LEAD_MULTIPLIER
+                commanderSprinting ? SPRINTING_LEAD_DISTANCE : WALKING_LEAD_DISTANCE
         );
     }
 }
