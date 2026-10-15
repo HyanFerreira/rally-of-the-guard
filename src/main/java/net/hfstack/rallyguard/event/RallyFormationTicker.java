@@ -35,7 +35,6 @@ public final class RallyFormationTicker {
     }
 
     private static final Identifier GUARD_ID = Identifier.fromNamespaceAndPath("guardvillagers", "guard");
-    private static final int TICK_INTERVAL = 2;
     private static final double COMMANDER_MOVEMENT_SQUARED = 0.02 * 0.02;
     private static final Map<UUID, FormationAnchor> ANCHORS = new HashMap<>();
 
@@ -51,7 +50,6 @@ public final class RallyFormationTicker {
 
     public static void register() {
         ServerTickEvents.END_LEVEL_TICK.register(world -> {
-            if (world.getGameTime() % TICK_INTERVAL != 0) return;
             tickWorld(world);
         });
     }
