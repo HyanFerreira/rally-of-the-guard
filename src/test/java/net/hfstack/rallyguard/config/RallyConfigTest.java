@@ -8,6 +8,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RallyConfigTest {
     @Test
+    void defendAreaRadiusDefaultsAndClampsToServerLimits() {
+        int originalRadius = RallyConfig.defendAreaRadius;
+        try {
+            assertEquals(16, RallyConfig.defendAreaRadius());
+
+            RallyConfig.defendAreaRadius = 0;
+            assertEquals(4, RallyConfig.defendAreaRadius());
+
+            RallyConfig.defendAreaRadius = 200;
+            assertEquals(64, RallyConfig.defendAreaRadius());
+        } finally {
+            RallyConfig.defendAreaRadius = originalRadius;
+        }
+    }
+
+    @Test
     void formationHeadingMarginDefaultsAndClamps() {
         double originalMargin = RallyConfig.formationHeadingMargin;
         try {
