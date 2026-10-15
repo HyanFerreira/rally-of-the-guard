@@ -35,6 +35,7 @@ import net.hfstack.rallyguard.order.GuardRouteState;
 import net.hfstack.rallyguard.order.GuardRoutes;
 import net.hfstack.rallyguard.order.move.MoveOrders;
 import net.hfstack.rallyguard.service.GuardBatchCommandExecutor;
+import net.hfstack.rallyguard.service.GuardCommandTargets;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Monster;
@@ -157,11 +158,11 @@ public final class GuardCommandNetworking {
             player.sendOverlayMessage(Component.translatable("gui.rallyguard.squad.disabled"));
             return;
         }
-        if (!validScope(player, payload.scope())) {
+        if (!GuardCommandTargets.validScope(player, payload.scope())) {
             player.sendOverlayMessage(Component.translatable("gui.rallyguard.squad.not_found"));
             return;
         }
-        List<GuardEntity> guards = loadedScopedGuards(player, payload.scope());
+        List<GuardEntity> guards = GuardCommandTargets.loadedScopedGuards(player, payload.scope());
         GuardBatchCommandResult result = GuardBatchCommandExecutor.executeCandidates(guards, guard -> switch (payload.action()) {
             case NetworkConstants.ACTION_SUMMON -> COMMANDS.summon(player, guard);
             case NetworkConstants.ACTION_FOLLOW -> COMMANDS.follow(player, guard);
@@ -173,25 +174,6 @@ public final class GuardCommandNetworking {
                 "gui.rallyguard.squad.batch_result", result.succeeded(), result.rejected(), result.unavailable()
         ));
         sendGuardList(player);
-    }
-
-    private static boolean validScope(ServerPlayer player, GuardCommandScope scope) {
-        if (!RallyConfig.squadsEnabled()) return scope.equals(GuardCommandScope.all());
-        return scope.squadId().isEmpty() || RallyGuardApi.squads().list(player).stream()
-                .anyMatch(squad -> squad.id().equals(scope.squadId().orElseThrow()));
-    }
-
-    private static List<GuardEntity> loadedScopedGuards(ServerPlayer player, GuardCommandScope scope) {
-        Identifier guardTypeId = Identifier.fromNamespaceAndPath("guardvillagers", "guard");
-        return player.level().getEntities(
-                BuiltInRegistries.ENTITY_TYPE.getValue(guardTypeId),
-                entity -> entity instanceof GuardEntity guard
-                        && GuardOwnership.isOwnedBy(guard, player.getUUID())
-                        && net.hfstack.rallyguard.squad.GuardScopeMatcher.matches(
-                                scope,
-                                RallyGuardApi.squads().find(player, guard).squad().map(value -> value.id())
-                        )
-        ).stream().filter(GuardEntity.class::isInstance).map(GuardEntity.class::cast).toList();
     }
 
     private static void handleAction(ServerPlayer player, int entityId, int action) {
@@ -311,7 +293,7 @@ public final class GuardCommandNetworking {
             return;
         }
 
-        if (!validScope(player, payload.scope())) {
+        if (!GuardCommandTargets.validScope(player, payload.scope())) {
             player.sendOverlayMessage(Component.translatable("gui.rallyguard.squad.not_found"));
             return;
         }

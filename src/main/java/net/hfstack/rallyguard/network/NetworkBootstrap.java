@@ -41,6 +41,7 @@ public final class NetworkBootstrap {
         PayloadTypeRegistry.serverboundPlay().register(CloseMusterRollC2SPayload.ID, CloseMusterRollC2SPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(CaptainActionC2SPayload.ID, CaptainActionC2SPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(FormationSelectionC2SPayload.ID, FormationSelectionC2SPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(MoveHereC2SPayload.ID, MoveHereC2SPayload.CODEC);
 
         // S2C
         PayloadTypeRegistry.clientboundPlay().register(GuardListS2CPayload.ID, GuardListS2CPayload.CODEC);
