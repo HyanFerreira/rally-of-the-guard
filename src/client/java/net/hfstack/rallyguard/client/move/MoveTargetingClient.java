@@ -8,6 +8,7 @@ import net.hfstack.rallyguard.api.command.GuardCommandScope;
 import net.hfstack.rallyguard.api.command.GuardUnitCategory;
 import net.hfstack.rallyguard.item.ModItems;
 import net.hfstack.rallyguard.network.MoveHereC2SPayload;
+import net.hfstack.rallyguard.network.DefendAreaC2SPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -32,28 +33,44 @@ public final class MoveTargetingClient {
             ).orElse(null);
             if (armed == null) return InteractionResult.PASS;
 
-            ClientPlayNetworking.send(new MoveHereC2SPayload(
-                    armed.scope(),
-                    armed.category().wireId(),
-                    hit.getBlockPos(),
-                    hit.getDirection().get3DDataValue()
-            ));
+            switch (armed.order()) {
+                case MOVE_HERE -> ClientPlayNetworking.send(new MoveHereC2SPayload(
+                        armed.scope(), armed.category().wireId(), hit.getBlockPos(),
+                        hit.getDirection().get3DDataValue()
+                ));
+                case DEFEND_AREA -> ClientPlayNetworking.send(new DefendAreaC2SPayload(
+                        armed.scope(), armed.category().wireId(), hit.getBlockPos(),
+                        hit.getDirection().get3DDataValue()
+                ));
+            }
             return InteractionResult.FAIL;
         });
     }
 
     public static void arm(GuardCommandScope scope, GuardUnitCategory category) {
+        arm(MoveTargetingSession.Order.MOVE_HERE, scope, category);
+    }
+
+    public static void armDefend(GuardCommandScope scope, GuardUnitCategory category) {
+        arm(MoveTargetingSession.Order.DEFEND_AREA, scope, category);
+    }
+
+    private static void arm(
+            MoveTargetingSession.Order order,
+            GuardCommandScope scope,
+            GuardUnitCategory category
+    ) {
         Minecraft client = Minecraft.getInstance();
         if (client.player == null) return;
         int handId;
         if (client.player.getMainHandItem().is(ModItems.COMMANDERS_LEDGER)) handId = 0;
         else if (client.player.getOffhandItem().is(ModItems.COMMANDERS_LEDGER)) handId = 1;
         else {
-            overlay(client, "gui.rallyguard.move.cancelled");
+            overlay(client, messageKey(order, "cancelled"));
             return;
         }
-        SESSION.arm(scope, category, handId, clientTick);
-        overlay(client, "gui.rallyguard.move.target_prompt");
+        SESSION.arm(order, scope, category, handId, clientTick);
+        overlay(client, messageKey(order, "target_prompt"));
     }
 
     private static void tick(Minecraft client) {
@@ -63,21 +80,26 @@ public final class MoveTargetingClient {
             SESSION.reset();
             return;
         }
+        MoveTargetingSession.Armed armed = SESSION.current().orElseThrow();
         if (client.screen != null) {
             if (SESSION.cancel()) {
-                overlay(client, "gui.rallyguard.move.cancelled");
+                overlay(client, messageKey(armed.order(), "cancelled"));
             }
             return;
         }
 
-        MoveTargetingSession.Armed armed = SESSION.current().orElseThrow();
         boolean ledgerHeld = client.player.getItemInHand(handById(armed.handId())).is(ModItems.COMMANDERS_LEDGER);
         MoveTargetingSession.Update update = SESSION.update(clientTick, client.player.isAlive(), ledgerHeld);
         if (update == MoveTargetingSession.Update.EXPIRED) {
-            overlay(client, "gui.rallyguard.move.expired");
+            overlay(client, messageKey(armed.order(), "expired"));
         } else if (update == MoveTargetingSession.Update.CANCELLED) {
-            overlay(client, "gui.rallyguard.move.cancelled");
+            overlay(client, messageKey(armed.order(), "cancelled"));
         }
+    }
+
+    private static String messageKey(MoveTargetingSession.Order order, String suffix) {
+        String prefix = order == MoveTargetingSession.Order.MOVE_HERE ? "move" : "defend";
+        return "gui.rallyguard." + prefix + "." + suffix;
     }
 
     private static void overlay(Minecraft client, String translationKey) {

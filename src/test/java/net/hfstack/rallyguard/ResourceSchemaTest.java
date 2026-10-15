@@ -275,6 +275,28 @@ class ResourceSchemaTest {
         }
     }
 
+    @Test
+    void defendAreaLabelsAndConfigurationExistInBothSupportedLanguages() throws IOException {
+        JsonObject english = readJson(RESOURCES.resolve("assets/rallyguard/lang/en_us.json"));
+        JsonObject portuguese = readJson(RESOURCES.resolve("assets/rallyguard/lang/pt_br.json"));
+        Set<String> keys = Set.of(
+                "rallyguard.midnightconfig.defendAreaRadius",
+                "rallyguard.midnightconfig.defendAreaRadius.tooltip",
+                "gui.rallyguard.defend.button",
+                "gui.rallyguard.defend.title",
+                "gui.rallyguard.defend.target_prompt",
+                "gui.rallyguard.defend.cancelled",
+                "gui.rallyguard.defend.expired",
+                "gui.rallyguard.defend.invalid_destination",
+                "gui.rallyguard.command.defend_ordered",
+                "gui.rallyguard.command.status.defending"
+        );
+        for (String key : keys) {
+            assertTrue(english.has(key), () -> "Missing English Defend Area key: " + key);
+            assertTrue(portuguese.has(key), () -> "Missing Portuguese Defend Area key: " + key);
+        }
+    }
+
     private static void assertRecipeResult(String recipeName, String expectedItemId) throws IOException {
         JsonObject recipe = readJson(RESOURCES.resolve(
                 "data/rallyguard/recipe/" + recipeName + ".json"

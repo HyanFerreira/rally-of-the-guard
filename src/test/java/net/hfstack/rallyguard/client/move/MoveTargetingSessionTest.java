@@ -20,8 +20,29 @@ class MoveTargetingSessionTest {
 
         assertEquals(GuardCommandScope.unassigned(), request.orElseThrow().scope());
         assertEquals(GuardUnitCategory.RANGED, request.orElseThrow().category());
+        assertEquals(MoveTargetingSession.Order.MOVE_HERE, request.orElseThrow().order());
         assertEquals(1, request.orElseThrow().handId());
         assertTrue(session.consume(42, true, true).isEmpty());
+    }
+
+    @Test
+    void armingDefendAreaReplacesMoveModeInTheSingleSharedSession() {
+        MoveTargetingSession session = new MoveTargetingSession();
+        session.arm(GuardCommandScope.all(), GuardUnitCategory.ALL, 0, 10);
+        session.arm(
+                MoveTargetingSession.Order.DEFEND_AREA,
+                GuardCommandScope.unassigned(),
+                GuardUnitCategory.INFANTRY,
+                1,
+                11
+        );
+
+        MoveTargetingSession.Armed request = session.consume(12, true, true).orElseThrow();
+
+        assertEquals(MoveTargetingSession.Order.DEFEND_AREA, request.order());
+        assertEquals(GuardCommandScope.unassigned(), request.scope());
+        assertEquals(GuardUnitCategory.INFANTRY, request.category());
+        assertTrue(session.consume(13, true, true).isEmpty());
     }
 
     @Test

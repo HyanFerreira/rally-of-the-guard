@@ -10,17 +10,34 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public final class MoveCategoryScreen extends Screen {
+    public enum Mode {
+        MOVE("gui.rallyguard.move.title"),
+        DEFEND("gui.rallyguard.defend.title");
+
+        private final String titleKey;
+
+        Mode(String titleKey) {
+            this.titleKey = titleKey;
+        }
+    }
+
     private static final int PANEL_WIDTH = 250;
     private static final int PANEL_HEIGHT = 92;
     private static final int WHITE = 0xFFFFFFFF;
 
     private final Screen parent;
     private final GuardCommandScope scope;
+    private final Mode mode;
 
     public MoveCategoryScreen(Screen parent, GuardCommandScope scope) {
-        super(Component.translatable("gui.rallyguard.move.title"));
+        this(parent, scope, Mode.MOVE);
+    }
+
+    public MoveCategoryScreen(Screen parent, GuardCommandScope scope, Mode mode) {
+        super(Component.translatable(mode.titleKey));
         this.parent = parent;
         this.scope = scope;
+        this.mode = mode;
     }
 
     @Override
@@ -41,7 +58,8 @@ public final class MoveCategoryScreen extends Screen {
 
     private void select(GuardUnitCategory category) {
         Minecraft.getInstance().setScreen(null);
-        MoveTargetingClient.arm(scope, category);
+        if (mode == Mode.MOVE) MoveTargetingClient.arm(scope, category);
+        else MoveTargetingClient.armDefend(scope, category);
     }
 
     @Override

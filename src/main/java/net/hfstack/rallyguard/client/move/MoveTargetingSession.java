@@ -9,6 +9,11 @@ import java.util.Optional;
 public final class MoveTargetingSession {
     public static final long TIMEOUT_TICKS = 300;
 
+    public enum Order {
+        MOVE_HERE,
+        DEFEND_AREA
+    }
+
     public enum Update {
         INACTIVE,
         ACTIVE,
@@ -17,12 +22,14 @@ public final class MoveTargetingSession {
     }
 
     public record Armed(
+            Order order,
             GuardCommandScope scope,
             GuardUnitCategory category,
             int handId,
             long expiresAtTick
     ) {
         public Armed {
+            Objects.requireNonNull(order, "order");
             Objects.requireNonNull(scope, "scope");
             Objects.requireNonNull(category, "category");
             if (handId < 0 || handId > 1) throw new IllegalArgumentException("Unknown hand: " + handId);
@@ -32,7 +39,17 @@ public final class MoveTargetingSession {
     private Armed armed;
 
     public void arm(GuardCommandScope scope, GuardUnitCategory category, int handId, long currentTick) {
-        armed = new Armed(scope, category, handId, currentTick + TIMEOUT_TICKS);
+        arm(Order.MOVE_HERE, scope, category, handId, currentTick);
+    }
+
+    public void arm(
+            Order order,
+            GuardCommandScope scope,
+            GuardUnitCategory category,
+            int handId,
+            long currentTick
+    ) {
+        armed = new Armed(order, scope, category, handId, currentTick + TIMEOUT_TICKS);
     }
 
     public boolean isArmed() {
