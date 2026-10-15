@@ -11,14 +11,14 @@ rotas de patrulha em loop usando o Livro de Comando.
 
 ## Versão Atual
 
-### 1.5.0
+### 1.4.0
 
 Principais mudanças:
 
 - Pelotões persistentes com nomes personalizados, filtros e ordens coletivas no Livro de Comando.
 - Um Capitão existente pode atuar como Oficial de cada Pelotão.
 - Criação, renomeação, exclusão e atribuição de guardas pela nova tela de gerenciamento.
-- Perfis, progressão, Capitães naturais, custo dinâmico e Registro de Tropa da versão 1.4.0.
+- Perfis, progressão, Capitães naturais, custo dinâmico e Registro de Tropa.
 
 - Adicionadas posturas no Livro de Comando: seguir, aguardar, patrulhar e rota.
 - Adicionada tela de rota de patrulha.

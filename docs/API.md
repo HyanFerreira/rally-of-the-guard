@@ -4,7 +4,7 @@ Rally exposes a small common-side API so integrations can issue tactical orders 
 
 ## Compatibility
 
-- Mod version: `1.5.0`
+- Mod version: `1.4.0`
 - API contract version: `4`
 - Entry point: `net.hfstack.rallyguard.api.RallyGuardApi`
 

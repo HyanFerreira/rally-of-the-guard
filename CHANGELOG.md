@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased — planned 1.5.0
+## Unreleased — planned 1.4.0
 
 - Added persistent player-owned Squads with custom creation, rename, and deletion in the Commander's Ledger.
 - Added All Guards, Unassigned, and named-Squad Ledger scopes with collective summon, follow, wait, patrol, and combat orders.
@@ -10,8 +10,6 @@
 - Added read-only Squad views and server-side Squad mutation service in API contract version 4.
 - Added English and Brazilian Portuguese Squad management text.
 - Added a Squad column to the Ledger and immediate server-authoritative state refresh after individual or collective orders.
-
-## 1.4.0
 
 - Added deterministic natural quality, attribute rolls, initial levels, ranks, and star ratings for guards.
 - Added persistent Natural Captains with configurable spawn chance, minimum level, loaded-region control, Muster Roll display, and hiring-cost bonus.
