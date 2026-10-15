@@ -30,6 +30,8 @@ public final class DefaultGuardCommandService implements GuardCommandService {
         return execute(commander, guard, GuardCommandType.SUMMON, null, () -> {
             MoveOrders.clear(guard);
             DefendAreas.clear(guard);
+            guard.setPatrolling(false);
+            guard.setPatrolPos(null);
             double offsetX = (commander.getRandom().nextDouble() - 0.5) * 2.5;
             double offsetZ = (commander.getRandom().nextDouble() - 0.5) * 2.5;
             guard.snapTo(
