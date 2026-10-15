@@ -49,11 +49,19 @@ public record GuardCommandResult(Outcome outcome, Component feedback) {
         );
     }
 
+    public static GuardCommandResult unsupportedData() {
+        return new GuardCommandResult(
+                Outcome.UNSUPPORTED_DATA,
+                Component.translatable("gui.rallyguard.command.unsupported_data")
+        );
+    }
+
     public enum Outcome {
         SUCCESS,
         INVALID_GUARD,
         NOT_OWNER,
         DENIED,
-        POLICY_ERROR
+        POLICY_ERROR,
+        UNSUPPORTED_DATA
     }
 }

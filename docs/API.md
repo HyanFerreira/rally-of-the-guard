@@ -56,7 +56,7 @@ than a public mutation surface; integrations should continue treating
 
 ## Captain promotion and demotion
 
-API contract version 5 exposes the only supported Captain mutation path:
+API contract version 6 exposes the only supported Captain mutation path and the positional `Move Here` guard command:
 
 ```java
 CaptainService captains = RallyGuardApi.captains();
@@ -142,15 +142,22 @@ Obtain the shared service with:
 GuardCommandService commands = RallyGuardApi.guardCommands();
 ```
 
-The first contract exposes:
+The command contract exposes:
 
 - `summon`
 - `follow`
 - `wait`
 - `patrol`
 - `stopPatrol`
+- `moveTo`
 
 Every method must run on the logical server thread. The service validates that the guard is alive, loaded in the commander's world and tactically owned by that commander. It returns a `GuardCommandResult` with a machine-readable outcome and localized player feedback.
+
+API version 6 adds `moveTo(ServerPlayer, GuardEntity, BlockPos)` and
+`GuardCommandType.MOVE_TO`. A successful call replaces a supported move order,
+clears mutually exclusive tactical state, and persists the requested target.
+An attachment written by a future schema returns `UNSUPPORTED_DATA` and remains
+untouched; another explicit mutually exclusive order may still clear it.
 
 Rally's own packet receiver uses this same service. Integrations must call the service directly on the server and must not construct Rally network payloads.
 

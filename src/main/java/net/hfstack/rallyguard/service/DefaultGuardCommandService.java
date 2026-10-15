@@ -14,6 +14,8 @@ import net.hfstack.rallyguard.api.eligibility.GuardEligibilityDecision;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRoutes;
+import net.hfstack.rallyguard.order.move.MoveOrderRead;
+import net.hfstack.rallyguard.order.move.MoveOrders;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.BlockPos;
 
@@ -23,6 +25,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
     @Override
     public GuardCommandResult summon(ServerPlayer commander, GuardEntity guard) {
         return execute(commander, guard, GuardCommandType.SUMMON, null, () -> {
+            MoveOrders.clear(guard);
             double offsetX = (commander.getRandom().nextDouble() - 0.5) * 2.5;
             double offsetZ = (commander.getRandom().nextDouble() - 0.5) * 2.5;
             guard.snapTo(
@@ -43,6 +46,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
     @Override
     public GuardCommandResult follow(ServerPlayer commander, GuardEntity guard) {
         return execute(commander, guard, GuardCommandType.FOLLOW, null, () -> {
+            MoveOrders.clear(guard);
             guard.setPatrolling(false);
             guard.setPatrolPos(null);
             GuardOrders.setRallied(guard, false);
@@ -56,6 +60,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
     @Override
     public GuardCommandResult wait(ServerPlayer commander, GuardEntity guard) {
         return execute(commander, guard, GuardCommandType.WAIT, null, () -> {
+            MoveOrders.clear(guard);
             guard.setFollowing(false);
             guard.setPatrolling(false);
             guard.setPatrolPos(null);
@@ -70,6 +75,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
     public GuardCommandResult patrol(ServerPlayer commander, GuardEntity guard, BlockPos position) {
         BlockPos patrolPosition = Objects.requireNonNull(position, "position");
         return execute(commander, guard, GuardCommandType.PATROL, patrolPosition, () -> {
+            MoveOrders.clear(guard);
             guard.setFollowing(false);
             GuardOrders.setRallied(guard, false);
             GuardOrders.setWaiting(guard, false);
@@ -83,6 +89,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
     @Override
     public GuardCommandResult stopPatrol(ServerPlayer commander, GuardEntity guard) {
         return execute(commander, guard, GuardCommandType.STOP_PATROL, null, () -> {
+            MoveOrders.clear(guard);
             guard.setPatrolling(false);
             guard.setFollowing(false);
             guard.setPatrolPos(null);
@@ -91,6 +98,28 @@ public final class DefaultGuardCommandService implements GuardCommandService {
             GuardRoutes.deactivate(guard);
             stopCurrentActions(guard);
         }, "gui.rallyguard.command.patrol_off");
+    }
+
+    @Override
+    public GuardCommandResult moveTo(ServerPlayer commander, GuardEntity guard, BlockPos position) {
+        ServerPlayer requiredCommander = requireCommander(commander);
+        GuardCommandResult rejection = validate(requiredCommander, guard);
+        if (rejection != null) return rejection;
+        if (MoveOrders.read(guard) instanceof MoveOrderRead.Unsupported) {
+            return GuardCommandResult.unsupportedData();
+        }
+
+        BlockPos target = Objects.requireNonNull(position, "position").immutable();
+        return executeValidated(requiredCommander, guard, GuardCommandType.MOVE_TO, target, () -> {
+            guard.setFollowing(false);
+            guard.setPatrolling(false);
+            guard.setPatrolPos(null);
+            GuardOrders.setRallied(guard, false);
+            GuardOrders.setWaiting(guard, false);
+            GuardRoutes.deactivate(guard);
+            stopCurrentActions(guard);
+            MoveOrders.set(guard, target);
+        }, "gui.rallyguard.command.move_ordered");
     }
 
     private static GuardCommandResult execute(
@@ -106,6 +135,18 @@ public final class DefaultGuardCommandService implements GuardCommandService {
         if (rejection != null) {
             return rejection;
         }
+
+        return executeValidated(requiredCommander, guard, command, requestedPosition, action, successTranslationKey);
+    }
+
+    private static GuardCommandResult executeValidated(
+            ServerPlayer requiredCommander,
+            GuardEntity guard,
+            GuardCommandType command,
+            BlockPos requestedPosition,
+            Runnable action,
+            String successTranslationKey
+    ) {
 
         GuardCommandContext context = new GuardCommandContext(
                 requiredCommander,

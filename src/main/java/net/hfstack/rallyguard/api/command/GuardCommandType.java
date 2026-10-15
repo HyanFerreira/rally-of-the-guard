@@ -8,5 +8,6 @@ public enum GuardCommandType {
     FOLLOW,
     WAIT,
     PATROL,
-    STOP_PATROL
+    STOP_PATROL,
+    MOVE_TO
 }

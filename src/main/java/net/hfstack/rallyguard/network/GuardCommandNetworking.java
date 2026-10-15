@@ -7,6 +7,7 @@ import net.hfstack.rallyguard.api.command.GuardCommandResult;
 import net.hfstack.rallyguard.api.command.GuardCommandService;
 import net.hfstack.rallyguard.api.command.GuardBatchCommandResult;
 import net.hfstack.rallyguard.api.command.GuardCommandScope;
+import net.hfstack.rallyguard.api.command.GuardUnitCategory;
 import net.hfstack.rallyguard.api.eligibility.GuardEligibility;
 import net.hfstack.rallyguard.api.eligibility.GuardEligibilityContext;
 import net.hfstack.rallyguard.api.eligibility.GuardEligibilityDecision;
@@ -15,6 +16,7 @@ import net.hfstack.rallyguard.api.presentation.GuardPresentation;
 import net.hfstack.rallyguard.api.presentation.GuardPresentationContext;
 import net.hfstack.rallyguard.api.presentation.GuardPresentationRegistry;
 import net.hfstack.rallyguard.combat.GuardCombatState;
+import net.hfstack.rallyguard.combat.GuardCombatRole;
 import net.hfstack.rallyguard.combat.ProtectedAllyPolicy;
 import net.hfstack.rallyguard.combat.ScopedAttackPolicy;
 import net.hfstack.rallyguard.config.RallyConfig;
@@ -31,13 +33,12 @@ import net.hfstack.rallyguard.network.payload.SquadOfficerC2SPayload;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRouteState;
 import net.hfstack.rallyguard.order.GuardRoutes;
+import net.hfstack.rallyguard.order.move.MoveOrders;
 import net.hfstack.rallyguard.service.GuardBatchCommandExecutor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
@@ -251,6 +252,7 @@ public final class GuardCommandNetworking {
                     return;
                 }
                 GuardRouteState route = new GuardRouteState(true, 0, waitTicks, 0, points);
+                MoveOrders.clear(guard);
                 GuardRoutes.applyToGuard(guard, route);
                 GuardCombatState.disengage(guard);
                 guard.setPatrolPos(route.currentPoint());
@@ -342,7 +344,7 @@ public final class GuardCommandNetworking {
 
             guard.setTarget(target);
             guard.setAggressive(true);
-            if (!isRangedGuard(guard)) {
+            if (!GuardCombatRole.isRanged(guard)) {
                 guard.getNavigation().moveTo(target.getX(), target.getY(), target.getZ(), 1.2);
             }
             ordered++;
@@ -356,20 +358,8 @@ public final class GuardCommandNetworking {
     }
 
     private static boolean matchesAttackMode(GuardEntity guard, int mode) {
-        boolean ranged = isRangedGuard(guard);
-        return switch (mode) {
-            case NetworkConstants.ATTACK_INFANTRY -> !ranged;
-            case NetworkConstants.ATTACK_RANGED -> ranged;
-            default -> true;
-        };
-    }
-
-    private static boolean isRangedGuard(GuardEntity guard) {
-        return isRangedWeapon(guard.getMainHandItem()) || isRangedWeapon(guard.getOffhandItem());
-    }
-
-    private static boolean isRangedWeapon(ItemStack stack) {
-        return stack.is(Items.BOW) || stack.is(Items.CROSSBOW);
+        GuardUnitCategory category = GuardUnitCategory.fromWireId(mode).orElse(GuardUnitCategory.ALL);
+        return GuardCombatRole.matches(category, guard);
     }
 
     private static Entity findLookedTarget(ServerPlayer player, double range) {
