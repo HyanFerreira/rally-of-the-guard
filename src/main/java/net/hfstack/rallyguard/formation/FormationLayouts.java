@@ -6,6 +6,7 @@ public final class FormationLayouts {
     private static final double FIRST_ROW_OFFSET = 1.8;
     private static final double SHIELD_WALL_DEPTH = 2.3;
     private static final double SHIELD_WALL_SPACING_FACTOR = 0.75;
+    private static final double DEFAULT_CIRCLE_RADIUS = 3.25;
 
     private FormationLayouts() {
     }
@@ -17,6 +18,24 @@ public final class FormationLayouts {
             double columnSpacing,
             double rowSpacing
     ) {
+        return slot(
+                formation,
+                index,
+                total,
+                columnSpacing,
+                rowSpacing,
+                DEFAULT_CIRCLE_RADIUS
+        );
+    }
+
+    public static FormationOffset slot(
+            RallyFormation formation,
+            int index,
+            int total,
+            double columnSpacing,
+            double rowSpacing,
+            double circleRadius
+    ) {
         Objects.requireNonNull(formation, "formation");
         if (index < 0) throw new IllegalArgumentException("index must be non-negative");
         if (!Double.isFinite(columnSpacing) || columnSpacing <= 0.0) {
@@ -24,6 +43,9 @@ public final class FormationLayouts {
         }
         if (!Double.isFinite(rowSpacing) || rowSpacing <= 0.0) {
             throw new IllegalArgumentException("rowSpacing must be positive and finite");
+        }
+        if (!Double.isFinite(circleRadius) || circleRadius <= 0.0) {
+            throw new IllegalArgumentException("circleRadius must be positive and finite");
         }
         int groupSize = Math.max(total, index + 1);
 
@@ -33,7 +55,7 @@ public final class FormationLayouts {
             case LINE -> line(index, groupSize, columnSpacing, FIRST_ROW_OFFSET);
             case WEDGE -> wedge(index, columnSpacing, rowSpacing);
             case SQUARE -> square(index, groupSize, columnSpacing, rowSpacing);
-            case CIRCLE -> circle(index, groupSize, columnSpacing, rowSpacing);
+            case CIRCLE -> circle(index, groupSize, columnSpacing, rowSpacing, circleRadius);
             case SHIELD_WALL -> line(
                     index,
                     groupSize,
@@ -81,8 +103,11 @@ public final class FormationLayouts {
         int column = index % columns;
         int rowStart = row * columns;
         int rowSize = Math.min(columns, total - rowStart);
+        double gridColumn = rowSize == 1
+                ? (columns - 1) / 2.0
+                : column * (columns - 1.0) / (rowSize - 1.0);
         return new FormationOffset(
-                (column - (rowSize - 1) / 2.0) * columnSpacing,
+                (gridColumn - (columns - 1) / 2.0) * columnSpacing,
                 FIRST_ROW_OFFSET + row * rowSpacing
         );
     }
@@ -91,10 +116,11 @@ public final class FormationLayouts {
             int index,
             int total,
             double columnSpacing,
-            double rowSpacing
+            double rowSpacing,
+            double minimumRadius
     ) {
         double desiredSpacing = Math.max(columnSpacing, rowSpacing);
-        double radius = Math.max(FIRST_ROW_OFFSET, desiredSpacing * total / (2.0 * Math.PI));
+        double radius = Math.max(minimumRadius, desiredSpacing * total / (2.0 * Math.PI));
         double angle = 2.0 * Math.PI * index / total;
         return new FormationOffset(Math.sin(angle) * radius, Math.cos(angle) * radius);
     }

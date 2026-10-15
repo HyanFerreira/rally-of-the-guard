@@ -43,8 +43,23 @@ class FormationLayoutsTest {
     void squareCentersEachPopulatedRow() {
         assertOffset(RallyFormation.SQUARE, 0, 5, -2.0, 1.8);
         assertOffset(RallyFormation.SQUARE, 2, 5, 2.0, 1.8);
-        assertOffset(RallyFormation.SQUARE, 3, 5, -1.0, 4.8);
-        assertOffset(RallyFormation.SQUARE, 4, 5, 1.0, 4.8);
+        assertOffset(RallyFormation.SQUARE, 3, 5, -2.0, 4.8);
+        assertOffset(RallyFormation.SQUARE, 4, 5, 2.0, 4.8);
+    }
+
+    @Test
+    void nineGuardsProduceARegularThreeByThreeSquare() {
+        for (int index = 0; index < 9; index++) {
+            FormationOffset offset = FormationLayouts.slot(
+                    RallyFormation.SQUARE,
+                    index,
+                    9,
+                    COLUMN,
+                    ROW
+            );
+            assertEquals((index % 3 - 1) * COLUMN, offset.right(), 1.0e-9);
+            assertEquals(1.8 + (index / 3) * ROW, offset.forward(), 1.0e-9);
+        }
     }
 
     @Test
@@ -58,6 +73,20 @@ class FormationLayoutsTest {
         assertTrue(second.right() > 0.0);
         assertEquals(0.0, second.forward(), 1.0e-9);
         assertEquals(-first.forward(), third.forward(), 1.0e-9);
+    }
+
+    @Test
+    void circleKeepsAProtectiveMinimumRadius() {
+        FormationOffset offset = FormationLayouts.slot(
+                RallyFormation.CIRCLE,
+                0,
+                8,
+                1.35,
+                1.8,
+                3.25
+        );
+
+        assertEquals(3.25, offset.forward(), 1.0e-9);
     }
 
     @Test

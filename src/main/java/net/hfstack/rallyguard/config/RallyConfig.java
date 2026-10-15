@@ -119,6 +119,9 @@ public final class RallyConfig extends MidnightConfig {
     @Entry(category = "formation", min = 0.5, max = 8.0)
     public static double formationRowSpacing = 1.8;
 
+    @Entry(category = "formation", min = 2.0, max = 16.0)
+    public static double formationCircleRadius = 3.25;
+
     @Entry(category = "formation", min = 0.1, max = 4.0)
     public static double formationReturnSpeed = 1.0;
 
@@ -318,6 +321,10 @@ public final class RallyConfig extends MidnightConfig {
 
     public static double formationRowSpacing() {
         return clamp(formationRowSpacing, 0.5, 8.0);
+    }
+
+    public static double formationCircleRadius() {
+        return clamp(formationCircleRadius, 2.0, 16.0);
     }
 
     public static double formationReturnSpeed() {

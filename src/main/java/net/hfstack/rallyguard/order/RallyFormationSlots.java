@@ -37,7 +37,8 @@ public final class RallyFormationSlots {
                 index,
                 total,
                 RallyConfig.formationColumnSpacing(),
-                RallyConfig.formationRowSpacing()
+                RallyConfig.formationRowSpacing(),
+                RallyConfig.formationCircleRadius()
         );
         double direction = formation == RallyFormation.CIRCLE || inFront ? 1.0 : -1.0;
 

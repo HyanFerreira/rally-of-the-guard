@@ -155,6 +155,8 @@ class ResourceSchemaTest {
         Set<String> keys = Set.of(
                 "tooltip.rallyguard.scroll_of_rallying.formation",
                 "alert.rallyguard.scroll_of_rallying.formation_changed",
+                "rallyguard.midnightconfig.formationCircleRadius",
+                "rallyguard.midnightconfig.formationCircleRadius.tooltip",
                 "formation.rallyguard.escort",
                 "formation.rallyguard.column",
                 "formation.rallyguard.line",

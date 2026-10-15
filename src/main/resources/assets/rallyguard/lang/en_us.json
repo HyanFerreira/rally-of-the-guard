@@ -99,6 +99,8 @@
   "rallyguard.midnightconfig.formationColumnSpacing.tooltip": "Lateral spacing used by Rally formations.\n\n\u00a7eDefault: \u00a7f1.35\n\u00a76Min: \u00a7f0.5 \u00a77| \u00a76Max: \u00a7f8.0",
   "rallyguard.midnightconfig.formationRowSpacing": "Row Spacing",
   "rallyguard.midnightconfig.formationRowSpacing.tooltip": "Longitudinal spacing between formation rows.\n\n\u00a7eDefault: \u00a7f1.8\n\u00a76Min: \u00a7f0.5 \u00a77| \u00a76Max: \u00a7f8.0",
+  "rallyguard.midnightconfig.formationCircleRadius": "Circle Protection Radius",
+  "rallyguard.midnightconfig.formationCircleRadius.tooltip": "Minimum distance between the commander and guards in Circle formation.\n\n\u00a7eDefault: \u00a7f3.25\n\u00a76Min: \u00a7f2.0 \u00a77| \u00a76Max: \u00a7f16.0",
   "rallyguard.midnightconfig.formationReturnSpeed": "Return Speed",
   "rallyguard.midnightconfig.formationReturnSpeed.tooltip": "Speed used by guards when returning to their formation slot.\n\n\u00a7eDefault: \u00a7f1.0\n\u00a76Min: \u00a7f0.1 \u00a77| \u00a76Max: \u00a7f4.0",
   "rallyguard.midnightconfig.formationTeleportDistance": "Formation Teleport Distance",

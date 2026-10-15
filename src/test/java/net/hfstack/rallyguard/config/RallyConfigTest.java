@@ -8,6 +8,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RallyConfigTest {
     @Test
+    void circleRadiusDefaultsAndClampsToAProtectiveRange() {
+        double originalRadius = RallyConfig.formationCircleRadius;
+        try {
+            assertEquals(3.25, RallyConfig.formationCircleRadius());
+
+            RallyConfig.formationCircleRadius = 0.0;
+            assertEquals(2.0, RallyConfig.formationCircleRadius());
+
+            RallyConfig.formationCircleRadius = 100.0;
+            assertEquals(16.0, RallyConfig.formationCircleRadius());
+        } finally {
+            RallyConfig.formationCircleRadius = originalRadius;
+        }
+    }
+
+    @Test
     void squadSettingsDefaultAndClampToSupportedRanges() {
         boolean originalEnabled = RallyConfig.squadsEnabled;
         int originalSquads = RallyConfig.maxSquadsPerPlayer;
