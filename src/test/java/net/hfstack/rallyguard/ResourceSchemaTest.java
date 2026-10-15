@@ -67,9 +67,9 @@ class ResourceSchemaTest {
 
     @Test
     void itemDefinitionsResolveToExistingModelsAndTextures() throws IOException {
-        assertItemResources("scroll_of_rallying", "rallyguard:item/scroll_of_rallying");
-        assertItemResources("commanders_ledger", "rallyguard:item/commanders_ledger");
-        assertItemResources("muster_roll", "rallyguard:item/muster_roll");
+        assertItemResources("scroll_of_rallying", "rallyguard:item/scroll_of_rallying", "rallyguard:item/scroll_of_rallying");
+        assertItemResources("commanders_ledger", "rallyguard:item/commanders_ledger", "rallyguard:item/commanders_ledger");
+        assertItemResources("muster_roll", "rallyguard:item/muster_roll", "rallyguard:item/muster_roll");
     }
 
     @Test
@@ -289,7 +289,11 @@ class ResourceSchemaTest {
         }
     }
 
-    private static void assertItemResources(String itemName, String expectedModelId) throws IOException {
+    private static void assertItemResources(
+            String itemName,
+            String expectedModelId,
+            String expectedTextureId
+    ) throws IOException {
         JsonObject definition = readJson(RESOURCES.resolve(
                 "assets/rallyguard/items/" + itemName + ".json"
         ));
@@ -301,6 +305,7 @@ class ResourceSchemaTest {
 
         JsonObject model = readJson(modelPath);
         String textureId = model.getAsJsonObject("textures").get("layer0").getAsString();
+        assertEquals(expectedTextureId, textureId);
         Path texturePath = resourcePath("textures", textureId, ".png");
         assertTrue(Files.isRegularFile(texturePath), () -> "Missing texture: " + texturePath);
     }
