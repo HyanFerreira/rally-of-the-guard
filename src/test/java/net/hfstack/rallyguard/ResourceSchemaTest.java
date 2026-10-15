@@ -4,6 +4,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Test;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,6 +18,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ResourceSchemaTest {
     private static final Path RESOURCES = Path.of("src", "main", "resources");
+
+    @Test
+    void formationSelectorIconsAreCompleteAndNativeSized() throws IOException {
+        Path icons = RESOURCES.resolve("assets/rallyguard/textures/gui/formations");
+        for (String formation : Set.of(
+                "escort", "column", "line", "wedge", "square", "circle", "shield_wall"
+        )) {
+            Path icon = icons.resolve(formation + ".png");
+            assertTrue(Files.isRegularFile(icon), () -> "Missing formation icon: " + formation);
+            BufferedImage image = ImageIO.read(icon.toFile());
+            assertEquals(21, image.getWidth(), () -> "Unexpected icon width: " + formation);
+            assertEquals(21, image.getHeight(), () -> "Unexpected icon height: " + formation);
+            assertTrue(image.getColorModel().hasAlpha(), () -> "Icon must preserve alpha: " + formation);
+        }
+    }
 
     @Test
     void recipesProduceRegisteredRallyItems() throws IOException {
