@@ -9,6 +9,7 @@
 - Smoothed moving formations with continuous navigation, short look-ahead, and bounded sprint catch-up speeds.
 - Added a configurable lateral heading margin and gradual turning so minor commander drift no longer abruptly rotates the formation.
 - Added near-slot velocity matching with bounded positional correction, while retaining pathfinding for separated guards and terrain recovery.
+- Kept guard body and head rotation aligned smoothly with direct formation movement.
 - Added bounded sprint assistance to the native Follow order while leaving walking, combat, Rally, and mounted travel behavior untouched.
 
 - Added server-authoritative promotion of owned Level 7 Veteran guards to the persistent Captain role.

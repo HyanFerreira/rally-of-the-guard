@@ -234,6 +234,10 @@ public final class RallyFormationTicker {
         );
         guard.getNavigation().stop();
         guard.setDeltaMovement(velocity.x(), guard.getDeltaMovement().y, velocity.z());
+        float yaw = FormationVelocityPolicy.facingYaw(guard.getYRot(), velocity);
+        guard.setYRot(yaw);
+        guard.setYBodyRot(yaw);
+        guard.setYHeadRot(yaw);
     }
 
     private static List<GuardEntity> ralliedGuards(ServerLevel world, ServerPlayer player) {
