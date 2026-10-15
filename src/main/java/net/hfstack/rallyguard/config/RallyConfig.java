@@ -32,6 +32,9 @@ public final class RallyConfig extends MidnightConfig {
     @Entry(category = "economy", min = 0, max = 999)
     public static int captainHireCostBonus = 4;
 
+    @Entry(category = "economy", min = 0, max = 999)
+    public static int captainPromotionCost = 4;
+
     @Entry(category = "progression")
     public static boolean progressionEnabled = true;
 
@@ -58,6 +61,12 @@ public final class RallyConfig extends MidnightConfig {
 
     @Entry(category = "progression", min = 0, max = 32)
     public static int captainRegionalLimit = 2;
+
+    @Entry(category = "progression")
+    public static boolean captainPromotionEnabled = true;
+
+    @Entry(category = "progression", min = 1, max = 10)
+    public static int captainPromotionMinimumLevel = 7;
 
     @Entry(category = "progression", min = 0.0, max = 100.0)
     public static double xpMultiplier = 1.0;
@@ -195,6 +204,10 @@ public final class RallyConfig extends MidnightConfig {
         return clamp(captainHireCostBonus, 0, 999);
     }
 
+    public static int captainPromotionCost() {
+        return clamp(captainPromotionCost, 0, 999);
+    }
+
     public static boolean progressionEnabled() {
         return progressionEnabled;
     }
@@ -229,6 +242,14 @@ public final class RallyConfig extends MidnightConfig {
 
     public static int captainRegionalLimit() {
         return clamp(captainRegionalLimit, 0, 32);
+    }
+
+    public static boolean captainPromotionEnabled() {
+        return captainPromotionEnabled;
+    }
+
+    public static int captainPromotionMinimumLevel() {
+        return clamp(captainPromotionMinimumLevel, 1, 10);
     }
 
     public static double xpMultiplier() {

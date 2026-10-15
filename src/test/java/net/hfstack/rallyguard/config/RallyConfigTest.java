@@ -102,6 +102,34 @@ class RallyConfigTest {
     }
 
     @Test
+    void captainPromotionSettingsDefaultAndClampToSupportedRanges() {
+        boolean originalEnabled = RallyConfig.captainPromotionEnabled;
+        int originalLevel = RallyConfig.captainPromotionMinimumLevel;
+        int originalCost = RallyConfig.captainPromotionCost;
+        try {
+            assertTrue(RallyConfig.captainPromotionEnabled());
+            assertEquals(7, RallyConfig.captainPromotionMinimumLevel());
+            assertEquals(4, RallyConfig.captainPromotionCost());
+
+            RallyConfig.captainPromotionEnabled = false;
+            RallyConfig.captainPromotionMinimumLevel = -1;
+            RallyConfig.captainPromotionCost = -20;
+            assertFalse(RallyConfig.captainPromotionEnabled());
+            assertEquals(1, RallyConfig.captainPromotionMinimumLevel());
+            assertEquals(0, RallyConfig.captainPromotionCost());
+
+            RallyConfig.captainPromotionMinimumLevel = 99;
+            RallyConfig.captainPromotionCost = 2_000;
+            assertEquals(10, RallyConfig.captainPromotionMinimumLevel());
+            assertEquals(999, RallyConfig.captainPromotionCost());
+        } finally {
+            RallyConfig.captainPromotionEnabled = originalEnabled;
+            RallyConfig.captainPromotionMinimumLevel = originalLevel;
+            RallyConfig.captainPromotionCost = originalCost;
+        }
+    }
+
+    @Test
     void combatProgressionSettingsClampAndRejectNonFiniteValues() {
         double originalMultiplier = RallyConfig.xpMultiplier;
         int originalTimeout = RallyConfig.combatTimeoutSeconds;
