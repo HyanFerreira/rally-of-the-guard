@@ -242,6 +242,11 @@ public class GuardCommandScreen extends Screen {
         ).bounds(x + 38, y + PANEL_H - 28, 76, 20).build();
         this.addRenderableWidget(combat);
 
+        this.addRenderableWidget(Button.builder(
+                Component.translatable("gui.rallyguard.move.button"),
+                b -> Minecraft.getInstance().setScreen(new MoveCategoryScreen(this, scope))
+        ).bounds(x + 198, y + PANEL_H - 28, 88, 20).build());
+
         if (snapshot.squadsEnabled()) {
             this.addRenderableWidget(Button.builder(
                     Component.translatable("gui.rallyguard.squad.manage"),
@@ -492,6 +497,7 @@ public class GuardCommandScreen extends Screen {
             case GuardOrderStatus.WAITING -> Component.translatable("gui.rallyguard.command.status.waiting");
             case GuardOrderStatus.PATROLLING -> Component.translatable("gui.rallyguard.command.status.patrolling");
             case GuardOrderStatus.ROUTING -> Component.translatable("gui.rallyguard.command.status.routing");
+            case GuardOrderStatus.MOVING -> Component.translatable("gui.rallyguard.command.status.moving");
             default -> Component.translatable("gui.rallyguard.command.status.idle");
         };
     }

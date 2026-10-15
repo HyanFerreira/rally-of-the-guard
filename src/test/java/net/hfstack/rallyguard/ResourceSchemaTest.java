@@ -251,6 +251,30 @@ class ResourceSchemaTest {
         }
     }
 
+    @Test
+    void moveHereLabelsExistInBothSupportedLanguages() throws IOException {
+        JsonObject english = readJson(RESOURCES.resolve("assets/rallyguard/lang/en_us.json"));
+        JsonObject portuguese = readJson(RESOURCES.resolve("assets/rallyguard/lang/pt_br.json"));
+        Set<String> keys = Set.of(
+                "gui.rallyguard.move.button",
+                "gui.rallyguard.move.title",
+                "gui.rallyguard.move.category.all",
+                "gui.rallyguard.move.category.infantry",
+                "gui.rallyguard.move.category.ranged",
+                "gui.rallyguard.move.target_prompt",
+                "gui.rallyguard.move.cancelled",
+                "gui.rallyguard.move.expired",
+                "gui.rallyguard.move.invalid_destination",
+                "gui.rallyguard.command.move_ordered",
+                "gui.rallyguard.command.unsupported_data",
+                "gui.rallyguard.command.status.moving"
+        );
+        for (String key : keys) {
+            assertTrue(english.has(key), () -> "Missing English Move Here key: " + key);
+            assertTrue(portuguese.has(key), () -> "Missing Portuguese Move Here key: " + key);
+        }
+    }
+
     private static void assertRecipeResult(String recipeName, String expectedItemId) throws IOException {
         JsonObject recipe = readJson(RESOURCES.resolve(
                 "data/rallyguard/recipe/" + recipeName + ".json"
