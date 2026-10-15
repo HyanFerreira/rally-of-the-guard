@@ -6,6 +6,7 @@ import net.hfstack.rallyguard.command.RallyGuardCommands;
 import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.effect.ModEffects;
 import net.hfstack.rallyguard.event.GuardVillagersSpawnEggFix;
+import net.hfstack.rallyguard.event.DefendAreaTicker;
 import net.hfstack.rallyguard.event.GuardAllySafetyHandler;
 import net.hfstack.rallyguard.event.GuardRouteTicker;
 import net.hfstack.rallyguard.event.HiredGuardsNeutralityHandler;
@@ -62,6 +63,7 @@ public class RallyOfTheGuard implements ModInitializer {
         HiredGuardsNeutralityHandler.register();
         GuardRouteTicker.register();
         MoveOrderTicker.register();
+        DefendAreaTicker.register();
         RallyFormationTicker.register();
 
         // ✅ Registra codecs uma vez por lado (client e server)

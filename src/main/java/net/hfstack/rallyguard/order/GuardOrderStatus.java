@@ -10,6 +10,19 @@ public final class GuardOrderStatus {
     public static final int PATROLLING = 3;
     public static final int ROUTING = 4;
     public static final int MOVING = 5;
+    public static final int DEFENDING = 6;
+
+    public static int resolve(
+            boolean defending,
+            boolean moving,
+            boolean routing,
+            boolean patrolling,
+            boolean waiting,
+            boolean following
+    ) {
+        if (defending) return DEFENDING;
+        return resolve(moving, routing, patrolling, waiting, following);
+    }
 
     public static int resolve(boolean moving, boolean routing, boolean patrolling, boolean waiting, boolean following) {
         if (moving) return MOVING;

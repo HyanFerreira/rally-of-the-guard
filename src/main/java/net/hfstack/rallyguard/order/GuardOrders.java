@@ -2,6 +2,7 @@ package net.hfstack.rallyguard.order;
 
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.hfstack.rallyguard.order.move.MoveOrders;
+import net.hfstack.rallyguard.order.defend.DefendAreas;
 import net.minecraft.world.entity.Entity;
 
 public final class GuardOrders {
@@ -41,6 +42,7 @@ public final class GuardOrders {
 
     public static int statusOf(GuardEntity guard) {
         return GuardOrderStatus.resolve(
+                DefendAreas.active(guard).isPresent(),
                 MoveOrders.active(guard).isPresent(),
                 GuardRoutes.get(guard).active(),
                 guard.isPatrolling(),
