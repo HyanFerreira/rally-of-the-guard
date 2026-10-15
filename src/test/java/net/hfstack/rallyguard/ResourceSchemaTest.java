@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ResourceSchemaTest {
@@ -110,6 +111,40 @@ class ResourceSchemaTest {
         for (String key : keys) {
             assertTrue(english.has(key), () -> "Missing English Captain key: " + key);
             assertTrue(portuguese.has(key), () -> "Missing Portuguese Captain key: " + key);
+        }
+    }
+
+    @Test
+    void captainPromotionReleaseDocumentationTargetsApiFiveAndVersionOneFour() throws IOException {
+        String api = Files.readString(Path.of("docs", "API.md"));
+        String readme = Files.readString(Path.of("README.md"));
+        String changelog = Files.readString(Path.of("CHANGELOG.md"));
+        String roadmap = Files.readString(Path.of("ROADMAP.md"));
+        Path smokePath = Path.of("docs", "testing", "26.1-captain-promotion-smoke-test.md");
+
+        assertTrue(api.contains("API contract version: `5`"));
+        assertTrue(api.contains("RallyGuardApi.captains()"));
+        assertTrue(readme.contains("Level 7"));
+        assertTrue(readme.contains("4 unidades"));
+        assertTrue(changelog.contains("## Unreleased — planned 1.4.0"));
+        assertTrue(roadmap.contains("- [x] **Captain Promotion & Demotion**"));
+        assertTrue(Files.isRegularFile(smokePath));
+        if (Files.isRegularFile(smokePath)) {
+            String smoke = Files.readString(smokePath);
+            assertTrue(smoke.contains("Level 7"));
+            assertTrue(smoke.contains("4"));
+            assertTrue(smoke.contains("Officer"));
+        }
+
+        for (Path releaseMetadata : new Path[]{
+                Path.of("gradle.properties"),
+                Path.of("CHANGELOG.md"),
+                Path.of("README.md"),
+                Path.of("docs", "API.md"),
+                Path.of("ROADMAP.md")
+        }) {
+            assertFalse(Files.readString(releaseMetadata).contains("1.5.0"),
+                    () -> "Unexpected 1.5.0 reference in " + releaseMetadata);
         }
     }
 

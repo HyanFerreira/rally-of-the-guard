@@ -1,7 +1,7 @@
 # Captain Promotion & Demotion Design
 
 **Date:** 2026-10-15  
-**Status:** Draft for review
+**Status:** Implemented
 
 ## Goal
 

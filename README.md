@@ -19,6 +19,7 @@ Principais mudanças:
 - Um Capitão existente pode atuar como Oficial de cada Pelotão.
 - Criação, renomeação, exclusão e atribuição de guardas pela nova tela de gerenciamento.
 - Perfis, progressão, Capitães naturais, custo dinâmico e Registro de Tropa.
+- Promoção de guardas veteranos a Capitão e dispensa segura pelo Registro de Tropa.
 
 - Adicionadas posturas no Livro de Comando: seguir, aguardar, patrulhar e rota.
 - Adicionada tela de rota de patrulha.
@@ -53,6 +54,16 @@ Principais mudanças:
 - O controle regional usa os guardas carregados em um raio configurável: sem Capitão próximo a chance é normal, com um ela é reduzida pela metade e, no limite regional, cai para zero.
 - Perfis antigos são migrados sem transformar guardas existentes em Capitães nem sortear novamente seus atributos.
 - O **Registro de Tropa (Muster Roll)** exibe o cargo de Capitão e aplica o bônus configurável ao preço de contratação.
+
+### Promoção e dispensa de Capitães
+
+- Um guarda contratado pode ser promovido pelo Registro de Tropa ao alcançar **Level 7 / Veteran** por padrão.
+- A promoção custa **4 unidades** de `economy.hireItem` por padrão; item, custo, nível mínimo e habilitação são configuráveis.
+- O servidor repete propriedade, disponibilidade, perfil, nível e pagamento no momento da ação.
+- Se a persistência falhar, o pagamento completo é devolvido.
+- Dispensar um Capitão não devolve pagamento e preserva XP, patente, atributos, estatísticas e Pelotão.
+- Um Capitão que seja Officer precisa deixar essa função antes de ser dispensado.
+- Desativar novas promoções não impede a dispensa de Capitães existentes.
 
 ### Livro de Comando
 

@@ -848,22 +848,14 @@ Possíveis evoluções futuras:
 
 ---
 
-# Atualizações futuras
+# Atualização concluída — Captain Promotion & Demotion
 
-As versões abaixo são direções planejadas.
-
-Nomes, números de versão, conteúdo e ordem ainda podem mudar.
-
----
-
-# Captain Promotion & Demotion
-
-O jogador poderá transformar um guarda veterano em Captain por meio de uma
-promoção deliberada. O objetivo é permitir que um guarda que construiu sua
-história em serviço possa assumir um cargo de liderança, sem depender
+O jogador agora pode transformar um guarda veterano em Captain por meio de uma
+promoção deliberada no Muster Roll. Isso permite que um guarda que construiu sua
+história em serviço assuma um cargo de liderança, sem depender
 exclusivamente da chance de encontrar um Captain natural.
 
-Os dois caminhos deverão continuar valiosos:
+Os dois caminhos continuam valiosos:
 
 ```text
 Captain natural
@@ -873,13 +865,13 @@ Captain promovido
 → desenvolvido pelo jogador e reconhecido por seu tempo de serviço
 ```
 
-Captain continuará sendo um **cargo persistente**, separado da patente e da
-função de Officer. Promover um guarda não o tornará automaticamente Officer de
-um squad; essa continuará sendo uma escolha separada.
+Captain continua sendo um **cargo persistente**, separado da patente e da
+função de Officer. Promover um guarda não o torna automaticamente Officer de
+um squad; essa continua sendo uma escolha separada.
 
 ## Requisitos de promoção
 
-Referência inicial:
+Regras implementadas:
 
 - o guarda deve pertencer ao jogador;
 - o guarda deve estar vivo, carregado e possuir um perfil válido;
@@ -888,12 +880,12 @@ Referência inicial:
 - o jogador deve pagar o custo configurado de promoção;
 - toda validação e mutação deve ocorrer no servidor.
 
-O nível mínimo deverá ser configurável. A promoção não concederá XP,
+O nível mínimo é configurável. A promoção não concede XP,
 níveis, patente ou atributos adicionais por si mesma.
 
 ## Custo de promoção
 
-A promoção deverá utilizar `economy.hireItem`, preservando compatibilidade
+A promoção utiliza `economy.hireItem`, preservando compatibilidade
 com servidores e modpacks que substituem Emerald por outra moeda.
 
 O pagamento deve ser atômico:
@@ -911,9 +903,9 @@ O jogador também poderá retirar o cargo de Captain de um guarda sob seu
 comando.
 
 - a demissão não devolverá o custo da promoção ou da contratação;
-- nível, patente, XP, atributos e estatísticas permanecerão inalterados;
-- um Captain que seja Officer deverá ser removido dessa função antes da demissão;
-- um guarda demitido poderá ser promovido novamente se cumprir os requisitos e
+- nível, patente, XP, atributos e estatísticas permanecem inalterados;
+- um Captain que seja Officer precisa ser removido dessa função antes da demissão;
+- um guarda demitido pode ser promovido novamente se cumprir os requisitos e
   pagar um novo custo.
 
 Essa regra evita alterações silenciosas na estrutura do squad e mantém Officer
@@ -921,24 +913,25 @@ como uma responsabilidade explícita do jogador.
 
 ## Persistência e compatibilidade
 
-O sistema deverá reutilizar o campo persistente de Captain já existente no
+O sistema reutiliza o campo persistente de Captain já existente no
 perfil, sem reroll de identidade e sem promover retroativamente guardas de saves
 existentes.
 
-A escrita deverá passar por um serviço dedicado de promoção, sem expor edição
+A escrita passa por um serviço dedicado de promoção, sem expor edição
 arbitrária do perfil para integrações. Eventos isolados de promoção e demissão
-poderão permitir integrações futuras sem acoplar outros mods à persistência
+permitem integrações futuras sem acoplar outros mods à persistência
 interna.
 
 ## Interface
 
-A ação deverá ficar associada ao perfil individual do guarda, com confirmação
-clara dos requisitos e do custo. O fluxo visual definitivo será definido junto
-da revisão mais ampla da GUI, sem alterar as regras de servidor descritas acima.
+A ação fica associada ao perfil individual do guarda no Muster Roll, com custo
+e impedimentos derivados do snapshot autoritativo do servidor. O controle atual
+é funcional e deliberadamente mínimo; o fluxo visual definitivo será definido
+na revisão mais ampla da GUI, sem alterar as regras de servidor descritas acima.
 
 ## Configuração inicial
 
-Possíveis opções:
+Opções implementadas:
 
 ```text
 progression.captainPromotionEnabled
@@ -946,7 +939,17 @@ progression.captainPromotionMinimumLevel
 economy.captainPromotionCost
 ```
 
-O custo padrão inicial será de **4 unidades** de `economy.hireItem`.
+O custo padrão é de **4 unidades** de `economy.hireItem`; o nível mínimo padrão
+é **Level 7**. A promoção pode ser desativada sem bloquear a demissão segura de
+Capitães existentes.
+
+---
+
+# Atualizações futuras
+
+As versões abaixo são direções planejadas.
+
+Nomes, números de versão, conteúdo e ordem ainda podem mudar.
 
 ---
 
@@ -1527,7 +1530,7 @@ O objetivo final é que Rally of the Guard se torne o complemento natural para j
 - [x] Muster Roll profile GUI
 - [x] Captains como Officers de Squad
 - [x] **Squads & Officers**
-- [ ] **Captain Promotion & Demotion**
+- [x] **Captain Promotion & Demotion**
 - [ ] Additional formations
 - [ ] Move Here
 - [ ] Defend Area

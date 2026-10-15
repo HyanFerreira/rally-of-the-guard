@@ -5,7 +5,7 @@ Rally exposes a small common-side API so integrations can issue tactical orders 
 ## Compatibility
 
 - Mod version: `1.4.0`
-- API contract version: `4`
+- API contract version: `5`
 - Entry point: `net.hfstack.rallyguard.api.RallyGuardApi`
 
 Integrations should check `RallyGuardApi.apiVersion()` before relying on a newer contract. Additive changes may keep the same contract version; incompatible changes require a new integer version and a coordinated minimum mod dependency.
@@ -54,6 +54,42 @@ and are reconstructed from the profile. They are implementation details rather
 than a public mutation surface; integrations should continue treating
 `GuardProfileView` as read-only.
 
+## Captain promotion and demotion
+
+API contract version 5 exposes the only supported Captain mutation path:
+
+```java
+CaptainService captains = RallyGuardApi.captains();
+CaptainActionView view = captains.inspect(owner, guard);
+CaptainMutationResult promoted = captains.promote(owner, guard);
+CaptainMutationResult demoted = captains.demote(owner, guard);
+```
+
+These methods must run on the logical server thread. `inspect` returns the
+current server-authoritative action, eligibility state, blocking outcome,
+configured minimum level, and optional promotion offer. Integrations must not
+edit profile attachments or call the internal profile repository to change the
+Captain flag.
+
+Promotion requires a living loaded guard in the owner's dimension, matching
+ownership, a supported writable profile, the configured minimum level
+(Level 7 by default), and the current payment (4 units of
+`economy.hireItem` by default). The service revalidates after policies run,
+removes payment immediately before persistence, and refunds the complete offer
+when persistence fails. Demotion has no payment or refund and remains available
+when promotion is disabled, but an active Squad Officer must be cleared first.
+
+`CaptainMutationResult.Outcome` distinguishes `SUCCESS`, `DISABLED`,
+`NOT_AVAILABLE`, `NOT_OWNER`, `UNSUPPORTED_PROFILE`, `ALREADY_CAPTAIN`,
+`NOT_CAPTAIN`, `LEVEL_TOO_LOW`, `INSUFFICIENT_PAYMENT`, `ACTIVE_OFFICER`,
+`PERSISTENCE_ERROR`, and `DENIED`. Promotion success includes its applied
+`CaptainOffer`; demotion success does not.
+
+`CaptainEvents.BEFORE` is an ordered policy event. The first denial stops
+evaluation and supplies localized feedback. `CaptainEvents.AFTER` runs only
+after successful persistence; observer exceptions are logged and isolated so
+one integration cannot turn a completed mutation into a reported failure.
+
 ## Guard progression
 
 Progression writes are available on the logical server through:
@@ -87,7 +123,8 @@ The built-in Muster Roll uses `GuardProfileSnapshotFactory` on the logical
 server to create a bounded, immutable display snapshot. It contains only the
 guard identity, derived level/rank/stars, Captain status, XP progress, effective attributes,
 kills, assists, viewer-relative service status, and an optional current hiring
-offer. Schema versions, origin, natural quality value, and attribute rolls are
+offer and, for a guard under the viewer's command, an optional Captain action
+view. Schema versions, origin, natural quality value, and attribute rolls are
 deliberately absent from the wire contract.
 
 Snapshots are refreshed at most once per second and sent only after their

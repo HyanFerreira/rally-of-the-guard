@@ -2,6 +2,14 @@
 
 ## Unreleased — planned 1.4.0
 
+- Added server-authoritative promotion of owned Level 7 Veteran guards to the persistent Captain role.
+- Added configurable Captain promotion enablement, minimum level, and a default cost of 4 units of the configured hiring item.
+- Added Captain demotion without refunds or progression changes, with protection against demoting an active Squad Officer.
+- Added atomic inventory payment with full refund when Captain profile persistence fails.
+- Added Captain API contract version 5 with inspection, mutation results, ordered BEFORE policies, and isolated AFTER notifications.
+- Added secure Muster Roll promotion networking bound to the active nearby inspection session.
+- Added a minimal synchronized Muster Roll promotion/demotion control with English and Brazilian Portuguese feedback.
+
 - Added persistent player-owned Squads with custom creation, rename, and deletion in the Commander's Ledger.
 - Added All Guards, Unassigned, and named-Squad Ledger scopes with collective summon, follow, wait, patrol, and combat orders.
 - Added persistent guard-to-Squad assignment with lazy repair when a referenced Squad no longer exists.
