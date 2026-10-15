@@ -994,6 +994,46 @@ táticas e para a revisão posterior da interface.
 
 ---
 
+# Melhoria planejada para 1.4.0 — Formation Selection Hub
+
+O ciclo sequencial do Pergaminho do Rali será substituído por um seletor visual
+compacto, permitindo acessar qualquer formação diretamente sem atravessar todas
+as opções intermediárias.
+
+## Interação
+
+- clique direito abre o seletor sem pausar o mundo;
+- `Shift + clique direito` continua ativando ou encerrando o Rally;
+- uma faixa central exibe Escolta, Coluna, Linha, Cunha, Quadrado, Círculo e
+  Muralha de Escudos;
+- a formação atual recebe destaque dourado e a opção sob o cursor exibe seu
+  nome traduzido;
+- clique esquerdo confirma e fecha; `Esc` fecha sem alterar a seleção;
+- selecionar durante um Rally ativo reorganiza os guardas imediatamente.
+
+## Segurança e compatibilidade
+
+A tela será apenas a camada de interação. A escolha continuará autoritativa no
+servidor, que deverá validar o jogador, a mão, o Pergaminho do Rali e o
+identificador da formação antes de persistir a alteração. Pergaminhos antigos
+ou sem componente continuarão usando Escolta como padrão.
+
+O seletor deverá se adaptar a escalas menores de GUI, oferecer nomes traduzidos
+e preservar navegação por teclado e narração sempre que os componentes nativos
+permitirem.
+
+## Etapas
+
+- [x] conjunto original de sete ícones 21×21 com fundo transparente;
+- [x] gerador determinístico e validação dos recursos;
+- [ ] tela nativa e layout responsivo;
+- [ ] abertura pelo clique direito e preservação do atalho com `Shift`;
+- [ ] pacote de seleção e validação autoritativa no servidor;
+- [ ] atualização ao vivo de um Rally ativo;
+- [ ] traduções, acessibilidade, testes automatizados e smoke test em jogo.
+
+---
+
 # Atualizações futuras
 
 As versões abaixo são direções planejadas.
@@ -1522,6 +1562,7 @@ O objetivo final é que Rally of the Guard se torne o complemento natural para j
 - [x] **Squads & Officers**
 - [x] **Captain Promotion & Demotion**
 - [x] **Additional formations**
+- [ ] **Formation Selection Hub (1.4.0)** — ícones concluídos; interface e integração pendentes
 - [ ] Move Here
 - [ ] Defend Area
 - [ ] Combat stances
