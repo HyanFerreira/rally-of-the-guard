@@ -20,6 +20,7 @@ Principais mudanças:
 - Criação, renomeação, exclusão e atribuição de guardas pela nova tela de gerenciamento.
 - Perfis, progressão, Capitães naturais, custo dinâmico e Registro de Tropa.
 - Promoção de guardas veteranos a Capitão e dispensa segura pelo Registro de Tropa.
+- Formações Escolta, Coluna, Linha, Cunha, Quadrado, Círculo e Muralha de Escudos selecionáveis no Pergaminho do Rali.
 
 - Adicionadas posturas no Livro de Comando: seguir, aguardar, patrulhar e rota.
 - Adicionada tela de rota de patrulha.
@@ -30,7 +31,7 @@ Principais mudanças:
 - Rotas usam o comportamento nativo de patrulha do Guard Villagers.
 - Dados da rota ficam salvos no próprio guarda e sobrevivem ao reload do mundo.
 - O Pergaminho do Rali respeita guardas em patrulha ou aguardando.
-- O Rali usa formação Escolta para posicionar guardas em duas colunas atrás/laterais do jogador.
+- O Rali permite escolher entre sete formações persistentes no próprio pergaminho.
 - Adicionada tela de Ordens de Combate para atacar o alvo mirado com todos, infantaria ou arqueiros.
 
 ---
@@ -121,7 +122,10 @@ Regras atuais:
 O **Pergaminho do Rali** convoca guardas contratados próximos para perto do jogador.
 
 - `Shift + botão direito` ativa ou encerra o rali.
-- Guardas convocados são posicionados em formação Escolta e passam a seguir.
+- `Botão direito` alterna entre Escolta, Coluna, Linha, Cunha, Quadrado, Círculo e Muralha de Escudos.
+- A formação escolhida fica salva no pergaminho; pergaminhos antigos usam Escolta.
+- Trocar a formação pelo pergaminho ativo reorganiza imediatamente os guardas do rali.
+- Guardas convocados são posicionados na formação selecionada e passam a seguir.
 - Guardas em patrulha não são puxados.
 - Guardas aguardando não são puxados.
 - Enquanto o rali está ativo, guardas tentam manter seus slots de formação quando não estão em combate.
@@ -265,11 +269,11 @@ Principais opções:
 - `rally.maxGuards`: limite de guardas chamados pelo rali.
 - `rally.teleportEnabled`: permite ou bloqueia teleportes do rali/formação.
 - `rally.teleportMinDistance`: distância mínima para teleportar um guarda ao iniciar o rali.
-- `rally.formationEnabled`: liga ou desliga a formação Escolta.
+- `rally.formationEnabled`: liga ou desliga o posicionamento em formação.
 - `rally.protectRalliedGuardsFromOwner`: impede o comandante de acertar seus guardas durante o rali.
 - `rally.retreatEnabled`: controla a retirada automática de guardas em rali (`rallyRetreatEnabled` no arquivo MidnightLib).
 - `rally.retreatDistance`: distância para abandonar o combate e retornar, padrão de 24 blocos (`rallyRetreatDistance` no arquivo MidnightLib).
-- `formation.columnSpacing`: distância entre as duas colunas da formação.
+- `formation.columnSpacing`: distância lateral usada pelas formações.
 - `formation.rowSpacing`: distância entre fileiras.
 - `formation.returnSpeed`: velocidade usada para voltar ao slot.
 - `formation.teleportDistance`: distância em que a formação teleporta um guarda muito longe.

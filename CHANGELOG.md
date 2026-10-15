@@ -2,6 +2,10 @@
 
 ## Unreleased — planned 1.4.0
 
+- Added selectable Escort, Column, Line, Wedge, Square, Circle, and Shield Wall Rally formations.
+- Added persistent per-scroll formation selection with live server-authoritative switching during an active Rally.
+- Preserved existing combat, retreat, pathfinding, safe-slot, and corrective teleport behavior across every formation.
+
 - Added server-authoritative promotion of owned Level 7 Veteran guards to the persistent Captain role.
 - Added configurable Captain promotion enablement, minimum level, and a default cost of 4 units of the configured hiring item.
 - Added Captain demotion without refunds or progression changes, with protection against demoting an active Squad Officer.

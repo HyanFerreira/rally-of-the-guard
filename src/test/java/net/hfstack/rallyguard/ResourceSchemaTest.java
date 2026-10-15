@@ -149,6 +149,37 @@ class ResourceSchemaTest {
     }
 
     @Test
+    void additionalFormationResourcesAndReleaseDocumentationAreComplete() throws IOException {
+        JsonObject english = readJson(RESOURCES.resolve("assets/rallyguard/lang/en_us.json"));
+        JsonObject portuguese = readJson(RESOURCES.resolve("assets/rallyguard/lang/pt_br.json"));
+        Set<String> keys = Set.of(
+                "tooltip.rallyguard.scroll_of_rallying.formation",
+                "alert.rallyguard.scroll_of_rallying.formation_changed",
+                "formation.rallyguard.escort",
+                "formation.rallyguard.column",
+                "formation.rallyguard.line",
+                "formation.rallyguard.wedge",
+                "formation.rallyguard.square",
+                "formation.rallyguard.circle",
+                "formation.rallyguard.shield_wall"
+        );
+        for (String key : keys) {
+            assertTrue(english.has(key), () -> "Missing English formation key: " + key);
+            assertTrue(portuguese.has(key), () -> "Missing Portuguese formation key: " + key);
+        }
+
+        String readme = Files.readString(Path.of("README.md"));
+        String changelog = Files.readString(Path.of("CHANGELOG.md"));
+        String roadmap = Files.readString(Path.of("ROADMAP.md"));
+        Path smokePath = Path.of("docs", "testing", "26.1-additional-formations-smoke-test.md");
+
+        assertTrue(readme.contains("Muralha de Escudos"));
+        assertTrue(changelog.contains("Shield Wall"));
+        assertTrue(roadmap.contains("- [x] **Additional formations**"));
+        assertTrue(Files.isRegularFile(smokePath));
+    }
+
+    @Test
     void squadLabelsAndConfigurationExistInBothSupportedLanguages() throws IOException {
         JsonObject english = readJson(RESOURCES.resolve("assets/rallyguard/lang/en_us.json"));
         JsonObject portuguese = readJson(RESOURCES.resolve("assets/rallyguard/lang/pt_br.json"));

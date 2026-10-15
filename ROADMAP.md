@@ -945,6 +945,38 @@ Capitães existentes.
 
 ---
 
+# Atualização concluída — Additional Formations
+
+O Pergaminho do Rali agora permite escolher a geometria usada pelos guardas
+convocados, preservando Escolta como padrão compatível com itens antigos.
+
+Formações implementadas:
+
+```text
+Escort
+Column
+Line
+Wedge
+Square
+Circle
+Shield Wall
+```
+
+O clique direito alterna a seleção e `Shift + clique direito` continua
+ativando ou encerrando o Rally. A escolha fica persistida em cada pergaminho e
+pode reorganizar um Rally ativo imediatamente.
+
+Todas as geometrias reutilizam as configurações de espaçamento existentes e o
+mesmo fluxo de posição segura, navegação, retorno e teleporte corretivo. O
+combate continua tendo prioridade enquanto o guarda estiver dentro das regras
+de engajamento; ao reagrupar, ele retorna ao slot da formação selecionada.
+
+Esta etapa não adiciona bônus de combate ou comportamento especial por
+formação. Ela estabelece uma base determinística e testável para futuras ordens
+táticas e para a revisão posterior da interface.
+
+---
+
 # Atualizações futuras
 
 As versões abaixo são direções planejadas.
@@ -1019,65 +1051,6 @@ Pode combater, mas evita perseguições longas.
 ### Protect Commander
 
 Prioriza ameaças que estejam atacando o jogador comandante.
-
----
-
-# Formations
-
-O sistema de Rally poderá ganhar várias formações.
-
-Possibilidades:
-
-### Escort
-
-Formação atual.
-
-### Column
-
-```text
-X
-X
-X
-X
-```
-
-### Line
-
-```text
-X X X X X X
-```
-
-### Wedge
-
-```text
-      X
-    X   X
-  X       X
-```
-
-### Square
-
-```text
-X X X
-X X X
-X X X
-```
-
-### Circle
-
-```text
-  X X
-X   P   X
-  X X
-```
-
-### Shield Wall
-
-```text
-X X X X X
-```
-
-As formações deverão respeitar combate e pathfinding, evitando que o sistema force posições quando a IA precisar reagir.
 
 ---
 
@@ -1531,7 +1504,7 @@ O objetivo final é que Rally of the Guard se torne o complemento natural para j
 - [x] Captains como Officers de Squad
 - [x] **Squads & Officers**
 - [x] **Captain Promotion & Demotion**
-- [ ] Additional formations
+- [x] **Additional formations**
 - [ ] Move Here
 - [ ] Defend Area
 - [ ] Combat stances
