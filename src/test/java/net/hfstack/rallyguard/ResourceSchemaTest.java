@@ -31,6 +31,26 @@ class ResourceSchemaTest {
             assertEquals(21, image.getWidth(), () -> "Unexpected icon width: " + formation);
             assertEquals(21, image.getHeight(), () -> "Unexpected icon height: " + formation);
             assertTrue(image.getColorModel().hasAlpha(), () -> "Icon must preserve alpha: " + formation);
+            for (int coordinate = 0; coordinate < 21; coordinate++) {
+                assertEquals(0, image.getRGB(20, coordinate) >>> 24,
+                        () -> "Right padding must be transparent: " + formation);
+                assertEquals(0, image.getRGB(coordinate, 20) >>> 24,
+                        () -> "Bottom padding must be transparent: " + formation);
+            }
+        }
+    }
+
+    @Test
+    void formationHubLabelsExistInBothSupportedLanguages() throws IOException {
+        JsonObject english = readJson(RESOURCES.resolve("assets/rallyguard/lang/en_us.json"));
+        JsonObject portuguese = readJson(RESOURCES.resolve("assets/rallyguard/lang/pt_br.json"));
+
+        for (String key : Set.of(
+                "gui.rallyguard.formation_hub.title",
+                "gui.rallyguard.formation_hub.cancel_hint"
+        )) {
+            assertTrue(english.has(key), () -> "Missing English Formation Hub key: " + key);
+            assertTrue(portuguese.has(key), () -> "Missing Portuguese Formation Hub key: " + key);
         }
     }
 

@@ -97,20 +97,15 @@ public class ScrollOfRallyingItem extends Item {
     @Override
     public InteractionResult use(Level world, Player user, InteractionHand hand) {
         ItemStack stack = user.getItemInHand(hand);
-        if (world.isClientSide()) return InteractionResult.SUCCESS;
+        if (world.isClientSide()) {
+            if (!user.isShiftKeyDown()) {
+                openFormationHub(hand, selectedFormation(stack));
+            }
+            return InteractionResult.SUCCESS;
+        }
         if (!(user instanceof ServerPlayer sp)) return InteractionResult.PASS;
 
         if (!user.isShiftKeyDown()) {
-            RallyFormation formation = selectedFormation(stack).next();
-            setSelectedFormation(stack, formation);
-            if (isActive(stack) && user.hasEffect(ModEffects.RALLY_COMMANDER)) {
-                RallyFormationTicker.updateFormation(sp, formation);
-            }
-            user.sendSystemMessage(Component.translatable(
-                    "alert.rallyguard.scroll_of_rallying.formation_changed",
-                    Component.translatable(formation.translationKey())
-            ));
-            user.getCooldowns().addCooldown(stack, 10);
             return InteractionResult.SUCCESS_SERVER;
         }
 
@@ -180,6 +175,15 @@ public class ScrollOfRallyingItem extends Item {
 
         user.getCooldowns().addCooldown(stack, 60);
         return InteractionResult.SUCCESS_SERVER;
+    }
+
+    private static void openFormationHub(InteractionHand hand, RallyFormation formation) {
+        try {
+            Class<?> hooks = Class.forName("net.hfstack.rallyguard.client.ClientHooks");
+            hooks.getMethod("openFormationHub", int.class, String.class)
+                    .invoke(null, hand == InteractionHand.MAIN_HAND ? 0 : 1, formation.id());
+        } catch (ReflectiveOperationException ignored) {
+        }
     }
 
     @Override

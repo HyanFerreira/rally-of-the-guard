@@ -131,7 +131,7 @@
   "alert.rallyguard.scroll_of_rallying.strength_gained": "Voc\u00ea iniciou um Rali! Seus Guardas em um raio de %s blocos atenderam ao chamado.",
   "alert.rallyguard.scroll_of_rallying.strength_lost": "Voc\u00ea encerrou o Rali! Seus Guardas voltar\u00e3o a vagar por a\u00ed",
 
-  "tooltip.rallyguard.scroll_of_rallying.tooltip_desc": "Bot\u00e3o direito: forma\u00e7\u00e3o · SHIFT + bot\u00e3o direito: ativar/desativar Rali",
+  "tooltip.rallyguard.scroll_of_rallying.tooltip_desc": "Bot\u00e3o direito: menu de forma\u00e7\u00f5es · SHIFT + bot\u00e3o direito: ativar/desativar Rali",
   "tooltip.rallyguard.scroll_of_rallying.formation": "Forma\u00e7\u00e3o: %s",
   "alert.rallyguard.scroll_of_rallying.formation_changed": "Forma\u00e7\u00e3o do Rali: %s",
   "tooltip.rallyguard.scroll_of_rallying.tooltip_shift": "Segure SHIFT para mais informa\u00e7\u00f5es",
@@ -299,6 +299,9 @@
   "gui.rallyguard.squad.unsupported_data": "Os dados de Pelot\u00e3o foram criados por uma vers\u00e3o mais nova e n\u00e3o foram alterados.",
   "gui.rallyguard.squad.invalid_request": "Solicita\u00e7\u00e3o de Pelot\u00e3o inv\u00e1lida.",
   "gui.rallyguard.squad.batch_result": "Ordens: %s conclu\u00eddas, %s rejeitadas, %s indispon\u00edveis.",
+
+  "gui.rallyguard.formation_hub.title": "Escolher Forma\u00e7\u00e3o",
+  "gui.rallyguard.formation_hub.cancel_hint": "Esc: cancelar",
 
   "formation.rallyguard.escort": "Escolta",
   "formation.rallyguard.column": "Coluna",
