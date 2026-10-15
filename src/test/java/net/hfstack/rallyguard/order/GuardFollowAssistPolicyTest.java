@@ -23,7 +23,7 @@ class GuardFollowAssistPolicyTest {
     @Test
     void usesModerateCatchUpWhenGuardFallsFarBehind() {
         assertSpeed(1.15, GuardFollowAssistPolicy.speed(
-                true, false, false, true, false, 100.0
+                true, false, false, true, false, 36.0
         ));
     }
 
