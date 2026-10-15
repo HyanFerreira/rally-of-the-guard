@@ -2,7 +2,8 @@ package net.hfstack.rallyguard.formation;
 
 public final class FormationHeadingPolicy {
     private static final double MOVEMENT_SQUARED = 0.02 * 0.02;
-    private static final float MAX_TURN_DEGREES = 6.0F;
+    private static final float MAX_TURN_DEGREES = 10.0F;
+    private static final float DECISIVE_TURN_DEGREES = 60.0F;
 
     private FormationHeadingPolicy() {
     }
@@ -27,12 +28,14 @@ public final class FormationHeadingPolicy {
         double rightX = Math.cos(yawRadians);
         double rightZ = Math.sin(yawRadians);
         double drift = current.lateralDrift() + movementX * rightX + movementZ * rightZ;
-        boolean adapting = current.adapting() || Math.abs(drift) > lateralMargin;
+        float desiredYaw = (float) Math.toDegrees(Math.atan2(-movementX, movementZ));
+        boolean decisiveTurn = Math.abs(wrappedDifference(current.yawDegrees(), desiredYaw))
+                >= DECISIVE_TURN_DEGREES;
+        boolean adapting = current.adapting() || decisiveTurn || Math.abs(drift) > lateralMargin;
         if (!adapting) {
             return new FormationHeadingState(current.yawDegrees(), drift, false);
         }
 
-        float desiredYaw = (float) Math.toDegrees(Math.atan2(-movementX, movementZ));
         float updatedYaw = approachDegrees(current.yawDegrees(), desiredYaw, MAX_TURN_DEGREES);
         boolean aligned = Math.abs(wrappedDifference(updatedYaw, desiredYaw)) < 0.01F;
         double boundedDrift = aligned

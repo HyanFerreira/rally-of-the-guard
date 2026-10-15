@@ -2,11 +2,11 @@ package net.hfstack.rallyguard.formation;
 
 public final class FormationVelocityPolicy {
     private static final double CORRECTION_GAIN = 0.08;
-    private static final double MAX_CORRECTION = 0.06;
+    private static final double MAX_CORRECTION = 0.18;
     private static final double MAX_COMMANDER_SPEED = 0.35;
     private static final double MAX_GUARD_SPEED = 0.38;
     private static final double FACING_MOVEMENT_SQUARED = 0.01 * 0.01;
-    private static final float MAX_FACING_CHANGE = 18.0F;
+    private static final float MAX_FACING_CHANGE = 45.0F;
 
     private FormationVelocityPolicy() {
     }

@@ -14,7 +14,7 @@ class FormationHeadingPolicyTest {
         FormationHeadingState state = FormationHeadingState.initial(0.0F);
 
         for (int i = 0; i < 5; i++) {
-            state = FormationHeadingPolicy.update(state, 0.2, 0.0, MARGIN);
+            state = FormationHeadingPolicy.update(state, 0.2, 1.0, MARGIN);
         }
 
         assertEquals(0.0F, state.yawDegrees(), 1.0e-6F);
@@ -24,8 +24,8 @@ class FormationHeadingPolicyTest {
     @Test
     void oppositeSmallCorrectionsCancelInsideMargin() {
         FormationHeadingState state = FormationHeadingState.initial(0.0F);
-        state = FormationHeadingPolicy.update(state, 0.8, 0.0, MARGIN);
-        state = FormationHeadingPolicy.update(state, -0.8, 0.0, MARGIN);
+        state = FormationHeadingPolicy.update(state, 0.8, 3.0, MARGIN);
+        state = FormationHeadingPolicy.update(state, -0.8, 3.0, MARGIN);
 
         assertEquals(0.0F, state.yawDegrees(), 1.0e-6F);
         assertEquals(0.0, state.lateralDrift(), 1.0e-9);
@@ -37,13 +37,26 @@ class FormationHeadingPolicyTest {
         state = FormationHeadingPolicy.update(state, 1.3, 0.0, MARGIN);
 
         assertTrue(state.adapting());
-        assertEquals(-6.0F, state.yawDegrees(), 1.0e-6F);
+        assertEquals(-10.0F, state.yawDegrees(), 1.0e-6F);
+    }
+
+    @Test
+    void decisiveDirectionChangeDoesNotWaitForLateralMargin() {
+        FormationHeadingState state = FormationHeadingPolicy.update(
+                FormationHeadingState.initial(0.0F),
+                0.1,
+                0.0,
+                MARGIN
+        );
+
+        assertTrue(state.adapting());
+        assertEquals(-10.0F, state.yawDegrees(), 1.0e-6F);
     }
 
     @Test
     void sustainedDirectionChangeEventuallyAlignsFormation() {
         FormationHeadingState state = FormationHeadingState.initial(0.0F);
-        for (int i = 0; i < 22; i++) {
+        for (int i = 0; i < 10; i++) {
             state = FormationHeadingPolicy.update(state, 0.2, 0.0, MARGIN);
         }
 
@@ -56,7 +69,7 @@ class FormationHeadingPolicyTest {
         FormationHeadingState state = FormationHeadingPolicy.update(
                 FormationHeadingState.initial(0.0F),
                 0.8,
-                0.0,
+                3.0,
                 MARGIN
         );
 

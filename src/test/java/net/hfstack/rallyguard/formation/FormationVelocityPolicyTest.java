@@ -29,6 +29,14 @@ class FormationVelocityPolicyTest {
     }
 
     @Test
+    void guardFarAheadCanReverseTowardNewRearSlotAfterTurn() {
+        FormationVelocity velocity = FormationVelocityPolicy.velocity(0.1, 0.0, -3.0, 0.0);
+
+        assertTrue(velocity.x() < 0.0);
+        assertTrue(Math.abs(velocity.x()) <= 0.18 + 1.0e-9);
+    }
+
+    @Test
     void correctionAndTotalSpeedRemainBounded() {
         FormationVelocity velocity = FormationVelocityPolicy.velocity(10.0, 0.0, 100.0, 0.0);
 
@@ -39,7 +47,7 @@ class FormationVelocityPolicyTest {
     void facingTurnsGraduallyTowardActualMovement() {
         FormationVelocity velocity = new FormationVelocity(0.1, 0.0);
 
-        assertEquals(-18.0F, FormationVelocityPolicy.facingYaw(0.0F, velocity), 1.0e-6F);
+        assertEquals(-45.0F, FormationVelocityPolicy.facingYaw(0.0F, velocity), 1.0e-6F);
         assertEquals(-90.0F, FormationVelocityPolicy.facingYaw(-80.0F, velocity), 1.0e-6F);
     }
 
