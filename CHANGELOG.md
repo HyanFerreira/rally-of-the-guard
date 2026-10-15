@@ -2,6 +2,8 @@
 
 ## Unreleased — planned 1.4.0
 
+- Added a responsive, non-pausing Formation Selection Hub with native keyboard focus, narration, translated tooltips, and direct access to every Rally formation.
+- Added strict server-authoritative formation selection that validates the hand, Scroll of Rallying, and formation identifier before persisting or updating an active Rally.
 - Added selectable Escort, Column, Line, Wedge, Square, Circle, and Shield Wall Rally formations.
 - Added persistent per-scroll formation selection with live server-authoritative switching during an active Rally.
 - Preserved existing combat, retreat, pathfinding, safe-slot, and corrective teleport behavior across every formation.

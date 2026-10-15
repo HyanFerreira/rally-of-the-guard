@@ -994,7 +994,7 @@ táticas e para a revisão posterior da interface.
 
 ---
 
-# Melhoria planejada para 1.4.0 — Formation Selection Hub
+# Implementação concluída para 1.4.0 — Formation Selection Hub
 
 O ciclo sequencial do Pergaminho do Rali será substituído por um seletor visual
 compacto, permitindo acessar qualquer formação diretamente sem atravessar todas
@@ -1026,11 +1026,12 @@ permitirem.
 
 - [x] conjunto original de sete ícones 21×21 com fundo transparente;
 - [x] gerador determinístico e validação dos recursos;
-- [ ] tela nativa e layout responsivo;
-- [ ] abertura pelo clique direito e preservação do atalho com `Shift`;
-- [ ] pacote de seleção e validação autoritativa no servidor;
-- [ ] atualização ao vivo de um Rally ativo;
-- [ ] traduções, acessibilidade, testes automatizados e smoke test em jogo.
+- [x] tela nativa e layout responsivo;
+- [x] abertura pelo clique direito e preservação do atalho com `Shift`;
+- [x] pacote de seleção e validação autoritativa no servidor;
+- [x] atualização ao vivo de um Rally ativo;
+- [x] traduções, acessibilidade e testes automatizados;
+- [ ] smoke test em jogo (roteiro documentado).
 
 ---
 
@@ -1562,7 +1563,7 @@ O objetivo final é que Rally of the Guard se torne o complemento natural para j
 - [x] **Squads & Officers**
 - [x] **Captain Promotion & Demotion**
 - [x] **Additional formations**
-- [ ] **Formation Selection Hub (1.4.0)** — ícones concluídos; interface e integração pendentes
+- [ ] **Formation Selection Hub (1.4.0)** — implementação concluída; smoke test em jogo pendente
 - [ ] Move Here
 - [ ] Defend Area
 - [ ] Combat stances
