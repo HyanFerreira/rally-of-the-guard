@@ -5,6 +5,9 @@
 - Added selectable Escort, Column, Line, Wedge, Square, Circle, and Shield Wall Rally formations.
 - Added persistent per-scroll formation selection with live server-authoritative switching during an active Rally.
 - Preserved existing combat, retreat, pathfinding, safe-slot, and corrective teleport behavior across every formation.
+- Refined Square into a stable grid and increased Circle's configurable minimum protection radius to 3.25 blocks.
+- Smoothed moving formations with continuous navigation, short look-ahead, and bounded sprint catch-up speeds.
+- Added bounded sprint assistance to the native Follow order while leaving walking, combat, Rally, and mounted travel behavior untouched.
 
 - Added server-authoritative promotion of owned Level 7 Veteran guards to the persistent Captain role.
 - Added configurable Captain promotion enablement, minimum level, and a default cost of 4 units of the configured hiring item.

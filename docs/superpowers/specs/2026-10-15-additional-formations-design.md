@@ -55,9 +55,14 @@ the commander. Circle remains centered on the commander.
 
 ## Runtime behavior
 
-Combat priority, protected-ally disengagement, pathfinding, hold distance,
-return speed, and corrective teleport behavior do not change. Additional
-formations only replace the target-slot calculation.
+Combat priority, protected-ally disengagement, safe-ground selection, and
+corrective teleport behavior remain authoritative across every formation.
+
+Following playtest feedback, a moving commander keeps guards navigating toward
+a short predicted slot instead of repeatedly stopping inside a dead band.
+Walking, sprinting, and catch-up use bounded speed tiers. The native Follow
+order remains authoritative outside Rally and only receives bounded assistance
+when a sprinting, unmounted commander pulls more than three blocks ahead.
 
 Guard ordering remains stable by entity ID. Layout changes therefore do not
 randomly reshuffle guards on every tick.

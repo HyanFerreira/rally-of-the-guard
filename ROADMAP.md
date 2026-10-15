@@ -971,6 +971,14 @@ mesmo fluxo de posição segura, navegação, retorno e teleporte corretivo. O
 combate continua tendo prioridade enquanto o guarda estiver dentro das regras
 de engajamento; ao reagrupar, ele retorna ao slot da formação selecionada.
 
+Após validação em jogo, o Quadrado foi refinado como uma grade rígida e o
+Círculo recebeu raio mínimo configurável de 3,25 blocos, mantendo sua unidade
+frontal adiante do comandante. O deslocamento das formações passou a usar
+navegação contínua e uma pequena antecipação enquanto o comandante anda, com
+recuperação moderada para corrida e corrida com salto. A ordem normal de seguir
+mantém a IA nativa e recebe assistência apenas quando o comandante corre e o
+guarda fica para trás; montarias não ativam essa assistência.
+
 Esta etapa não adiciona bônus de combate ou comportamento especial por
 formação. Ela estabelece uma base determinística e testável para futuras ordens
 táticas e para a revisão posterior da interface.

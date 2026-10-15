@@ -126,11 +126,14 @@ O **Pergaminho do Rali** convoca guardas contratados próximos para perto do jog
 - A formação escolhida fica salva no pergaminho; pergaminhos antigos usam Escolta.
 - Trocar a formação pelo pergaminho ativo reorganiza imediatamente os guardas do rali.
 - Guardas convocados são posicionados na formação selecionada e passam a seguir.
+- Enquanto o comandante se move, os guardas navegam continuamente para slots levemente adiantados, evitando o ciclo de andar e parar.
+- Corrida e corrida com salto recebem recuperação moderada; viagens montadas não recebem aceleração especial.
 - Guardas em patrulha não são puxados.
 - Guardas aguardando não são puxados.
 - Enquanto o rali está ativo, guardas tentam manter seus slots de formação quando não estão em combate.
 - Se o comandante se afastar mais de 24 blocos durante um combate, os guardas abandonam o alvo e retornam por padrão.
 - Durante o rali, guardas contratados ficam protegidos contra dano causado pelo próprio comandante.
+- A ordem normal de seguir preserva a IA do Guard Villagers e recebe apenas uma assistência moderada quando o comandante corre e o guarda começa a ficar para trás.
 
 ### Ordens de Combate
 
