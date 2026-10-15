@@ -16,6 +16,9 @@ import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRoutes;
 import net.hfstack.rallyguard.order.move.MoveOrderRead;
 import net.hfstack.rallyguard.order.move.MoveOrders;
+import net.hfstack.rallyguard.order.defend.DefendAreaRead;
+import net.hfstack.rallyguard.order.defend.DefendAreaState;
+import net.hfstack.rallyguard.order.defend.DefendAreas;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.BlockPos;
 
@@ -26,6 +29,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
     public GuardCommandResult summon(ServerPlayer commander, GuardEntity guard) {
         return execute(commander, guard, GuardCommandType.SUMMON, null, () -> {
             MoveOrders.clear(guard);
+            DefendAreas.clear(guard);
             double offsetX = (commander.getRandom().nextDouble() - 0.5) * 2.5;
             double offsetZ = (commander.getRandom().nextDouble() - 0.5) * 2.5;
             guard.snapTo(
@@ -47,6 +51,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
     public GuardCommandResult follow(ServerPlayer commander, GuardEntity guard) {
         return execute(commander, guard, GuardCommandType.FOLLOW, null, () -> {
             MoveOrders.clear(guard);
+            DefendAreas.clear(guard);
             guard.setPatrolling(false);
             guard.setPatrolPos(null);
             GuardOrders.setRallied(guard, false);
@@ -61,6 +66,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
     public GuardCommandResult wait(ServerPlayer commander, GuardEntity guard) {
         return execute(commander, guard, GuardCommandType.WAIT, null, () -> {
             MoveOrders.clear(guard);
+            DefendAreas.clear(guard);
             guard.setFollowing(false);
             guard.setPatrolling(false);
             guard.setPatrolPos(null);
@@ -76,6 +82,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
         BlockPos patrolPosition = Objects.requireNonNull(position, "position");
         return execute(commander, guard, GuardCommandType.PATROL, patrolPosition, () -> {
             MoveOrders.clear(guard);
+            DefendAreas.clear(guard);
             guard.setFollowing(false);
             GuardOrders.setRallied(guard, false);
             GuardOrders.setWaiting(guard, false);
@@ -90,6 +97,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
     public GuardCommandResult stopPatrol(ServerPlayer commander, GuardEntity guard) {
         return execute(commander, guard, GuardCommandType.STOP_PATROL, null, () -> {
             MoveOrders.clear(guard);
+            DefendAreas.clear(guard);
             guard.setPatrolling(false);
             guard.setFollowing(false);
             guard.setPatrolPos(null);
@@ -111,6 +119,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
 
         BlockPos target = Objects.requireNonNull(position, "position").immutable();
         return executeValidated(requiredCommander, guard, GuardCommandType.MOVE_TO, target, () -> {
+            DefendAreas.clear(guard);
             guard.setFollowing(false);
             guard.setPatrolling(false);
             guard.setPatrolPos(null);
@@ -120,6 +129,35 @@ public final class DefaultGuardCommandService implements GuardCommandService {
             stopCurrentActions(guard);
             MoveOrders.set(guard, target);
         }, "gui.rallyguard.command.move_ordered");
+    }
+
+    @Override
+    public GuardCommandResult defendArea(
+            ServerPlayer commander,
+            GuardEntity guard,
+            BlockPos center,
+            BlockPos post,
+            int radius
+    ) {
+        ServerPlayer requiredCommander = requireCommander(commander);
+        GuardCommandResult rejection = validate(requiredCommander, guard);
+        if (rejection != null) return rejection;
+        if (DefendAreas.read(guard) instanceof DefendAreaRead.Unsupported) {
+            return GuardCommandResult.unsupportedData();
+        }
+
+        DefendAreaState order = DefendAreaState.active(center, post, radius);
+        return executeValidated(requiredCommander, guard, GuardCommandType.DEFEND_AREA, order.center(), () -> {
+            MoveOrders.clear(guard);
+            guard.setFollowing(false);
+            GuardOrders.setRallied(guard, false);
+            GuardOrders.setWaiting(guard, false);
+            GuardRoutes.deactivate(guard);
+            stopCurrentActions(guard);
+            guard.setPatrolPos(order.post());
+            guard.setPatrolling(true);
+            DefendAreas.set(guard, order.center(), order.post(), order.radius());
+        }, "gui.rallyguard.command.defend_ordered");
     }
 
     private static GuardCommandResult execute(

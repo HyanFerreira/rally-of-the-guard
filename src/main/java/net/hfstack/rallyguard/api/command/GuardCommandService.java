@@ -19,4 +19,12 @@ public interface GuardCommandService {
     GuardCommandResult stopPatrol(ServerPlayer commander, GuardEntity guard);
 
     GuardCommandResult moveTo(ServerPlayer commander, GuardEntity guard, BlockPos position);
+
+    GuardCommandResult defendArea(
+            ServerPlayer commander,
+            GuardEntity guard,
+            BlockPos center,
+            BlockPos post,
+            int radius
+    );
 }

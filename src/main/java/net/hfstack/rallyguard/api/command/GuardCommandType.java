@@ -9,5 +9,6 @@ public enum GuardCommandType {
     WAIT,
     PATROL,
     STOP_PATROL,
-    MOVE_TO
+    MOVE_TO,
+    DEFEND_AREA
 }

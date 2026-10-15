@@ -5,7 +5,7 @@ Rally exposes a small common-side API so integrations can issue tactical orders 
 ## Compatibility
 
 - Mod version: `1.4.0`
-- API contract version: `6`
+- API contract version: `7`
 - Entry point: `net.hfstack.rallyguard.api.RallyGuardApi`
 
 Integrations should check `RallyGuardApi.apiVersion()` before relying on a newer contract. Additive changes may keep the same contract version; incompatible changes require a new integer version and a coordinated minimum mod dependency.
@@ -150,6 +150,7 @@ The command contract exposes:
 - `patrol`
 - `stopPatrol`
 - `moveTo`
+- `defendArea`
 
 Every method must run on the logical server thread. The service validates that the guard is alive, loaded in the commander's world and tactically owned by that commander. It returns a `GuardCommandResult` with a machine-readable outcome and localized player feedback.
 
@@ -158,6 +159,14 @@ API version 6 adds `moveTo(ServerPlayer, GuardEntity, BlockPos)` and
 clears mutually exclusive tactical state, and persists the requested target.
 An attachment written by a future schema returns `UNSUPPORTED_DATA` and remains
 untouched; another explicit mutually exclusive order may still clear it.
+
+API version 7 adds
+`defendArea(ServerPlayer, GuardEntity, BlockPos center, BlockPos post, int radius)`
+and `GuardCommandType.DEFEND_AREA`. The server integration chooses safe posts and
+the accepted radius before calling the service. A successful call activates the
+native patrol at the post, clears mutually exclusive tactical state, and stores
+the territorial order. Future Defend Area schemas use the same
+`UNSUPPORTED_DATA` preservation rule as Move Here.
 
 Rally's own packet receiver uses this same service. Integrations must call the service directly on the server and must not construct Rally network payloads.
 

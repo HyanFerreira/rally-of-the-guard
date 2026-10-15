@@ -14,6 +14,7 @@ import net.hfstack.rallyguard.formation.RallyFormation;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.RallyFormationSlots;
 import net.hfstack.rallyguard.order.move.MoveOrders;
+import net.hfstack.rallyguard.order.defend.DefendAreas;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -81,6 +82,7 @@ public class ScrollOfRallyingItem extends Item {
         guard.setTarget(null);
         guard.setAggressive(false);
         MoveOrders.clear(guard);
+        DefendAreas.clear(guard);
         GuardOrders.setWaiting(guard, false);
         GuardOrders.setRallied(guard, true);
         guard.getNavigation().stop();

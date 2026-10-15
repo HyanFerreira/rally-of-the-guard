@@ -34,6 +34,7 @@ import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRouteState;
 import net.hfstack.rallyguard.order.GuardRoutes;
 import net.hfstack.rallyguard.order.move.MoveOrders;
+import net.hfstack.rallyguard.order.defend.DefendAreas;
 import net.hfstack.rallyguard.service.GuardBatchCommandExecutor;
 import net.hfstack.rallyguard.service.GuardCommandTargets;
 import net.minecraft.world.entity.Entity;
@@ -235,6 +236,7 @@ public final class GuardCommandNetworking {
                 }
                 GuardRouteState route = new GuardRouteState(true, 0, waitTicks, 0, points);
                 MoveOrders.clear(guard);
+                DefendAreas.clear(guard);
                 GuardRoutes.applyToGuard(guard, route);
                 GuardCombatState.disengage(guard);
                 guard.setPatrolPos(route.currentPoint());
