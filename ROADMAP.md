@@ -983,10 +983,10 @@ Pequenos desvios laterais do comandante agora são absorvidos por uma margem
 configurável de 1,25 blocos. Ao ultrapassá-la, a formação realinha sua direção
 gradualmente em vez de girar todos os slots de forma brusca.
 
-Durante a marcha, cada slot usa um alvo de navegação projetado adiante e uma
-recuperação de velocidade contínua conforme o atraso. Isso evita o ciclo de
-acelerar, alcançar o ponto móvel, parar e voltar a andar sem desfazer a
-geometria da formação.
+Durante a marcha, guardas próximos combinam a velocidade do comandante com uma
+correção posicional pequena e contínua. Guardas separados ainda usam o
+pathfinding para retornar, preservando terreno, obstáculos e a geometria da
+formação sem projetar os primeiros slots sobre o jogador.
 
 Esta etapa não adiciona bônus de combate ou comportamento especial por
 formação. Ela estabelece uma base determinística e testável para futuras ordens

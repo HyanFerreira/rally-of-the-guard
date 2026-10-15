@@ -13,6 +13,8 @@ import net.hfstack.rallyguard.formation.FormationHeadingPolicy;
 import net.hfstack.rallyguard.formation.FormationHeadingState;
 import net.hfstack.rallyguard.formation.FormationMovementPlan;
 import net.hfstack.rallyguard.formation.FormationMovementPolicy;
+import net.hfstack.rallyguard.formation.FormationVelocity;
+import net.hfstack.rallyguard.formation.FormationVelocityPolicy;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRoutes;
 import net.hfstack.rallyguard.order.RallyFormationSlots;
@@ -38,6 +40,7 @@ public final class RallyFormationTicker {
 
     private static final Identifier GUARD_ID = Identifier.fromNamespaceAndPath("guardvillagers", "guard");
     private static final double COMMANDER_MOVEMENT_SQUARED = 0.02 * 0.02;
+    private static final double DIRECT_CONTROL_DISTANCE_SQUARED = 3.0 * 3.0;
     private static final Map<UUID, FormationAnchor> ANCHORS = new HashMap<>();
 
     private record FormationAnchor(
@@ -155,33 +158,21 @@ public final class RallyFormationTicker {
                     baseDistance,
                     RallyConfig.formationReturnSpeed()
             );
-            Vec3 lead = headingLead(anchor.heading().yawDegrees(), plan.leadDistance());
-            Vec3 slot = plan.leadDistance() == 0.0
-                    ? baseSlot
-                    : RallyFormationSlots.safeFormationSlot(
-                            world,
-                            player,
-                            anchor.formation(),
-                            i,
-                            guards.size(),
-                            anchor.heading().yawDegrees(),
-                            anchor.inFront(),
-                            lead
-                    );
-            double distance = guard.distanceToSqr(slot.x, slot.y, slot.z);
             guard.setFollowing(false);
             guard.setPatrolling(false);
 
             double teleportDistance = RallyConfig.formationTeleportDistance();
-            if (RallyConfig.rallyTeleportEnabled() && distance > teleportDistance * teleportDistance) {
-                guard.snapTo(slot.x, slot.y, slot.z, guard.getYRot(), guard.getXRot());
+            if (RallyConfig.rallyTeleportEnabled() && baseDistance > teleportDistance * teleportDistance) {
+                guard.snapTo(baseSlot.x, baseSlot.y, baseSlot.z, guard.getYRot(), guard.getXRot());
                 guard.setDeltaMovement(0.0, 0.0, 0.0);
                 guard.getNavigation().stop();
                 continue;
             }
 
-            if (plan.navigate()) {
-                guard.getNavigation().moveTo(slot.x, slot.y, slot.z, plan.speed());
+            if (anchor.moving() && baseDistance <= DIRECT_CONTROL_DISTANCE_SQUARED) {
+                moveWithFormation(guard, anchor.movement(), baseSlot);
+            } else if (plan.navigate()) {
+                guard.getNavigation().moveTo(baseSlot.x, baseSlot.y, baseSlot.z, plan.speed());
             } else {
                 holdSlot(guard, player);
             }
@@ -234,12 +225,15 @@ public final class RallyFormationTicker {
         return updated;
     }
 
-    private static Vec3 headingLead(float yawDegrees, double distance) {
-        if (distance == 0.0) {
-            return Vec3.ZERO;
-        }
-        double yaw = Math.toRadians(yawDegrees);
-        return new Vec3(-Math.sin(yaw) * distance, 0.0, Math.cos(yaw) * distance);
+    private static void moveWithFormation(GuardEntity guard, Vec3 commanderMovement, Vec3 slot) {
+        FormationVelocity velocity = FormationVelocityPolicy.velocity(
+                commanderMovement.x,
+                commanderMovement.z,
+                slot.x - guard.getX(),
+                slot.z - guard.getZ()
+        );
+        guard.getNavigation().stop();
+        guard.setDeltaMovement(velocity.x(), guard.getDeltaMovement().y, velocity.z());
     }
 
     private static List<GuardEntity> ralliedGuards(ServerLevel world, ServerPlayer player) {

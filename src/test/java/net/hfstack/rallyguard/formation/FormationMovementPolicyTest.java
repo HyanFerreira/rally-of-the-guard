@@ -12,7 +12,6 @@ class FormationMovementPolicyTest {
         FormationMovementPlan plan = FormationMovementPolicy.plan(false, false, 0.5, 1.0);
 
         assertFalse(plan.navigate());
-        assertEquals(0.0, plan.leadDistance());
     }
 
     @Test
@@ -21,7 +20,6 @@ class FormationMovementPolicyTest {
 
         assertTrue(plan.navigate());
         assertEquals(0.8, plan.speed());
-        assertEquals(0.0, plan.leadDistance());
     }
 
     @Test
@@ -30,7 +28,6 @@ class FormationMovementPolicyTest {
 
         assertTrue(plan.navigate());
         assertEquals(1.0, plan.speed());
-        assertEquals(1.5, plan.leadDistance());
     }
 
     @Test
@@ -39,7 +36,6 @@ class FormationMovementPolicyTest {
 
         assertTrue(plan.navigate());
         assertEquals(1.23, plan.speed(), 1.0e-9);
-        assertEquals(2.0, plan.leadDistance());
     }
 
     @Test

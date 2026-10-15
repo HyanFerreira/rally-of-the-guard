@@ -6,8 +6,6 @@ public final class FormationMovementPolicy {
     private static final double SPRINTING_SPEED_FLOOR = 1.2;
     private static final double MAX_MOVING_SPEED_FLOOR = 1.35;
     private static final double CATCH_UP_GAIN = 0.12;
-    private static final double WALKING_LEAD_DISTANCE = 1.5;
-    private static final double SPRINTING_LEAD_DISTANCE = 2.0;
 
     private FormationMovementPolicy() {
     }
@@ -27,8 +25,7 @@ public final class FormationMovementPolicy {
         if (!commanderMoving) {
             return new FormationMovementPlan(
                     distanceSquared > HOLD_DISTANCE_SQUARED,
-                    configuredSpeed,
-                    0.0
+                    configuredSpeed
             );
         }
 
@@ -40,8 +37,7 @@ public final class FormationMovementPolicy {
         speedFloor = Math.min(MAX_MOVING_SPEED_FLOOR, speedFloor + catchUp);
         return new FormationMovementPlan(
                 true,
-                Math.max(configuredSpeed, speedFloor),
-                commanderSprinting ? SPRINTING_LEAD_DISTANCE : WALKING_LEAD_DISTANCE
+                Math.max(configuredSpeed, speedFloor)
         );
     }
 }
