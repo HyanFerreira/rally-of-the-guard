@@ -8,6 +8,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RallyConfigTest {
     @Test
+    void formationHeadingMarginDefaultsAndClamps() {
+        double originalMargin = RallyConfig.formationHeadingMargin;
+        try {
+            assertEquals(1.25, RallyConfig.formationHeadingMargin());
+
+            RallyConfig.formationHeadingMargin = -1.0;
+            assertEquals(0.0, RallyConfig.formationHeadingMargin());
+
+            RallyConfig.formationHeadingMargin = 20.0;
+            assertEquals(4.0, RallyConfig.formationHeadingMargin());
+        } finally {
+            RallyConfig.formationHeadingMargin = originalMargin;
+        }
+    }
+
+    @Test
     void circleRadiusDefaultsAndClampsToAProtectiveRange() {
         double originalRadius = RallyConfig.formationCircleRadius;
         try {

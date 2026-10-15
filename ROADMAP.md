@@ -979,6 +979,10 @@ recuperação moderada para corrida e corrida com salto. A ordem normal de segui
 mantém a IA nativa e recebe assistência apenas quando o comandante corre e o
 guarda fica para trás; montarias não ativam essa assistência.
 
+Pequenos desvios laterais do comandante agora são absorvidos por uma margem
+configurável de 1,25 blocos. Ao ultrapassá-la, a formação realinha sua direção
+gradualmente em vez de girar todos os slots de forma brusca.
+
 Esta etapa não adiciona bônus de combate ou comportamento especial por
 formação. Ela estabelece uma base determinística e testável para futuras ordens
 táticas e para a revisão posterior da interface.

@@ -157,6 +157,8 @@ class ResourceSchemaTest {
                 "alert.rallyguard.scroll_of_rallying.formation_changed",
                 "rallyguard.midnightconfig.formationCircleRadius",
                 "rallyguard.midnightconfig.formationCircleRadius.tooltip",
+                "rallyguard.midnightconfig.formationHeadingMargin",
+                "rallyguard.midnightconfig.formationHeadingMargin.tooltip",
                 "formation.rallyguard.escort",
                 "formation.rallyguard.column",
                 "formation.rallyguard.line",

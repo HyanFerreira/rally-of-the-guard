@@ -279,6 +279,7 @@ Principais opções:
 - `formation.columnSpacing`: distância lateral usada pelas formações.
 - `formation.rowSpacing`: distância entre fileiras.
 - `formation.circleRadius`: raio mínimo de proteção da formação Círculo, padrão 3,25 blocos.
+- `formation.headingMargin`: desvio lateral tolerado antes de a formação mudar de direção gradualmente, padrão 1,25 blocos.
 - `formation.returnSpeed`: velocidade usada para voltar ao slot.
 - `formation.teleportDistance`: distância em que a formação teleporta um guarda muito longe.
 - `combat.targetRange`: alcance máximo da mira para ordens de ataque.

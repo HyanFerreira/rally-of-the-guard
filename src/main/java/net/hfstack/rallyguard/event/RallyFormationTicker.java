@@ -9,6 +9,8 @@ import net.hfstack.rallyguard.combat.RallyCombatPolicy;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.effect.ModEffects;
 import net.hfstack.rallyguard.formation.RallyFormation;
+import net.hfstack.rallyguard.formation.FormationHeadingPolicy;
+import net.hfstack.rallyguard.formation.FormationHeadingState;
 import net.hfstack.rallyguard.formation.FormationMovementPlan;
 import net.hfstack.rallyguard.formation.FormationMovementPolicy;
 import net.hfstack.rallyguard.order.GuardOrders;
@@ -40,7 +42,7 @@ public final class RallyFormationTicker {
 
     private record FormationAnchor(
             Vec3 position,
-            float yaw,
+            FormationHeadingState heading,
             boolean inFront,
             RallyFormation formation,
             Vec3 movement,
@@ -63,7 +65,7 @@ public final class RallyFormationTicker {
                 player.getUUID(),
                 new FormationAnchor(
                         player.position(),
-                        player.getYRot(),
+                        FormationHeadingState.initial(player.getYRot()),
                         true,
                         formation,
                         new Vec3(0.0, 0.0, 0.0),
@@ -75,7 +77,7 @@ public final class RallyFormationTicker {
     public static void updateFormation(ServerPlayer player, RallyFormation formation) {
         ANCHORS.computeIfPresent(player.getUUID(), (ignored, anchor) -> new FormationAnchor(
                 anchor.position(),
-                anchor.yaw(),
+                anchor.heading(),
                 anchor.inFront(),
                 formation,
                 anchor.movement(),
@@ -143,7 +145,7 @@ public final class RallyFormationTicker {
                     anchor.formation(),
                     i,
                     guards.size(),
-                    anchor.yaw(),
+                    anchor.heading().yawDegrees(),
                     anchor.inFront()
             );
             double baseDistance = guard.distanceToSqr(baseSlot.x, baseSlot.y, baseSlot.z);
@@ -162,7 +164,7 @@ public final class RallyFormationTicker {
                             anchor.formation(),
                             i,
                             guards.size(),
-                            anchor.yaw(),
+                            anchor.heading().yawDegrees(),
                             anchor.inFront(),
                             lead
                     );
@@ -204,7 +206,7 @@ public final class RallyFormationTicker {
         if (anchor == null) {
             anchor = new FormationAnchor(
                     current,
-                    player.getYRot(),
+                    FormationHeadingState.initial(player.getYRot()),
                     true,
                     RallyFormation.ESCORT,
                     new Vec3(0.0, 0.0, 0.0),
@@ -220,10 +222,15 @@ public final class RallyFormationTicker {
                 current.z - anchor.position().z
         );
         boolean moving = movement.horizontalDistanceSqr() > COMMANDER_MOVEMENT_SQUARED;
-        float yaw = moving ? movementYaw(movement.x, movement.z, anchor.yaw()) : anchor.yaw();
+        FormationHeadingState heading = FormationHeadingPolicy.update(
+                anchor.heading(),
+                movement.x,
+                movement.z,
+                RallyConfig.formationHeadingMargin()
+        );
         FormationAnchor updated = new FormationAnchor(
                 current,
-                yaw,
+                heading,
                 moving ? false : anchor.inFront(),
                 anchor.formation(),
                 movement,
@@ -231,11 +238,6 @@ public final class RallyFormationTicker {
         );
         ANCHORS.put(player.getUUID(), updated);
         return updated;
-    }
-
-    private static float movementYaw(double dx, double dz, float fallback) {
-        if (dx == 0 && dz == 0) return fallback;
-        return (float) Math.toDegrees(Math.atan2(-dx, dz));
     }
 
     private static List<GuardEntity> ralliedGuards(ServerLevel world, ServerPlayer player) {
