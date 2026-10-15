@@ -39,7 +39,7 @@ public final class RallyFormationSlots {
                 RallyConfig.formationColumnSpacing(),
                 RallyConfig.formationRowSpacing()
         );
-        double direction = inFront ? 1.0 : -1.0;
+        double direction = formation == RallyFormation.CIRCLE || inFront ? 1.0 : -1.0;
 
         return new Vec3(player.getX(), player.getY(), player.getZ())
                 .add(right.scale(offset.right()))
