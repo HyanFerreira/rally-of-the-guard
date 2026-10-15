@@ -1049,13 +1049,18 @@ O sistema de ordens poderá ser expandido para transformar o Rally em uma camada
 
 ## Move Here
 
-Permitir mandar:
+Implementação concluída; smoke test em jogo pendente.
+
+Permite mandar:
 
 - todos os guardas;
 - um squad;
 - uma categoria;
 
-até a posição indicada pelo jogador.
+até a posição indicada pelo jogador. O Livro de Comando combina o escopo atual
+com `Todos`, `Infantaria` ou `Arqueiros`; o próximo clique direito escolhe a
+âncora e o servidor distribui slots seguros determinísticos. A ordem persiste
+entre reloads, pausa durante combate e termina em `Aguardando`.
 
 Exemplo:
 
@@ -1564,7 +1569,7 @@ O objetivo final é que Rally of the Guard se torne o complemento natural para j
 - [x] **Captain Promotion & Demotion**
 - [x] **Additional formations**
 - [ ] **Formation Selection Hub (1.4.0)** — implementação concluída; smoke test em jogo pendente
-- [ ] Move Here
+- [ ] **Move Here (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
 - [ ] Defend Area
 - [ ] Combat stances
 - [ ] Quick Command / Radial Menu

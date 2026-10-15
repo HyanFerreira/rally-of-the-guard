@@ -152,14 +152,14 @@ class ResourceSchemaTest {
     }
 
     @Test
-    void captainPromotionReleaseDocumentationTargetsApiFiveAndVersionOneFour() throws IOException {
+    void captainPromotionReleaseDocumentationTargetsApiSixAndVersionOneFour() throws IOException {
         String api = Files.readString(Path.of("docs", "API.md"));
         String readme = Files.readString(Path.of("README.md"));
         String changelog = Files.readString(Path.of("CHANGELOG.md"));
         String roadmap = Files.readString(Path.of("ROADMAP.md"));
         Path smokePath = Path.of("docs", "testing", "26.1-captain-promotion-smoke-test.md");
 
-        assertTrue(api.contains("API contract version: `5`"));
+        assertTrue(api.contains("API contract version: `6`"));
         assertTrue(api.contains("RallyGuardApi.captains()"));
         assertTrue(readme.contains("Level 7"));
         assertTrue(readme.contains("4 unidades"));

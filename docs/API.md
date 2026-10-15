@@ -5,7 +5,7 @@ Rally exposes a small common-side API so integrations can issue tactical orders 
 ## Compatibility
 
 - Mod version: `1.4.0`
-- API contract version: `5`
+- API contract version: `6`
 - Entry point: `net.hfstack.rallyguard.api.RallyGuardApi`
 
 Integrations should check `RallyGuardApi.apiVersion()` before relying on a newer contract. Additive changes may keep the same contract version; incompatible changes require a new integer version and a coordinated minimum mod dependency.
@@ -56,7 +56,7 @@ than a public mutation surface; integrations should continue treating
 
 ## Captain promotion and demotion
 
-API contract version 6 exposes the only supported Captain mutation path and the positional `Move Here` guard command:
+API contract version 5 introduced the only supported Captain mutation path:
 
 ```java
 CaptainService captains = RallyGuardApi.captains();

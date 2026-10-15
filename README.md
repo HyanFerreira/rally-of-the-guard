@@ -82,6 +82,7 @@ Pelo painel, o jogador pode:
 - Criar, iniciar, pausar, limpar e editar rotas de patrulha.
 - Filtrar a lista por todos os guardas, guardas sem Pelotão ou um Pelotão específico.
 - Enviar ordens coletivas de convocar, seguir, aguardar e patrulhar ao escopo selecionado.
+- Enviar `Mover para cá` ao escopo selecionado, filtrando todos, infantaria ou arqueiros, e indicar o destino com o próximo clique direito em bloco.
 - Restringir ordens de combate ao escopo selecionado.
 
 ### Pelotões e Oficiais
@@ -101,6 +102,18 @@ Estados exibidos:
 - `Aguardando`
 - `Em patrulha`
 - `Em rota`
+- `Em movimento`
+
+### Mover para cá
+
+No Livro de Comando, escolha o escopo atual e pressione `Mover para cá`. Selecione
+`Todos`, `Infantaria` ou `Arqueiros` e clique com o botão direito em uma face de
+bloco dentro de oito blocos. O servidor distribui os guardas carregados em slots
+seguros próximos, sem teleporte corretivo. Combate pausa a marcha, que é retomada
+depois; ao chegar, cada guarda permanece em `Aguardando`.
+
+O modo de escolha dura 15 segundos. `Esc`, troca do Livro de mão, morte ou
+desconexão cancelam a seleção sem emitir a ordem.
 
 ### Rotas de Patrulha
 

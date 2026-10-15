@@ -2,6 +2,12 @@
 
 ## Unreleased — planned 1.4.0
 
+- Added server-authoritative Move Here orders for All Guards, Unassigned guards, or a selected Squad, combined with All, Infantry, or Ranged filtering.
+- Added deterministic UUID-ordered safe destinations around the clicked block face, with partial handling for unavailable slots and no forced chunk loading or corrective teleport.
+- Added persistent move destinations that survive reloads, pause during combat, resume afterward, and finish in Waiting.
+- Added a 15-second translated client targeting mode with cancellation on Esc, item swap, death, disconnect, or expiry.
+- Advanced the public guard-command contract to API version 6 with `moveTo` and `MOVE_TO`.
+
 - Added a responsive, non-pausing Formation Selection Hub with native keyboard focus, narration, translated tooltips, and direct access to every Rally formation.
 - Added strict server-authoritative formation selection that validates the hand, Scroll of Rallying, and formation identifier before persisting or updating an active Rally.
 - Added selectable Escort, Column, Line, Wedge, Square, Circle, and Shield Wall Rally formations.
