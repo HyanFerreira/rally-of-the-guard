@@ -17,6 +17,7 @@ import net.hfstack.rallyguard.api.recruitment.RecruitmentQuoteResult;
 import net.hfstack.rallyguard.api.recruitment.RecruitmentResult;
 import net.hfstack.rallyguard.api.recruitment.RecruitmentTransaction;
 import net.hfstack.rallyguard.contract.GuardOwnership;
+import net.hfstack.rallyguard.economy.InventoryPayment;
 import net.hfstack.rallyguard.profile.GuardProfileReadResult;
 import net.hfstack.rallyguard.profile.GuardProfileRepository;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -81,7 +82,7 @@ public final class DefaultGuardRecruitmentService implements GuardRecruitmentSer
         if (changedState != null) return changedState;
 
         Inventory inventory = player.getInventory();
-        if (countPayment(inventory, prepared.paymentItem()) < prepared.offer().cost()) {
+        if (InventoryPayment.count(inventory, prepared.paymentItem()) < prepared.offer().cost()) {
             return RecruitmentResult.failure(
                     RecruitmentResult.Outcome.NOT_ENOUGH_PAYMENT,
                     Component.translatable(
@@ -108,14 +109,14 @@ public final class DefaultGuardRecruitmentService implements GuardRecruitmentSer
             return policyError();
         }
 
-        removePayment(inventory, prepared.paymentItem(), prepared.offer().cost());
+        InventoryPayment.remove(inventory, prepared.paymentItem(), prepared.offer().cost());
         Component originalCustomName = guard.getCustomName();
         boolean originalCustomNameVisible = guard.isCustomNameVisible();
         try {
             GuardOwnership.setOwner(guard, player);
         } catch (RuntimeException exception) {
             restoreAfterFailure(guard, originalCustomName, originalCustomNameVisible);
-            refundPayment(inventory, prepared.paymentItem(), prepared.offer().cost());
+            InventoryPayment.refund(inventory, prepared.paymentItem(), prepared.offer().cost());
             rollbackTransactions(reservedTransactions);
             RallyOfTheGuard.LOGGER.error("Failed to assign guard {} to player {}", guard.getUUID(), player.getUUID(), exception);
             return RecruitmentResult.failure(
@@ -128,7 +129,7 @@ public final class DefaultGuardRecruitmentService implements GuardRecruitmentSer
             for (RecruitmentTransaction transaction : reservedTransactions) transaction.commit();
         } catch (RuntimeException exception) {
             restoreAfterFailure(guard, originalCustomName, originalCustomNameVisible);
-            refundPayment(inventory, prepared.paymentItem(), prepared.offer().cost());
+            InventoryPayment.refund(inventory, prepared.paymentItem(), prepared.offer().cost());
             rollbackTransactions(reservedTransactions);
             RallyOfTheGuard.LOGGER.error("Recruitment transaction commit failed for guard {}", guard.getUUID(), exception);
             return policyError();
@@ -235,31 +236,6 @@ public final class DefaultGuardRecruitmentService implements GuardRecruitmentSer
             );
         }
         return null;
-    }
-
-    private static int countPayment(Inventory inventory, Item paymentItem) {
-        int total = 0;
-        for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
-            ItemStack stack = inventory.getItem(slot);
-            if (stack.is(paymentItem)) total += stack.getCount();
-        }
-        return total;
-    }
-
-    private static void removePayment(Inventory inventory, Item paymentItem, int cost) {
-        int remaining = cost;
-        for (int slot = 0; slot < inventory.getContainerSize() && remaining > 0; slot++) {
-            ItemStack stack = inventory.getItem(slot);
-            if (stack.is(paymentItem)) {
-                int removed = Math.min(remaining, stack.getCount());
-                stack.shrink(removed);
-                remaining -= removed;
-            }
-        }
-    }
-
-    private static void refundPayment(Inventory inventory, Item paymentItem, int cost) {
-        if (cost > 0) inventory.placeItemBackInInventory(new ItemStack(paymentItem, cost));
     }
 
     private static void restoreAfterFailure(
