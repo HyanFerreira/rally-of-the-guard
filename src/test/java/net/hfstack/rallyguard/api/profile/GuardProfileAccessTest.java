@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.hfstack.rallyguard.profile.GuardProfile;
 import net.hfstack.rallyguard.profile.GuardProfileReadResult;
+import net.hfstack.rallyguard.api.RallyGuardApi;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
@@ -15,6 +16,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 class GuardProfileAccessTest {
+
+    @Test
+    void apiVersionFiveExposesCaptainService() {
+        assertEquals(5, RallyGuardApi.apiVersion());
+        assertSame(RallyGuardApi.captains(), RallyGuardApi.captains());
+    }
 
     @Test
     void availableProfileIsExposedAsReadOnlyView() {
