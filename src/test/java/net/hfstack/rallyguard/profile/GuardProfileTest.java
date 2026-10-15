@@ -97,6 +97,40 @@ class GuardProfileTest {
         assertEquals(GuardProfileOrigin.OTHER, GuardProfileOrigin.fromSerializedName(null));
     }
 
+    @Test
+    void changingCaptainRolePreservesEveryOtherProfileField() {
+        GuardProfile original = GuardProfile.restoreV2(
+                2,
+                GuardProfileOrigin.NATURAL,
+                123_456,
+                8_765,
+                -321,
+                654,
+                2_345,
+                -987,
+                42,
+                19,
+                false
+        );
+
+        GuardProfile promoted = original.withCaptain(true);
+        GuardProfile demoted = promoted.withCaptain(false);
+
+        assertEquals(true, promoted.captain());
+        assertEquals(false, demoted.captain());
+        assertEquals(original, demoted);
+        assertEquals(original.generationVersion(), promoted.generationVersion());
+        assertEquals(original.originType(), promoted.originType());
+        assertEquals(original.totalXpMilli(), promoted.totalXpMilli());
+        assertEquals(original.naturalQuality(), promoted.naturalQuality());
+        assertEquals(original.healthRoll(), promoted.healthRoll());
+        assertEquals(original.attackRoll(), promoted.attackRoll());
+        assertEquals(original.armorRoll(), promoted.armorRoll());
+        assertEquals(original.speedRoll(), promoted.speedRoll());
+        assertEquals(original.kills(), promoted.kills());
+        assertEquals(original.assists(), promoted.assists());
+    }
+
     private static GuardProfile profileWithQuality(int quality) {
         return GuardProfile.createV2(
                 GuardProfileOrigin.NATURAL,

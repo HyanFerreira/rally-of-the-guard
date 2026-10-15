@@ -125,6 +125,22 @@ public record GuardProfile(
         );
     }
 
+    public GuardProfile withCaptain(boolean captain) {
+        return restoreV2(
+                generationVersion,
+                originType,
+                totalXpMilli,
+                naturalQuality,
+                healthRoll,
+                attackRoll,
+                armorRoll,
+                speedRoll,
+                kills,
+                assists,
+                captain
+        );
+    }
+
     @Override
     public int schemaVersion() {
         return CURRENT_SCHEMA_VERSION;
