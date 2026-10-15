@@ -5,7 +5,8 @@
   "mixins": [
     "GuardEntityMixin",
     "GuardEntityCrossbowMixin",
-    "GuardEntityMeleeGoalMixin"
+    "GuardEntityMeleeGoalMixin",
+    "GuardFollowHeroGoalMixin"
   ],
   "injectors": {
     "defaultRequire": 1

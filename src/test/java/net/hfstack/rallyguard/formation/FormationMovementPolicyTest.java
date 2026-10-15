@@ -50,6 +50,13 @@ class FormationMovementPolicyTest {
     }
 
     @Test
+    void smallMovingLagGetsEnoughReserveToCloseTheGapSmoothly() {
+        FormationMovementPlan plan = FormationMovementPolicy.plan(true, false, 4.0, 1.0);
+
+        assertEquals(1.15, plan.speed());
+    }
+
+    @Test
     void explicitHigherConfiguredSpeedIsNeverReduced() {
         FormationMovementPlan plan = FormationMovementPolicy.plan(true, true, 25.0, 2.0);
 
