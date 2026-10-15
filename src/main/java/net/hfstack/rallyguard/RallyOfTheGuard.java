@@ -17,6 +17,7 @@ import net.hfstack.rallyguard.interaction.GuardInteractionLocks;
 import net.hfstack.rallyguard.network.GuardCommandNetworking;
 import net.hfstack.rallyguard.network.NetworkBootstrap;
 import net.hfstack.rallyguard.network.MusterRollNetworking;
+import net.hfstack.rallyguard.network.FormationSelectionNetworking;
 import net.hfstack.rallyguard.muster.MusterRollSessions;
 import net.hfstack.rallyguard.profile.GuardProfileAttachments;
 import net.hfstack.rallyguard.profile.GuardProfileLifecycle;
@@ -59,6 +60,7 @@ public class RallyOfTheGuard implements ModInitializer {
         // ✅ Registra codecs uma vez por lado (client e server)
         NetworkBootstrap.registerTypesOnce();
         MusterRollNetworking.registerServer();
+        FormationSelectionNetworking.registerServer();
         MusterRollSessions.register();
 
         // ✅ Depois registra só os receivers do servidor

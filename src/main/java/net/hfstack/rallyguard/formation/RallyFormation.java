@@ -1,6 +1,7 @@
 package net.hfstack.rallyguard.formation;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 public enum RallyFormation {
     ESCORT("escort"),
@@ -31,10 +32,13 @@ public enum RallyFormation {
     }
 
     public static RallyFormation fromId(String id) {
-        if (id == null) return ESCORT;
+        return findById(id).orElse(ESCORT);
+    }
+
+    public static Optional<RallyFormation> findById(String id) {
+        if (id == null) return Optional.empty();
         return Arrays.stream(values())
                 .filter(formation -> formation.id.equals(id))
-                .findFirst()
-                .orElse(ESCORT);
+                .findFirst();
     }
 }
