@@ -48,19 +48,19 @@ public final class MoveOrderTicker {
                 target.getY(),
                 target.getZ() + 0.5
         );
-        switch (MoveOrderMovementPolicy.decide(guard.getTarget() != null, distanceSquared)) {
-            case PAUSE_FOR_COMBAT -> guard.getNavigation().stop();
-            case NAVIGATE -> guard.getNavigation().moveTo(
+        MoveOrderMovementPolicy.execute(
+                MoveOrderMovementPolicy.decide(guard.getTarget() != null, distanceSquared),
+                () -> guard.getNavigation().moveTo(
                     target.getX() + 0.5,
                     target.getY(),
                     target.getZ() + 0.5,
                     RallyConfig.routeMoveSpeed()
-            );
-            case ARRIVE -> {
-                guard.getNavigation().stop();
-                MoveOrders.clear(guard);
-                GuardOrders.setWaiting(guard, true);
-            }
-        }
+                ),
+                () -> {
+                    guard.getNavigation().stop();
+                    MoveOrders.clear(guard);
+                    GuardOrders.setWaiting(guard, true);
+                }
+        );
     }
 }

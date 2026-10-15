@@ -16,4 +16,14 @@ public final class MoveOrderMovementPolicy {
         if (hasCombatTarget) return Decision.PAUSE_FOR_COMBAT;
         return distanceSquared <= ARRIVAL_DISTANCE_SQUARED ? Decision.ARRIVE : Decision.NAVIGATE;
     }
+
+    public static void execute(Decision decision, Runnable navigate, Runnable arrive) {
+        switch (decision) {
+            case PAUSE_FOR_COMBAT -> {
+                // Combat AI retains control of navigation while the move order is paused.
+            }
+            case NAVIGATE -> navigate.run();
+            case ARRIVE -> arrive.run();
+        }
+    }
 }
