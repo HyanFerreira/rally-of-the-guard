@@ -81,6 +81,39 @@ class ResourceSchemaTest {
     }
 
     @Test
+    void captainPromotionLabelsFeedbackAndConfigurationExistInBothLanguages() throws IOException {
+        JsonObject english = readJson(RESOURCES.resolve("assets/rallyguard/lang/en_us.json"));
+        JsonObject portuguese = readJson(RESOURCES.resolve("assets/rallyguard/lang/pt_br.json"));
+        Set<String> keys = Set.of(
+                "rallyguard.midnightconfig.captainPromotionEnabled",
+                "rallyguard.midnightconfig.captainPromotionEnabled.tooltip",
+                "rallyguard.midnightconfig.captainPromotionMinimumLevel",
+                "rallyguard.midnightconfig.captainPromotionMinimumLevel.tooltip",
+                "rallyguard.midnightconfig.captainPromotionCost",
+                "rallyguard.midnightconfig.captainPromotionCost.tooltip",
+                "gui.rallyguard.captain.promote_button",
+                "gui.rallyguard.captain.demote_button",
+                "gui.rallyguard.captain.promoted",
+                "gui.rallyguard.captain.demoted",
+                "gui.rallyguard.captain.promotion_disabled",
+                "gui.rallyguard.captain.unavailable",
+                "gui.rallyguard.captain.not_owner",
+                "gui.rallyguard.captain.unsupported_profile",
+                "gui.rallyguard.captain.already_captain",
+                "gui.rallyguard.captain.not_captain",
+                "gui.rallyguard.captain.level_too_low",
+                "gui.rallyguard.captain.insufficient_payment",
+                "gui.rallyguard.captain.active_officer",
+                "gui.rallyguard.captain.persistence_error",
+                "gui.rallyguard.captain.denied"
+        );
+        for (String key : keys) {
+            assertTrue(english.has(key), () -> "Missing English Captain key: " + key);
+            assertTrue(portuguese.has(key), () -> "Missing Portuguese Captain key: " + key);
+        }
+    }
+
+    @Test
     void squadLabelsAndConfigurationExistInBothSupportedLanguages() throws IOException {
         JsonObject english = readJson(RESOURCES.resolve("assets/rallyguard/lang/en_us.json"));
         JsonObject portuguese = readJson(RESOURCES.resolve("assets/rallyguard/lang/pt_br.json"));

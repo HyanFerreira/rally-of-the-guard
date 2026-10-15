@@ -4,8 +4,10 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.hfstack.rallyguard.muster.GuardProfileSnapshot;
 import net.hfstack.rallyguard.muster.GuardServiceStatus;
 import net.hfstack.rallyguard.network.payload.CloseMusterRollC2SPayload;
+import net.hfstack.rallyguard.network.payload.CaptainActionC2SPayload;
 import net.hfstack.rallyguard.network.payload.MusterRollSnapshotS2CPayload;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -18,7 +20,7 @@ public final class MusterRollScreen extends Screen {
     private static final int PREFERRED_PANEL_WIDTH = 420;
     private static final int MINIMUM_PANEL_WIDTH = 320;
     private static final int SCREEN_PADDING = 12;
-    private static final int PANEL_HEIGHT = 250;
+    private static final int PANEL_HEIGHT = 290;
     private static final int WHITE = 0xFFFFFFFF;
     private static final int MUTED = 0xFFBBBBBB;
     private static final int GOLD = 0xFFFFD45A;
@@ -35,14 +37,45 @@ public final class MusterRollScreen extends Screen {
         Minecraft client = Minecraft.getInstance();
         client.execute(() -> {
             if (payload.openScreen() && client.screen instanceof MusterRollScreen screen) {
-                screen.snapshot = payload.snapshot();
+                screen.updateSnapshot(payload.snapshot());
             } else if (payload.openScreen()) {
                 client.setScreen(new MusterRollScreen(payload.snapshot()));
             } else if (client.screen instanceof MusterRollScreen screen
                     && screen.snapshot.entityUuid().equals(payload.snapshot().entityUuid())) {
-                screen.snapshot = payload.snapshot();
+                screen.updateSnapshot(payload.snapshot());
             }
         });
+    }
+
+    private void updateSnapshot(GuardProfileSnapshot updated) {
+        this.snapshot = updated;
+        this.rebuildWidgets();
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        CaptainActionScreenModel model = CaptainActionScreenModel.from(snapshot.captainAction());
+        if (!model.visible()) return;
+
+        int panelWidth = ScreenLayout.boundedPanelWidth(
+                width,
+                PREFERRED_PANEL_WIDTH,
+                MINIMUM_PANEL_WIDTH,
+                SCREEN_PADDING
+        );
+        int x = (width - panelWidth) / 2;
+        int y = (height - PANEL_HEIGHT) / 2;
+        Button actionButton = Button.builder(
+                actionLabel(model),
+                button -> {
+                    if (ClientPlayNetworking.canSend(CaptainActionC2SPayload.ID)) {
+                        ClientPlayNetworking.send(new CaptainActionC2SPayload(model.action()));
+                    }
+                }
+        ).bounds(x + 22, y + PANEL_HEIGHT - 50, panelWidth - 44, 20).build();
+        actionButton.active = model.enabled();
+        addRenderableWidget(actionButton);
     }
 
     public static void closeFromServer() {
@@ -147,8 +180,26 @@ public final class MusterRollScreen extends Screen {
                     itemName
             ), panelCenterX, line, GOLD);
         }
+        CaptainActionScreenModel captainAction = CaptainActionScreenModel.from(snapshot.captainAction());
+        captainAction.blockingReasonKey().ifPresent(reason -> graphics.centeredText(
+                font,
+                Component.translatable(reason),
+                panelCenterX,
+                y + PANEL_HEIGHT - 65,
+                MUTED
+        ));
         graphics.centeredText(font, Component.translatable("gui.rallyguard.muster.close_hint"), panelCenterX,
                 y + PANEL_HEIGHT - 18, MUTED);
+    }
+
+    private static Component actionLabel(CaptainActionScreenModel model) {
+        if (model.offer().isEmpty()) return Component.translatable(model.labelKey());
+        var offer = model.offer().orElseThrow();
+        Item item = BuiltInRegistries.ITEM.getValue(offer.paymentItemId());
+        Component itemName = item == null
+                ? Component.literal(offer.paymentItemId().toString())
+                : item.getName(item.getDefaultInstance());
+        return Component.translatable(model.labelKey(), offer.cost(), itemName);
     }
 
     private void drawLine(GuiGraphicsExtractor graphics, int x, int y, String key, Object... values) {
