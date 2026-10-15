@@ -2,7 +2,6 @@ package net.hfstack.rallyguard.captain;
 
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.hfstack.rallyguard.RallyOfTheGuard;
-import net.hfstack.rallyguard.api.RallyGuardApi;
 import net.hfstack.rallyguard.api.captain.CaptainAction;
 import net.hfstack.rallyguard.api.captain.CaptainActionView;
 import net.hfstack.rallyguard.api.captain.CaptainContext;
@@ -17,6 +16,7 @@ import net.hfstack.rallyguard.economy.InventoryPayment;
 import net.hfstack.rallyguard.profile.GuardProfile;
 import net.hfstack.rallyguard.profile.GuardProfileReadResult;
 import net.hfstack.rallyguard.profile.GuardProfileRepository;
+import net.hfstack.rallyguard.squad.GuardSquadAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
@@ -54,7 +54,7 @@ public final class DefaultCaptainService implements CaptainService {
                     : CaptainMutationResult.Outcome.NOT_AVAILABLE;
         } else {
             State state = prepare(owner, guard, action);
-            outcome = CaptainMutationCoordinator.validationOutcome(state.request());
+            outcome = validationOutcome(state);
             offer = action == CaptainAction.PROMOTE ? state.request().offer() : Optional.empty();
         }
 
@@ -82,7 +82,7 @@ public final class DefaultCaptainService implements CaptainService {
     private CaptainMutationResult mutate(ServerPlayer owner, GuardEntity guard, CaptainAction action) {
         Objects.requireNonNull(owner, "owner");
         State initial = prepare(owner, guard, action);
-        CaptainMutationResult.Outcome initialOutcome = CaptainMutationCoordinator.validationOutcome(initial.request());
+        CaptainMutationResult.Outcome initialOutcome = validationOutcome(initial);
         if (initialOutcome != CaptainMutationResult.Outcome.SUCCESS) {
             return CaptainMutationCoordinator.rejected(action, initialOutcome);
         }
@@ -105,6 +105,10 @@ public final class DefaultCaptainService implements CaptainService {
         }
 
         State current = prepare(owner, guard, action);
+        CaptainMutationResult.Outcome currentOutcome = validationOutcome(current);
+        if (currentOutcome != CaptainMutationResult.Outcome.SUCCESS) {
+            return CaptainMutationCoordinator.rejected(action, currentOutcome);
+        }
         Inventory inventory = owner.getInventory();
         CaptainMutationResult result = CaptainMutationCoordinator.execute(
                 current.request(),
@@ -138,10 +142,11 @@ public final class DefaultCaptainService implements CaptainService {
         GuardProfileReadResult profile = guard == null
                 ? new GuardProfileReadResult.Absent()
                 : profiles.read(guard);
-        boolean officer = action == CaptainAction.DEMOTE
+        GuardSquadAccess.OfficerStatus officerStatus = action == CaptainAction.DEMOTE
                 && available
                 && owned
-                && RallyGuardApi.squads().find(owner, guard).officer();
+                ? GuardSquadAccess.officerStatus(owner, guard)
+                : GuardSquadAccess.OfficerStatus.NOT_OFFICER;
         Item paymentItem = RallyConfig.hireItem();
         Optional<CaptainOffer> offer = action == CaptainAction.PROMOTE
                 ? Optional.of(new CaptainOffer(
@@ -157,11 +162,27 @@ public final class DefaultCaptainService implements CaptainService {
                         owned,
                         profile,
                         RallyConfig.captainPromotionMinimumLevel(),
-                        officer,
+                        officerStatus == GuardSquadAccess.OfficerStatus.OFFICER,
                         offer
                 ),
-                paymentItem
+                paymentItem,
+                officerStatus
         );
+    }
+
+    private static CaptainMutationResult.Outcome validationOutcome(State state) {
+        return validationOutcome(state.request(), state.officerStatus());
+    }
+
+    static CaptainMutationResult.Outcome validationOutcome(
+            CaptainMutationCoordinator.Request request,
+            GuardSquadAccess.OfficerStatus officerStatus
+    ) {
+        if (request.action() == CaptainAction.DEMOTE
+                && officerStatus == GuardSquadAccess.OfficerStatus.UNSUPPORTED) {
+            return CaptainMutationResult.Outcome.UNSUPPORTED_PROFILE;
+        }
+        return CaptainMutationCoordinator.validationOutcome(request);
     }
 
     private static boolean available(ServerPlayer owner, GuardEntity guard) {
@@ -180,6 +201,10 @@ public final class DefaultCaptainService implements CaptainService {
         return new CaptainContext(owner, guard, request.action(), profile, request.offer());
     }
 
-    private record State(CaptainMutationCoordinator.Request request, Item paymentItem) {
+    private record State(
+            CaptainMutationCoordinator.Request request,
+            Item paymentItem,
+            GuardSquadAccess.OfficerStatus officerStatus
+    ) {
     }
 }

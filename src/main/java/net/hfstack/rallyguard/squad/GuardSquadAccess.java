@@ -10,6 +10,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 public final class GuardSquadAccess {
+    public enum OfficerStatus {
+        OFFICER,
+        NOT_OFFICER,
+        UNSUPPORTED
+    }
+
     private GuardSquadAccess() {
     }
 
@@ -37,5 +43,40 @@ public final class GuardSquadAccess {
                 Optional.of(new SquadView(squad.id(), squad.name(), squad.officerGuardId())),
                 squad.officerGuardId().filter(guard.getUUID()::equals).isPresent()
         );
+    }
+
+    public static OfficerStatus officerStatus(ServerPlayer owner, GuardEntity guard) {
+        if (owner == null || guard == null || !GuardOwnership.isOwnedBy(guard, owner.getUUID())) {
+            return OfficerStatus.NOT_OFFICER;
+        }
+        return officerStatus(
+                guard.getUUID(),
+                SquadRegistryRepository.instance().readAndRepair(owner),
+                GuardSquadRepository.instance().readAndRepair(guard)
+        );
+    }
+
+    static OfficerStatus officerStatus(
+            UUID guardId,
+            SquadRegistryReadResult registryResult,
+            GuardSquadAssignmentReadResult assignmentResult
+    ) {
+        if (registryResult instanceof SquadRegistryReadResult.FutureSchema
+                || assignmentResult instanceof GuardSquadAssignmentReadResult.FutureSchema) {
+            return OfficerStatus.UNSUPPORTED;
+        }
+        if (!(registryResult instanceof SquadRegistryReadResult.Available registry)
+                || !(assignmentResult instanceof GuardSquadAssignmentReadResult.Available assignment)) {
+            return OfficerStatus.NOT_OFFICER;
+        }
+        Optional<UUID> assignedId = assignment.assignment().squadId();
+        if (assignedId.isEmpty()) return OfficerStatus.NOT_OFFICER;
+        return registry.registry().squads().stream()
+                .filter(squad -> squad.id().equals(assignedId.get()))
+                .findFirst()
+                .flatMap(SquadDefinition::officerGuardId)
+                .filter(guardId::equals)
+                .map(ignored -> OfficerStatus.OFFICER)
+                .orElse(OfficerStatus.NOT_OFFICER);
     }
 }

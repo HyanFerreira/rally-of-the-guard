@@ -7,6 +7,7 @@ import net.hfstack.rallyguard.profile.GuardLevelModel;
 import net.hfstack.rallyguard.profile.GuardProfile;
 import net.hfstack.rallyguard.profile.GuardProfileOrigin;
 import net.hfstack.rallyguard.profile.GuardProfileReadResult;
+import net.hfstack.rallyguard.squad.GuardSquadAccess;
 import net.minecraft.resources.Identifier;
 import org.junit.jupiter.api.Test;
 
@@ -172,6 +173,26 @@ class CaptainMutationCoordinatorTest {
 
         assertEquals(CaptainMutationResult.Outcome.ACTIVE_OFFICER, result.outcome());
         assertTrue(payment.calls.isEmpty());
+    }
+
+    @Test
+    void futureSquadDataFailsClosedBeforeCaptainDemotion() {
+        CaptainMutationCoordinator.Request request = request(
+                CaptainAction.DEMOTE,
+                veteran(true),
+                true,
+                true,
+                false,
+                false
+        );
+
+        assertEquals(
+                CaptainMutationResult.Outcome.UNSUPPORTED_PROFILE,
+                DefaultCaptainService.validationOutcome(
+                        request,
+                        GuardSquadAccess.OfficerStatus.UNSUPPORTED
+                )
+        );
     }
 
     private static CaptainMutationCoordinator.Request request(
