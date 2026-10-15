@@ -1,6 +1,6 @@
 # Additional Formations — Design
 
-**Status:** Approved for implementation
+**Status:** Implemented
 
 ## Goal
 
