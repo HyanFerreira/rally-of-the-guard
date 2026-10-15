@@ -2,6 +2,7 @@ package net.hfstack.rallyguard.muster;
 
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.hfstack.rallyguard.api.RallyGuardApi;
+import net.hfstack.rallyguard.api.captain.CaptainActionView;
 import net.hfstack.rallyguard.api.presentation.GuardPresentation;
 import net.hfstack.rallyguard.api.presentation.GuardPresentationContext;
 import net.hfstack.rallyguard.api.presentation.GuardPresentationRegistry;
@@ -14,6 +15,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 public final class GuardProfileSnapshotFactory {
     private GuardProfileSnapshotFactory() {
@@ -34,6 +36,10 @@ public final class GuardProfileSnapshotFactory {
         Optional<RecruitmentOffer> offer = status == GuardServiceStatus.UNOWNED
                 ? currentOffer(viewer, guard)
                 : Optional.empty();
+        Optional<CaptainActionView> captainAction = captainAction(
+                status,
+                () -> RallyGuardApi.captains().inspect(viewer, guard)
+        );
 
         String displayName = guard.getCustomName() != null
                 ? guard.getCustomName().getString()
@@ -56,7 +62,8 @@ public final class GuardProfileSnapshotFactory {
                 profile.kills(),
                 profile.assists(),
                 status,
-                offer
+                offer,
+                captainAction
         ));
     }
 
@@ -71,5 +78,13 @@ public final class GuardProfileSnapshotFactory {
     private static Optional<RecruitmentOffer> currentOffer(ServerPlayer viewer, GuardEntity guard) {
         RecruitmentQuoteResult result = RallyGuardApi.guardRecruitment().quote(viewer, guard);
         return result.quote().map(quote -> quote.offer());
+    }
+
+    static Optional<CaptainActionView> captainAction(
+            GuardServiceStatus status,
+            Supplier<CaptainActionView> inspection
+    ) {
+        if (status != GuardServiceStatus.UNDER_YOUR_COMMAND) return Optional.empty();
+        return Optional.of(inspection.get());
     }
 }

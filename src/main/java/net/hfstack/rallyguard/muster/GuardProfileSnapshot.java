@@ -1,5 +1,7 @@
 package net.hfstack.rallyguard.muster;
 
+import net.hfstack.rallyguard.api.captain.CaptainActionView;
+import net.hfstack.rallyguard.api.captain.CaptainOffer;
 import net.hfstack.rallyguard.api.profile.GuardRank;
 import net.hfstack.rallyguard.api.recruitment.RecruitmentOffer;
 
@@ -25,7 +27,8 @@ public record GuardProfileSnapshot(
         long kills,
         long assists,
         GuardServiceStatus serviceStatus,
-        Optional<RecruitmentOffer> hiringOffer
+        Optional<RecruitmentOffer> hiringOffer,
+        Optional<CaptainActionView> captainAction
 ) {
     public static final int MAX_DISPLAY_NAME_LENGTH = 128;
     public static final int MAX_RANK_OVERRIDE_LENGTH = 64;
@@ -49,6 +52,7 @@ public record GuardProfileSnapshot(
         assists = Math.max(0, assists);
         Objects.requireNonNull(serviceStatus, "serviceStatus");
         hiringOffer = hiringOffer == null ? Optional.empty() : hiringOffer;
+        captainAction = captainAction == null ? Optional.empty() : captainAction.map(GuardProfileSnapshot::bounded);
     }
 
     private static String bounded(String value, int maximumLength) {
@@ -58,5 +62,20 @@ public record GuardProfileSnapshot(
 
     private static double finiteNonNegative(double value) {
         return Double.isFinite(value) ? Math.max(0.0, value) : 0.0;
+    }
+
+    private static CaptainActionView bounded(CaptainActionView view) {
+        Optional<CaptainOffer> offer = view.offer().map(value -> new CaptainOffer(
+                value.paymentItemId(),
+                Math.min(999, value.cost())
+        ));
+        return new CaptainActionView(
+                view.captain(),
+                view.action(),
+                view.allowed(),
+                view.blockingOutcome(),
+                view.minimumLevel(),
+                offer
+        );
     }
 }
