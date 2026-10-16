@@ -56,6 +56,20 @@ public final class SquadScreenModel {
                 .toList();
     }
 
+    public List<GuardListS2CPayload.Entry> members(UUID squadId) {
+        Objects.requireNonNull(squadId, "squadId");
+        return snapshot.entries().stream()
+                .filter(guard -> guard.squadId().filter(squadId::equals).isPresent())
+                .toList();
+    }
+
+    public List<GuardListS2CPayload.Entry> outside(UUID squadId) {
+        Objects.requireNonNull(squadId, "squadId");
+        return snapshot.entries().stream()
+                .filter(guard -> guard.squadId().filter(squadId::equals).isEmpty())
+                .toList();
+    }
+
     public SquadScreenModel withScope(GuardCommandScope nextScope) {
         return new SquadScreenModel(snapshot, nextScope);
     }

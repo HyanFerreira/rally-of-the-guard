@@ -54,6 +54,28 @@ class SquadScreenModelTest {
     }
 
     @Test
+    void separatesSelectedMembersFromUnassignedAndOtherSquads() {
+        GuardListS2CPayload base = snapshot();
+        GuardListS2CPayload withBravoMember = new GuardListS2CPayload(
+                true,
+                base.squads(),
+                List.of(
+                        base.entries().get(0),
+                        base.entries().get(1),
+                        guard(3, UNASSIGNED, Optional.empty(), false),
+                        guard(4, UUID.fromString("20000000-0000-0000-0000-000000000004"), Optional.of(BRAVO), false)
+                )
+        );
+        SquadScreenModel model = new SquadScreenModel(withBravoMember, GuardCommandScope.all());
+
+        assertEquals(List.of(CAPTAIN, RECRUIT), model.members(ALPHA).stream()
+                .map(GuardListS2CPayload.Entry::guardId).toList());
+        assertEquals(List.of(UNASSIGNED, UUID.fromString("20000000-0000-0000-0000-000000000004")),
+                model.outside(ALPHA).stream().map(GuardListS2CPayload.Entry::guardId).toList());
+        assertEquals(Optional.of("Bravo"), model.squadName(model.outside(ALPHA).getLast().squadId()));
+    }
+
+    @Test
     void disabledSquadsForceTheAllScopeAndHideSquadData() {
         GuardListS2CPayload enabled = snapshot();
         GuardListS2CPayload disabled = new GuardListS2CPayload(false, enabled.squads(), enabled.entries());
