@@ -51,6 +51,20 @@ public record CommandPostState(
         return new CommandPostState(schemaVersion, postId, Optional.ofNullable(ownerId), name, active, radius, formation, assignedGuardIds);
     }
 
+    public CommandPostState withSettings(String name, boolean active, int radius, RallyFormation formation) {
+        return new CommandPostState(schemaVersion, postId, ownerId, name, active, radius, formation, assignedGuardIds);
+    }
+
+    public CommandPostState withAssignedGuard(UUID guardId, boolean assigned) {
+        List<UUID> updated = new java.util.ArrayList<>(assignedGuardIds);
+        if (assigned) {
+            if (!updated.contains(guardId) && updated.size() < MAX_ASSIGNED_GUARDS) updated.add(guardId);
+        } else {
+            updated.remove(guardId);
+        }
+        return new CommandPostState(schemaVersion, postId, ownerId, name, active, radius, formation, updated);
+    }
+
     private static String normalizeName(String value) {
         String normalized = value == null ? "" : value.trim();
         if (normalized.isEmpty()) normalized = "Posto de Comando";

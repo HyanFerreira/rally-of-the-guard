@@ -12,6 +12,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
 import java.util.UUID;
+import net.hfstack.rallyguard.formation.RallyFormation;
 
 public final class CommandPostBlockEntity extends BlockEntity {
     private CommandPostState state;
@@ -34,6 +35,26 @@ public final class CommandPostBlockEntity extends BlockEntity {
         if (futureSchema || ownerId == null || state.ownerId().isPresent()) return;
         state = state.withOwner(ownerId);
         setChanged();
+    }
+
+    public boolean updateSettings(UUID ownerId, String name, boolean active, int radius, RallyFormation formation) {
+        if (!canEdit(ownerId)) return false;
+        state = state.withSettings(name, active, radius, formation);
+        setChanged();
+        return true;
+    }
+
+    public boolean setGuardAssigned(UUID ownerId, UUID guardId, boolean assigned) {
+        if (!canEdit(ownerId) || guardId == null) return false;
+        CommandPostState updated = state.withAssignedGuard(guardId, assigned);
+        if (updated.equals(state)) return false;
+        state = updated;
+        setChanged();
+        return true;
+    }
+
+    public boolean canEdit(UUID playerId) {
+        return !futureSchema && playerId != null && state.ownerId().filter(playerId::equals).isPresent();
     }
 
     @Override
