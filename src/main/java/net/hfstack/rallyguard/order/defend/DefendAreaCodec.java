@@ -6,6 +6,7 @@ import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.Tag;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public final class DefendAreaCodec {
     private static final String SCHEMA_VERSION = "schema_version";
@@ -17,6 +18,7 @@ public final class DefendAreaCodec {
     private static final String POST_Y = "post_y";
     private static final String POST_Z = "post_z";
     private static final String RADIUS = "radius";
+    private static final String COMMAND_POST_ID = "command_post_id";
 
     private DefendAreaCodec() {
     }
@@ -32,6 +34,7 @@ public final class DefendAreaCodec {
         tag.putInt(POST_Y, state.post().getY());
         tag.putInt(POST_Z, state.post().getZ());
         tag.putInt(RADIUS, state.radius());
+        state.commandPostId().ifPresent(id -> tag.putString(COMMAND_POST_ID, id.toString()));
         return tag;
     }
 
@@ -42,7 +45,7 @@ public final class DefendAreaCodec {
         if (schemaVersion != null && schemaVersion > DefendAreaState.SCHEMA_VERSION) {
             return new DefendAreaRead.Unsupported(schemaVersion);
         }
-        if (schemaVersion == null || schemaVersion != DefendAreaState.SCHEMA_VERSION) return inactive();
+        if (schemaVersion == null || schemaVersion < 1) return inactive();
 
         Boolean active = strictBoolean(tag.get(ACTIVE));
         Integer centerX = strictInt(tag.get(CENTER_X));
@@ -58,12 +61,19 @@ public final class DefendAreaCodec {
             return inactive();
         }
 
+        Optional<UUID> commandPostId = Optional.empty();
+        if (schemaVersion >= 2 && tag.get(COMMAND_POST_ID) != null) {
+            commandPostId = tag.getString(COMMAND_POST_ID).flatMap(DefendAreaCodec::parseUuid);
+            if (commandPostId.isEmpty()) return inactive();
+        }
+
         return new DefendAreaRead.Available(Optional.of(new DefendAreaState(
                 DefendAreaState.SCHEMA_VERSION,
                 active,
                 new BlockPos(centerX, centerY, centerZ),
                 new BlockPos(postX, postY, postZ),
-                radius
+                radius,
+                commandPostId
         )));
     }
 
@@ -81,5 +91,13 @@ public final class DefendAreaCodec {
         long value = numeric.longValue();
         if (value != 0 && value != 1) return null;
         return value == 1;
+    }
+
+    private static Optional<UUID> parseUuid(String value) {
+        try {
+            return Optional.of(UUID.fromString(value));
+        } catch (IllegalArgumentException exception) {
+            return Optional.empty();
+        }
     }
 }

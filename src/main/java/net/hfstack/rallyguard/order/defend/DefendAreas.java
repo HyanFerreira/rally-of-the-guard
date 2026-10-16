@@ -6,6 +6,7 @@ import net.minecraft.world.entity.Entity;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 public final class DefendAreas {
     private DefendAreas() {
@@ -23,6 +24,24 @@ public final class DefendAreas {
         entity.setAttached(DefendAreaAttachments.ORDER, DefendAreaCodec.encode(
                 DefendAreaState.active(center, post, radius)
         ));
+        return true;
+    }
+
+    public static boolean setFromCommandPost(Entity entity, BlockPos center, BlockPos post, int radius, UUID commandPostId) {
+        Objects.requireNonNull(entity, "entity");
+        if (!DefendAreaPersistencePolicy.canReplace(read(entity))) return false;
+        entity.setAttached(DefendAreaAttachments.ORDER, DefendAreaCodec.encode(
+                DefendAreaState.fromCommandPost(center, post, radius, commandPostId)
+        ));
+        return true;
+    }
+
+    public static boolean clearIfFromCommandPost(Entity entity, UUID commandPostId) {
+        Objects.requireNonNull(entity, "entity");
+        Objects.requireNonNull(commandPostId, "commandPostId");
+        Optional<DefendAreaState> current = active(entity);
+        if (current.flatMap(DefendAreaState::commandPostId).filter(commandPostId::equals).isEmpty()) return false;
+        clear(entity);
         return true;
     }
 

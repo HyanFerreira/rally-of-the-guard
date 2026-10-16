@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -49,6 +50,21 @@ class DefendAreaCodecTest {
 
         assertEquals(4, result.schemaVersion());
         assertEquals(before, future);
+    }
+
+    @Test
+    void commandPostOriginRoundTripsAndLegacyStateMigratesWithoutOrigin() {
+        UUID postId = UUID.randomUUID();
+        DefendAreaState sourced = DefendAreaState.fromCommandPost(BlockPos.ZERO, BlockPos.ZERO, 20, postId);
+
+        DefendAreaState decoded = available(DefendAreaCodec.decode(DefendAreaCodec.encode(sourced))).state().orElseThrow();
+        assertEquals(Optional.of(postId), decoded.commandPostId());
+
+        CompoundTag legacy = DefendAreaCodec.encode(DefendAreaState.active(BlockPos.ZERO, BlockPos.ZERO, 12));
+        legacy.putInt("schema_version", 1);
+        DefendAreaState migrated = available(DefendAreaCodec.decode(legacy)).state().orElseThrow();
+        assertTrue(migrated.commandPostId().isEmpty());
+        assertEquals(DefendAreaState.SCHEMA_VERSION, migrated.schemaVersion());
     }
 
     private static DefendAreaRead.Available available(DefendAreaRead result) {
