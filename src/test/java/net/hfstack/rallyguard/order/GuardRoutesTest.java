@@ -7,8 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.UUID;
+
 class GuardRoutesTest {
     private static final String PREFIX = "rallyguard:route:v1:";
+    private static final String PREFIX_V2 = "rallyguard:route:v2:";
 
     @Test
     void malformedNumericFieldsReturnEmptyInactiveRoute() {
@@ -46,5 +49,35 @@ class GuardRoutesTest {
         GuardRouteState route = GuardRoutes.parse(PREFIX + "1:0:20:0:" + points);
 
         assertEquals(RallyConfig.routeMaxPoints(), route.points().size());
+    }
+
+    @Test
+    void versionOneRoutesMigrateWithoutInventingNamedAssociation() {
+        GuardRouteState route = GuardRoutes.parse(PREFIX + "1:0:20:0:1,2,3;4,5,6");
+
+        assertTrue(route.active());
+        assertTrue(route.namedRouteId().isEmpty());
+    }
+
+    @Test
+    void versionTwoPreservesNamedRouteAssociation() {
+        UUID routeId = UUID.fromString("30000000-0000-0000-0000-000000000001");
+
+        GuardRouteState route = GuardRoutes.parse(
+                PREFIX_V2 + "1:1:40:5:" + routeId + ":1,2,3;4,5,6"
+        );
+
+        assertEquals(routeId, route.namedRouteId().orElseThrow());
+        assertEquals(1, route.currentIndex());
+        assertEquals(5, route.dwellTicks());
+    }
+
+    @Test
+    void malformedVersionTwoAssociationFailsClosed() {
+        GuardRouteState route = GuardRoutes.parse(PREFIX_V2 + "1:0:20:0:not-a-uuid:1,2,3;4,5,6");
+
+        assertFalse(route.active());
+        assertTrue(route.points().isEmpty());
+        assertTrue(route.namedRouteId().isEmpty());
     }
 }

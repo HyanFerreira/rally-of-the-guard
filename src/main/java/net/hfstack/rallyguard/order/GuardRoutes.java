@@ -7,19 +7,23 @@ import net.minecraft.core.BlockPos;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 public final class GuardRoutes {
     private GuardRoutes() {
     }
 
-    private static final String ROUTE_PREFIX = "rallyguard:route:v1:";
+    private static final String ROUTE_PREFIX = "rallyguard:route:";
+    private static final String ROUTE_PREFIX_V1 = ROUTE_PREFIX + "v1:";
+    private static final String ROUTE_PREFIX_V2 = ROUTE_PREFIX + "v2:";
 
     public static GuardRouteState get(Entity guard) {
         if (guard == null) return empty();
 
         for (String tag : guard.entityTags()) {
-            if (tag.startsWith(ROUTE_PREFIX)) {
+            if (tag.startsWith(ROUTE_PREFIX_V2) || tag.startsWith(ROUTE_PREFIX_V1)) {
                 return parse(tag);
             }
         }
@@ -56,7 +60,7 @@ public final class GuardRoutes {
     }
 
     private static GuardRouteState empty() {
-        return new GuardRouteState(false, 0, GuardRouteState.defaultWaitTicks(), 0, List.of());
+        return new GuardRouteState(false, 0, GuardRouteState.defaultWaitTicks(), 0, List.of(), Optional.empty());
     }
 
     private static void clearTags(Entity guard) {
@@ -76,17 +80,24 @@ public final class GuardRoutes {
             points.append(p.getX()).append(',').append(p.getY()).append(',').append(p.getZ());
         }
 
-        return ROUTE_PREFIX
+        return ROUTE_PREFIX_V2
                 + (route.active() ? 1 : 0) + ":"
                 + route.currentIndex() + ":"
                 + route.waitTicks() + ":"
                 + route.dwellTicks() + ":"
+                + route.namedRouteId().map(UUID::toString).orElse("-") + ":"
                 + points;
     }
 
     static GuardRouteState parse(String tag) {
+        if (tag.startsWith(ROUTE_PREFIX_V2)) return parseV2(tag);
+        if (tag.startsWith(ROUTE_PREFIX_V1)) return parseV1(tag);
+        return empty();
+    }
+
+    private static GuardRouteState parseV1(String tag) {
         try {
-            String data = tag.substring(ROUTE_PREFIX.length());
+            String data = tag.substring(ROUTE_PREFIX_V1.length());
             String[] parts = data.split(":", 5);
             if (parts.length < 5) return empty();
 
@@ -95,7 +106,26 @@ public final class GuardRoutes {
             int waitTicks = Integer.parseInt(parts[2]);
             int dwellTicks = Integer.parseInt(parts[3]);
             List<BlockPos> points = parsePoints(parts[4]);
-            return new GuardRouteState(active, currentIndex, waitTicks, dwellTicks, points);
+            return new GuardRouteState(active, currentIndex, waitTicks, dwellTicks, points, Optional.empty());
+        } catch (RuntimeException ignored) {
+            return empty();
+        }
+    }
+
+    private static GuardRouteState parseV2(String tag) {
+        try {
+            String data = tag.substring(ROUTE_PREFIX_V2.length());
+            String[] parts = data.split(":", 6);
+            if (parts.length < 6) return empty();
+
+            boolean active = "1".equals(parts[0]);
+            int currentIndex = Integer.parseInt(parts[1]);
+            int waitTicks = Integer.parseInt(parts[2]);
+            int dwellTicks = Integer.parseInt(parts[3]);
+            Optional<UUID> namedRouteId = "-".equals(parts[4])
+                    ? Optional.empty() : Optional.of(UUID.fromString(parts[4]));
+            List<BlockPos> points = parsePoints(parts[5]);
+            return new GuardRouteState(active, currentIndex, waitTicks, dwellTicks, points, namedRouteId);
         } catch (RuntimeException ignored) {
             return empty();
         }
