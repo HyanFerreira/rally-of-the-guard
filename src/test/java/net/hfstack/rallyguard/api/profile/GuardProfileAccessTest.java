@@ -18,8 +18,8 @@ import java.util.stream.Collectors;
 class GuardProfileAccessTest {
 
     @Test
-    void apiVersionSixExposesCaptainService() {
-        assertEquals(6, RallyGuardApi.apiVersion());
+    void currentApiStillExposesCaptainService() {
+        assertEquals(7, RallyGuardApi.apiVersion());
         assertSame(RallyGuardApi.captains(), RallyGuardApi.captains());
     }
 
