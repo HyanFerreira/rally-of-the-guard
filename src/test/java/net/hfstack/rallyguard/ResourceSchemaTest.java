@@ -243,6 +243,9 @@ class ResourceSchemaTest {
                 "rallyguard.midnightconfig.maxSquadNameLength",
                 "gui.rallyguard.squad.manage",
                 "gui.rallyguard.squad.manage_title",
+                "gui.rallyguard.squad.available",
+                "gui.rallyguard.squad.members",
+                "gui.rallyguard.squad.member",
                 "gui.rallyguard.command.squad",
                 "gui.rallyguard.squad.scope_all",
                 "gui.rallyguard.squad.scope_unassigned",
@@ -253,6 +256,8 @@ class ResourceSchemaTest {
                 "gui.rallyguard.squad.unassign",
                 "gui.rallyguard.squad.make_officer",
                 "gui.rallyguard.squad.clear_officer",
+                "gui.rallyguard.squad.move_confirm_title",
+                "gui.rallyguard.squad.move_confirm",
                 "gui.rallyguard.squad.batch_result",
                 "gui.rallyguard.squad.officer_not_captain"
         );

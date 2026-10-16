@@ -320,6 +320,9 @@
 
   "gui.rallyguard.squad.manage": "Squads...",
   "gui.rallyguard.squad.manage_title": "Squads & Officers",
+  "gui.rallyguard.squad.available": "Available / Other Squads",
+  "gui.rallyguard.squad.members": "%s Members",
+  "gui.rallyguard.squad.member": "Member",
   "gui.rallyguard.squad.scope_all": "All Guards",
   "gui.rallyguard.squad.scope_unassigned": "Unassigned",
   "gui.rallyguard.squad.name": "Squad name",
@@ -333,6 +336,8 @@
   "gui.rallyguard.squad.clear_officer": "Clear",
   "gui.rallyguard.squad.delete_confirm_title": "Delete Squad?",
   "gui.rallyguard.squad.delete_confirm": "Delete %s? Its guards will become unassigned.",
+  "gui.rallyguard.squad.move_confirm_title": "Move Guard?",
+  "gui.rallyguard.squad.move_confirm": "Move %s from %s to %s?",
   "gui.rallyguard.squad.created": "Squad created.",
   "gui.rallyguard.squad.renamed": "Squad renamed.",
   "gui.rallyguard.squad.deleted": "Squad deleted.",

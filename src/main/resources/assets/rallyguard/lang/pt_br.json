@@ -320,6 +320,9 @@
 
   "gui.rallyguard.squad.manage": "Pelot\u00f5es...",
   "gui.rallyguard.squad.manage_title": "Pelot\u00f5es e Oficiais",
+  "gui.rallyguard.squad.available": "Dispon\u00edveis / Outros Pelot\u00f5es",
+  "gui.rallyguard.squad.members": "Membros de %s",
+  "gui.rallyguard.squad.member": "Membro",
   "gui.rallyguard.squad.scope_all": "Todos os Guardas",
   "gui.rallyguard.squad.scope_unassigned": "Sem Pelot\u00e3o",
   "gui.rallyguard.squad.name": "Nome do Pelot\u00e3o",
@@ -333,6 +336,8 @@
   "gui.rallyguard.squad.clear_officer": "Limpar",
   "gui.rallyguard.squad.delete_confirm_title": "Excluir Pelot\u00e3o?",
   "gui.rallyguard.squad.delete_confirm": "Excluir %s? Seus guardas ficar\u00e3o sem Pelot\u00e3o.",
+  "gui.rallyguard.squad.move_confirm_title": "Mover Guarda?",
+  "gui.rallyguard.squad.move_confirm": "Mover %s de %s para %s?",
   "gui.rallyguard.squad.created": "Pelot\u00e3o criado.",
   "gui.rallyguard.squad.renamed": "Pelot\u00e3o renomeado.",
   "gui.rallyguard.squad.deleted": "Pelot\u00e3o exclu\u00eddo.",
