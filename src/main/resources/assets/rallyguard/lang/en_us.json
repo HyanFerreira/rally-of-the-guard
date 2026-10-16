@@ -3,6 +3,16 @@
   "key.category.rallyguard.combat_orders": "Rally of the Guard - Combat Controls",
   "key.categories.rallyguard.controls": "Rally of the Guard",
   "key.rallyguard.combat_orders": "Open Combat Orders",
+  "key.rallyguard.quick_command": "Open Quick Command",
+
+  "gui.rallyguard.quick.title": "Quick Command",
+  "gui.rallyguard.quick.scope_hint": "All loaded guards",
+  "gui.rallyguard.quick.follow": "Follow",
+  "gui.rallyguard.quick.attack": "Attack...",
+  "gui.rallyguard.quick.move": "Move Here...",
+  "gui.rallyguard.quick.wait": "Wait",
+  "gui.rallyguard.quick.defend": "Defend Area...",
+  "gui.rallyguard.quick.patrol": "Patrol",
 
   "rallyguard.midnightconfig.title": "Rally of the Guard",
   "rallyguard.midnightconfig.economy": "Economy",

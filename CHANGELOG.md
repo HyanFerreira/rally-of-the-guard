@@ -2,6 +2,10 @@
 
 ## Unreleased — planned 1.4.0
 
+- Added a remappable `G` Quick Command panel for Follow, Wait, Patrol, Attack, Move Here, and Defend Area.
+- Reused existing server-authoritative All Guards commands, combat selection, and world-targeting flows without adding a parallel command protocol.
+- Added a responsive non-pausing native-button layout with keyboard focus, narration, and English and Brazilian Portuguese labels.
+
 - Added persistent Defensive, Aggressive, Passive, Hold Position, and Protect Commander combat stances for the current Ledger scope.
 - Added server-authoritative stance selection, configurable engagement radii, deterministic target selection, and protected-ally filtering.
 - Added a translated combat-stance screen with descriptive tooltips and made Passive guards reject explicit attack orders.

@@ -1131,25 +1131,30 @@ na API 8 com `setCombatStance` e `SET_COMBAT_STANCE`.
 
 # Quick Command / Radial Menu
 
-O Commander's Ledger continuará sendo a interface completa.
+Implementação e testes automatizados concluídos; smoke test em jogo pendente.
 
-Entretanto, uma interface rápida poderá facilitar ordens durante combate.
+O Commander's Ledger continua sendo a interface completa.
 
-Possível menu radial:
+Uma tecla `G` remapeável abre uma interface rápida para facilitar ordens durante
+combate. A primeira versão atua em todos os guardas carregados e reutiliza os
+fluxos autoritativos existentes.
+
+Menu radial implementado:
 
 ```text
              FOLLOW
 
-      DEFEND        ATTACK
+      PATROL        ATTACK
 
-   FORMATION          MOVE
+      DEFEND          MOVE
 
-       WAIT          RALLY
-
-             PATROL
+              WAIT
 ```
 
-A ideia é permitir que o jogador dê ordens táticas sem precisar navegar pelo Ledger em situações urgentes.
+Seguir, Aguardar e Patrulhar enviam a ordem coletiva imediatamente. Atacar abre
+a seleção de combate existente; Mover e Defender abrem a seleção de categoria
+e reutilizam a sessão de próximo clique no mundo. O painel não pausa o jogo e
+usa botões nativos para foco, teclado e narração.
 
 ---
 
@@ -1584,7 +1589,7 @@ O objetivo final é que Rally of the Guard se torne o complemento natural para j
 - [ ] **Move Here (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
 - [ ] **Defend Area (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
 - [ ] **Combat Stances (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
-- [ ] Quick Command / Radial Menu
+- [ ] **Quick Command / Radial Menu (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
 - [ ] Named Routes
 - [ ] Rally Point / Command Post
 - [ ] Global Guard Registry

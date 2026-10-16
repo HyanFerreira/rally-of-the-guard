@@ -202,6 +202,17 @@ Regras atuais:
 - Arqueiros são identificados por `Bow` ou `Crossbow` na mão principal ou secundária.
 - Infantaria corresponde aos guardas sem arco ou besta equipados.
 
+### Comando Rápido
+
+Pressione `G` para abrir um painel não pausante com seis ordens frequentes para
+todos os guardas carregados: `Seguir`, `Aguardar`, `Patrulhar`, `Atacar`,
+`Mover para cá` e `Defender área`. A tecla pode ser remapeada nos controles.
+
+As três ações imediatas reutilizam o feedback normal do servidor. `Atacar`,
+`Mover para cá` e `Defender área` encaminham para as mesmas telas e modos de
+seleção usados pelo Livro de Comando. Pelotões, guardas individuais, rotas,
+formações e Rally permanecem nas interfaces completas.
+
 ### Patrulha Fixa
 
 A patrulha fixa usa o comportamento nativo do Guard Villagers:

@@ -346,6 +346,35 @@ class ResourceSchemaTest {
         )));
     }
 
+    @Test
+    void quickCommandLabelsKeyBindingAndDocumentationExist() throws IOException {
+        JsonObject english = readJson(RESOURCES.resolve("assets/rallyguard/lang/en_us.json"));
+        JsonObject portuguese = readJson(RESOURCES.resolve("assets/rallyguard/lang/pt_br.json"));
+        Set<String> keys = Set.of(
+                "key.rallyguard.quick_command",
+                "gui.rallyguard.quick.title",
+                "gui.rallyguard.quick.scope_hint",
+                "gui.rallyguard.quick.follow",
+                "gui.rallyguard.quick.attack",
+                "gui.rallyguard.quick.move",
+                "gui.rallyguard.quick.wait",
+                "gui.rallyguard.quick.defend",
+                "gui.rallyguard.quick.patrol"
+        );
+        for (String key : keys) {
+            assertTrue(english.has(key), () -> "Missing English Quick Command key: " + key);
+            assertTrue(portuguese.has(key), () -> "Missing Portuguese Quick Command key: " + key);
+        }
+
+        assertTrue(Files.readString(Path.of("README.md")).contains("Comando Rápido"));
+        assertTrue(Files.readString(Path.of("ROADMAP.md")).contains(
+                "**Quick Command / Radial Menu (1.4.0)** — implementação e testes automatizados concluídos"
+        ));
+        assertTrue(Files.isRegularFile(Path.of(
+                "docs", "testing", "26.1-quick-command-smoke-test.md"
+        )));
+    }
+
     private static void assertRecipeResult(String recipeName, String expectedItemId) throws IOException {
         JsonObject recipe = readJson(RESOURCES.resolve(
                 "data/rallyguard/recipe/" + recipeName + ".json"
