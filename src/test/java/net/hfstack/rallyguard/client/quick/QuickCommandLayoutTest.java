@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QuickCommandLayoutTest {
     @Test
-    void sixActionsOccupyDistinctClockwiseSlots() {
+    void sixActionsOccupyACompactTwoColumnGrid() {
         QuickCommandLayout layout = QuickCommandLayout.forScreen(854, 480);
 
         assertEquals(6, layout.slots().size());
@@ -17,7 +17,11 @@ class QuickCommandLayoutTest {
                 .map(slot -> slot.x() + ":" + slot.y())
                 .toList()).size());
         assertEquals(QuickCommandAction.FOLLOW, layout.slots().get(0).action());
-        assertEquals(QuickCommandAction.PATROL, layout.slots().get(5).action());
+        assertEquals(QuickCommandAction.WAIT, layout.slots().get(1).action());
+        assertEquals(QuickCommandAction.DEFEND, layout.slots().get(5).action());
+
+        assertEquals(2, layout.slots().stream().map(QuickCommandLayout.Slot::x).distinct().count());
+        assertEquals(3, layout.slots().stream().map(QuickCommandLayout.Slot::y).distinct().count());
     }
 
     @Test
@@ -33,19 +37,18 @@ class QuickCommandLayoutTest {
     }
 
     @Test
-    void centerRemainsClearForTheOpaqueCommandLabel() {
+    void everyButtonRemainsInsideTheUnifiedPanel() {
         QuickCommandLayout layout = QuickCommandLayout.forScreen(854, 480);
-        int centerLeft = (854 - 168) / 2;
-        int centerRight = centerLeft + 168;
-        int centerTop = (480 - 48) / 2;
-        int centerBottom = centerTop + 48;
+        int panelLeft = (854 - QuickCommandLayout.PANEL_WIDTH) / 2;
+        int panelRight = panelLeft + QuickCommandLayout.PANEL_WIDTH;
+        int panelTop = (480 - QuickCommandLayout.PANEL_HEIGHT) / 2;
+        int panelBottom = panelTop + QuickCommandLayout.PANEL_HEIGHT;
 
         for (QuickCommandLayout.Slot slot : layout.slots()) {
-            boolean overlapsHorizontally = slot.x() < centerRight
-                    && slot.x() + QuickCommandLayout.BUTTON_WIDTH > centerLeft;
-            boolean overlapsVertically = slot.y() < centerBottom
-                    && slot.y() + QuickCommandLayout.BUTTON_HEIGHT > centerTop;
-            assertTrue(!overlapsHorizontally || !overlapsVertically);
+            assertTrue(slot.x() >= panelLeft + QuickCommandLayout.PANEL_PADDING);
+            assertTrue(slot.x() + QuickCommandLayout.BUTTON_WIDTH <= panelRight - QuickCommandLayout.PANEL_PADDING);
+            assertTrue(slot.y() >= panelTop + QuickCommandLayout.ACTIONS_TOP);
+            assertTrue(slot.y() + QuickCommandLayout.BUTTON_HEIGHT <= panelBottom - QuickCommandLayout.PANEL_PADDING);
         }
     }
 }

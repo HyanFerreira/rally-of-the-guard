@@ -14,8 +14,6 @@ import net.minecraft.network.chat.Component;
 public final class QuickCommandScreen extends Screen {
     private static final int WHITE = 0xFFFFFFFF;
     private static final int MUTED = 0xFFCCCCCC;
-    private static final int CENTER_WIDTH = 168;
-    private static final int CENTER_HEIGHT = 48;
 
     public QuickCommandScreen() {
         super(Component.translatable("gui.rallyguard.quick.title"));
@@ -63,17 +61,36 @@ public final class QuickCommandScreen extends Screen {
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        int centerX = (width - CENTER_WIDTH) / 2;
-        int centerY = (height - CENTER_HEIGHT) / 2;
-        graphics.fill(centerX, centerY, centerX + CENTER_WIDTH, centerY + CENTER_HEIGHT, 0xF0101010);
-        graphics.outline(centerX, centerY, CENTER_WIDTH, CENTER_HEIGHT, WHITE);
-        graphics.centeredText(font, title, width / 2, height / 2 - 10, WHITE);
+        int panelX = (width - QuickCommandLayout.PANEL_WIDTH) / 2;
+        int panelY = (height - QuickCommandLayout.PANEL_HEIGHT) / 2;
+        graphics.fill(
+                panelX,
+                panelY,
+                panelX + QuickCommandLayout.PANEL_WIDTH,
+                panelY + QuickCommandLayout.PANEL_HEIGHT,
+                0xF0101010
+        );
+        graphics.outline(
+                panelX,
+                panelY,
+                QuickCommandLayout.PANEL_WIDTH,
+                QuickCommandLayout.PANEL_HEIGHT,
+                WHITE
+        );
+        graphics.centeredText(font, title, width / 2, panelY + 10, WHITE);
         graphics.centeredText(
                 font,
                 Component.translatable("gui.rallyguard.quick.scope_hint"),
                 width / 2,
-                height / 2 + 6,
+                panelY + 25,
                 MUTED
+        );
+        graphics.fill(
+                panelX + QuickCommandLayout.PANEL_PADDING,
+                panelY + 41,
+                panelX + QuickCommandLayout.PANEL_WIDTH - QuickCommandLayout.PANEL_PADDING,
+                panelY + 42,
+                0x44FFFFFF
         );
         super.extractRenderState(graphics, mouseX, mouseY, delta);
     }

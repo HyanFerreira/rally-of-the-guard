@@ -50,9 +50,9 @@ que já estejam na coluna de membros.
 
 ## Comando rápido
 
-O painel da tecla `G` continua não pausante, mas recebe fundo escurecido e um
-centro opaco que cobre a mira. Os seis botões ficam mais compactos e o centro
-mostra claramente o escopo `Todos os guardas`.
+O painel da tecla `G` continua não pausante, mas recebe fundo escurecido. Um
+único painel central opaco cobre a mira, mostra claramente o escopo
+`Todos os guardas` e reúne as seis ações em uma grade compacta `2 × 3`.
 
 ## Identidade e Villager Names
 

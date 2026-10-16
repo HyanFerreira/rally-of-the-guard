@@ -211,8 +211,8 @@ Regras atuais:
 Pressione `G` para abrir um painel não pausante com seis ordens frequentes para
 todos os guardas carregados: `Seguir`, `Aguardar`, `Patrulhar`, `Atacar`,
 `Mover para cá` e `Defender área`. A tecla pode ser remapeada nos controles.
-O fundo é escurecido e o centro recebe uma placa opaca que cobre a mira sem
-interferir nos seis botões ao redor.
+O fundo é escurecido e as seis ações ficam reunidas em uma grade `2 × 3`
+dentro de um único painel central opaco, que também cobre a mira.
 
 As três ações imediatas reutilizam o feedback normal do servidor. `Atacar`,
 `Mover para cá` e `Defender área` encaminham para as mesmas telas e modos de

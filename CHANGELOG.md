@@ -5,7 +5,7 @@
 - Redesigned the Commander's Ledger around a selectable roster and one contextual action panel, separating individual orders from scope-wide orders.
 - Replaced repeated per-row Squad controls with a two-column membership workflow that shows each guard's current Squad and confirms cross-Squad transfers.
 - Made Villager Names and Collective required dependencies so guard identities remain readable throughout command and organization screens.
-- Dimmed the Quick Command background and added an opaque center plate so the player crosshair no longer competes with the overlay.
+- Reworked Quick Command into a compact two-column action panel with a dimmed background, consistent spacing, and full crosshair coverage.
 
 - Added a remappable `G` Quick Command panel for Follow, Wait, Patrol, Attack, Move Here, and Defend Area.
 - Reused existing server-authoritative All Guards commands, combat selection, and world-targeting flows without adding a parallel command protocol.
