@@ -105,6 +105,24 @@ class RallyConfigTest {
     }
 
     @Test
+    void namedRouteSettingsDefaultAndClampToSupportedRanges() {
+        int originalRoutes = RallyConfig.maxNamedRoutesPerPlayer;
+        int originalName = RallyConfig.maxNamedRouteNameLength;
+        try {
+            assertEquals(32, RallyConfig.maxNamedRoutesPerPlayer());
+            assertEquals(32, RallyConfig.maxNamedRouteNameLength());
+
+            RallyConfig.maxNamedRoutesPerPlayer = 0;
+            RallyConfig.maxNamedRouteNameLength = 99;
+            assertEquals(1, RallyConfig.maxNamedRoutesPerPlayer());
+            assertEquals(48, RallyConfig.maxNamedRouteNameLength());
+        } finally {
+            RallyConfig.maxNamedRoutesPerPlayer = originalRoutes;
+            RallyConfig.maxNamedRouteNameLength = originalName;
+        }
+    }
+
+    @Test
     void retreatDefaultsAndDistanceClampsToSupportedRange() {
         boolean originalEnabled = RallyConfig.rallyRetreatEnabled;
         double originalDistance = RallyConfig.rallyRetreatDistance;

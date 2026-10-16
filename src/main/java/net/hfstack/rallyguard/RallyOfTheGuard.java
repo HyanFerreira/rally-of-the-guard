@@ -31,6 +31,7 @@ import net.hfstack.rallyguard.order.defend.DefendAreaAttachments;
 import net.hfstack.rallyguard.profile.GuardProfileAttachments;
 import net.hfstack.rallyguard.profile.GuardProfileLifecycle;
 import net.hfstack.rallyguard.profile.GuardProfileRepository;
+import net.hfstack.rallyguard.route.NamedRouteAttachments;
 import net.hfstack.rallyguard.progression.CombatProgressionHandler;
 import net.hfstack.rallyguard.screen.ModScreenHandlers;
 import net.hfstack.rallyguard.squad.SquadAttachments;
@@ -53,6 +54,7 @@ public class RallyOfTheGuard implements ModInitializer {
         MoveOrderAttachments.initialize();
         DefendAreaAttachments.initialize();
         SquadAttachments.initialize();
+        NamedRouteAttachments.initialize();
         GuardProfileLifecycle.register(GuardProfileRepository.instance());
         ModItems.registerModItems();
         ModEffects.registerModEffects();

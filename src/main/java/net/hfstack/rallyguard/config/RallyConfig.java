@@ -170,6 +170,12 @@ public final class RallyConfig extends MidnightConfig {
     @Entry(category = "route", min = 2.0, max = 512.0)
     public static double routeTeleportDistance = 30.0;
 
+    @Entry(category = "route", min = 1, max = 64)
+    public static int maxNamedRoutesPerPlayer = 32;
+
+    @Entry(category = "route", min = 1, max = 48)
+    public static int maxNamedRouteNameLength = 32;
+
     @Entry(category = "squads")
     public static boolean squadsEnabled = true;
 
@@ -404,6 +410,14 @@ public final class RallyConfig extends MidnightConfig {
 
     public static double routeTeleportDistance() {
         return clamp(routeTeleportDistance, 2.0, 512.0);
+    }
+
+    public static int maxNamedRoutesPerPlayer() {
+        return clamp(maxNamedRoutesPerPlayer, 1, 64);
+    }
+
+    public static int maxNamedRouteNameLength() {
+        return clamp(maxNamedRouteNameLength, 1, 48);
     }
 
     public static boolean squadsEnabled() {

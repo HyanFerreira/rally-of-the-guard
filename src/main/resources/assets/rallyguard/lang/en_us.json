@@ -142,6 +142,11 @@
   "rallyguard.midnightconfig.routeTeleportDistance": "Route Teleport Distance",
   "rallyguard.midnightconfig.routeTeleportDistance.tooltip": "Minimum distance before a stuck route guard teleports.\n\n\u00a7eDefault: \u00a7f30.0\n\u00a76Min: \u00a7f2.0 \u00a77| \u00a76Max: \u00a7f512.0",
 
+  "rallyguard.midnightconfig.maxNamedRoutesPerPlayer": "Maximum Named Routes",
+  "rallyguard.midnightconfig.maxNamedRoutesPerPlayer.tooltip": "Maximum number of reusable patrol routes one player may save.\n\n\u00a7eDefault: \u00a7f32\n\u00a76Min: \u00a7f1 \u00a77| \u00a76Max: \u00a7f64",
+  "rallyguard.midnightconfig.maxNamedRouteNameLength": "Maximum Named Route Length",
+  "rallyguard.midnightconfig.maxNamedRouteNameLength.tooltip": "Maximum number of Unicode characters in a saved route name.\n\n\u00a7eDefault: \u00a7f32\n\u00a76Min: \u00a7f1 \u00a77| \u00a76Max: \u00a7f48",
+
   "item.rallyguard.scroll_of_rallying": "Scroll of Rallying",
 
   "alert.rallyguard.scroll_of_rallying.strength_gained": "You started a Rally! Your guards within %s blocks answered the call.",

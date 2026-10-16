@@ -142,6 +142,11 @@
   "rallyguard.midnightconfig.routeTeleportDistance": "Distância de Teleporte da Rota",
   "rallyguard.midnightconfig.routeTeleportDistance.tooltip": "Distância mínima para teleportar um guarda preso durante uma rota.\n\n\u00a7ePadrão: \u00a7f30.0\n\u00a76Min: \u00a7f2.0 \u00a77| \u00a76Max: \u00a7f512.0",
 
+  "rallyguard.midnightconfig.maxNamedRoutesPerPlayer": "M\u00e1ximo de Rotas Nomeadas",
+  "rallyguard.midnightconfig.maxNamedRoutesPerPlayer.tooltip": "Quantidade m\u00e1xima de rotas de patrulha reutiliz\u00e1veis que um jogador pode salvar.\n\n\u00a7ePadr\u00e3o: \u00a7f32\n\u00a76Min: \u00a7f1 \u00a77| \u00a76Max: \u00a7f64",
+  "rallyguard.midnightconfig.maxNamedRouteNameLength": "Tamanho M\u00e1ximo do Nome da Rota",
+  "rallyguard.midnightconfig.maxNamedRouteNameLength.tooltip": "Quantidade m\u00e1xima de caracteres Unicode no nome de uma rota salva.\n\n\u00a7ePadr\u00e3o: \u00a7f32\n\u00a76Min: \u00a7f1 \u00a77| \u00a76Max: \u00a7f48",
+
   "item.rallyguard.scroll_of_rallying": "Pergaminho do Rali",
 
   "alert.rallyguard.scroll_of_rallying.strength_gained": "Voc\u00ea iniciou um Rali! Seus Guardas em um raio de %s blocos atenderam ao chamado.",
