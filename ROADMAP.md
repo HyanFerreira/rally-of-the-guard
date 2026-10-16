@@ -1070,7 +1070,7 @@ Move Squad Here
 
 ## Defend Area
 
-Criar uma ordem territorial.
+Implementação concluída; smoke test em jogo pendente.
 
 Exemplo:
 
@@ -1079,9 +1079,14 @@ Defend Area
 Radius: 16 blocks
 ```
 
-A unidade deverá proteger uma região sem necessariamente ficar presa a um único ponto.
+O Livro de Comando combina o escopo atual com `Todos`, `Infantaria` ou
+`Arqueiros`; o próximo clique escolhe o centro e o servidor distribui postos
+seguros determinísticos. O raio é configurável, com padrão de 16 blocos.
 
-Essa ordem será diferente da patrulha fixa.
+Patrulha, percepção e combate permanecem nativos do Guard Villagers. Alvos fora
+do território são abandonados e guardas que ultrapassam a margem retornam ao
+posto sem teleporte. A ordem persiste entre reloads e é diferente da patrulha
+fixa porque protege uma região limitada e pode ser substituída pelo Rally.
 
 ---
 
@@ -1570,7 +1575,7 @@ O objetivo final é que Rally of the Guard se torne o complemento natural para j
 - [x] **Additional formations**
 - [ ] **Formation Selection Hub (1.4.0)** — implementação concluída; smoke test em jogo pendente
 - [ ] **Move Here (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
-- [ ] Defend Area
+- [ ] **Defend Area (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
 - [ ] Combat stances
 - [ ] Quick Command / Radial Menu
 - [ ] Named Routes

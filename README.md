@@ -83,6 +83,7 @@ Pelo painel, o jogador pode:
 - Filtrar a lista por todos os guardas, guardas sem Pelotão ou um Pelotão específico.
 - Enviar ordens coletivas de convocar, seguir, aguardar e patrulhar ao escopo selecionado.
 - Enviar `Mover para cá` ao escopo selecionado, filtrando todos, infantaria ou arqueiros, e indicar o destino com o próximo clique direito em bloco.
+- Enviar `Defender área` ao escopo selecionado, com o mesmo filtro de unidades, e escolher o centro territorial no mundo.
 - Restringir ordens de combate ao escopo selecionado.
 
 ### Pelotões e Oficiais
@@ -103,6 +104,7 @@ Estados exibidos:
 - `Em patrulha`
 - `Em rota`
 - `Em movimento`
+- `Defendendo`
 
 ### Mover para cá
 
@@ -114,6 +116,18 @@ depois; ao chegar, cada guarda permanece em `Aguardando`.
 
 O modo de escolha dura 15 segundos. `Esc`, troca do Livro de mão, morte ou
 desconexão cancelam a seleção sem emitir a ordem.
+
+### Defender área
+
+No Livro de Comando, escolha `Defender área`, selecione `Todos`, `Infantaria` ou
+`Arqueiros` e indique o centro com o próximo clique direito em bloco. O servidor
+atribui postos seguros e persiste centro, posto e raio para cada guarda. O raio
+padrão é 16 blocos e pode ser alterado na configuração.
+
+Dentro do território, patrulha, percepção e combate continuam sob controle da IA
+nativa do Guard Villagers. Alvos que deixam o raio são abandonados; guardas que
+passam da margem territorial retornam ao posto usando pathfinding, sem teleporte.
+Outra ordem explícita cancela a defesa.
 
 ### Rotas de Patrulha
 
@@ -141,7 +155,8 @@ O **Pergaminho do Rali** convoca guardas contratados próximos para perto do jog
 - Guardas convocados são posicionados na formação selecionada e passam a seguir.
 - Enquanto o comandante se move, os guardas navegam continuamente para slots levemente adiantados, evitando o ciclo de andar e parar.
 - Corrida e corrida com salto recebem recuperação moderada; viagens montadas não recebem aceleração especial.
-- Guardas em patrulha não são puxados.
+- Guardas em patrulha fixa não são puxados; uma ordem `Defender área` pode ser
+  substituída explicitamente pelo Rally.
 - Guardas aguardando não são puxados.
 - Enquanto o rali está ativo, guardas tentam manter seus slots de formação quando não estão em combate.
 - Se o comandante se afastar mais de 24 blocos durante um combate, os guardas abandonam o alvo e retornam por padrão.

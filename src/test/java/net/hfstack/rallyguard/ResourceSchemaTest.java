@@ -295,6 +295,14 @@ class ResourceSchemaTest {
             assertTrue(english.has(key), () -> "Missing English Defend Area key: " + key);
             assertTrue(portuguese.has(key), () -> "Missing Portuguese Defend Area key: " + key);
         }
+
+        assertTrue(Files.readString(Path.of("README.md")).contains("Defender área"));
+        assertTrue(Files.readString(Path.of("ROADMAP.md")).contains(
+                "**Defend Area (1.4.0)** — implementação e testes automatizados concluídos"
+        ));
+        assertTrue(Files.isRegularFile(Path.of(
+                "docs", "testing", "26.1-defend-area-smoke-test.md"
+        )));
     }
 
     private static void assertRecipeResult(String recipeName, String expectedItemId) throws IOException {
