@@ -1590,6 +1590,7 @@ O objetivo final é que Rally of the Guard se torne o complemento natural para j
 - [ ] **Defend Area (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
 - [ ] **Combat Stances (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
 - [ ] **Quick Command / Radial Menu (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
+- [ ] **GUI Usability Overhaul (1.4.0)** — Ledger contextual, Pelotões em duas colunas, Villager Names obrigatório e overlay central opaco concluídos; smoke test em jogo pendente
 - [ ] Named Routes
 - [ ] Rally Point / Command Post
 - [ ] Global Guard Registry

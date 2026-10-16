@@ -73,6 +73,7 @@ O **Livro de Comando** abre um painel portátil para gerenciar guardas contratad
 Pelo painel, o jogador pode:
 
 - Ver guardas contratados carregados no mundo atual.
+- Selecionar um guarda na lista à esquerda e usar um único painel contextual de ordens individuais à direita.
 - Ver o estado atual de cada guarda.
 - Convocar um guarda para perto do jogador.
 - Mandar um guarda seguir.
@@ -82,6 +83,7 @@ Pelo painel, o jogador pode:
 - Criar, iniciar, pausar, limpar e editar rotas de patrulha.
 - Filtrar a lista por todos os guardas, guardas sem Pelotão ou um Pelotão específico.
 - Enviar ordens coletivas de convocar, seguir, aguardar e patrulhar ao escopo selecionado.
+- Distinguir visualmente as ordens individuais das ordens coletivas do escopo atual.
 - Enviar `Mover para cá` ao escopo selecionado, filtrando todos, infantaria ou arqueiros, e indicar o destino com o próximo clique direito em bloco.
 - Enviar `Defender área` ao escopo selecionado, com o mesmo filtro de unidades, e escolher o centro territorial no mundo.
 - Restringir ordens de combate ao escopo selecionado.
@@ -90,6 +92,8 @@ Pelo painel, o jogador pode:
 ### Pelotões e Oficiais
 
 - O jogador pode criar, renomear e excluir Pelotões com nomes personalizados.
+- A tela usa duas colunas: guardas disponíveis ou de outros Pelotões à esquerda e membros do Pelotão selecionado à direita.
+- Cada linha mostra o nome fornecido pelo Villager Names, a patente e o Pelotão atual; transferências entre Pelotões pedem confirmação.
 - Cada guarda contratado pode pertencer a no máximo um Pelotão.
 - Um Capitão que já pertença ao Pelotão pode ser definido como seu único Oficial.
 - Trocar ou remover o Oficial não retira o cargo persistente de Capitão do guarda.
@@ -207,6 +211,8 @@ Regras atuais:
 Pressione `G` para abrir um painel não pausante com seis ordens frequentes para
 todos os guardas carregados: `Seguir`, `Aguardar`, `Patrulhar`, `Atacar`,
 `Mover para cá` e `Defender área`. A tecla pode ser remapeada nos controles.
+O fundo é escurecido e o centro recebe uma placa opaca que cobre a mira sem
+interferir nos seis botões ao redor.
 
 As três ações imediatas reutilizam o feedback normal do servidor. `Atacar`,
 `Mover para cá` e `Defender área` encaminham para as mesmas telas e modos de

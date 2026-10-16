@@ -394,6 +394,20 @@ class ResourceSchemaTest {
         )));
     }
 
+    @Test
+    void guiUsabilityOverhaulDocumentationIsComplete() throws IOException {
+        String readme = Files.readString(Path.of("README.md"));
+        String changelog = Files.readString(Path.of("CHANGELOG.md"));
+        String roadmap = Files.readString(Path.of("ROADMAP.md"));
+
+        assertTrue(readme.contains("duas colunas"));
+        assertTrue(changelog.contains("contextual action panel"));
+        assertTrue(roadmap.contains("GUI Usability Overhaul (1.4.0)"));
+        assertTrue(Files.isRegularFile(Path.of(
+                "docs", "testing", "26.1-gui-usability-smoke-test.md"
+        )));
+    }
+
     private static void assertRecipeResult(String recipeName, String expectedItemId) throws IOException {
         JsonObject recipe = readJson(RESOURCES.resolve(
                 "data/rallyguard/recipe/" + recipeName + ".json"
