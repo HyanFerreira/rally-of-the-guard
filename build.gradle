@@ -79,6 +79,8 @@ dependencies {
 	}
 
 	implementation "eu.midnightdust:midnightlib:${project.midnightlib_version}"
+	implementation "curse.maven:collective-342584:${project.collective_file_id}"
+	implementation "curse.maven:villager-names-345854:${project.villager_names_file_id}"
 
 	testImplementation platform("org.junit:junit-bom:${project.junit_version}")
 	testImplementation "org.junit.jupiter:junit-jupiter"

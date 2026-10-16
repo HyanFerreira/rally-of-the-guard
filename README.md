@@ -287,6 +287,9 @@ Os comandos usam o serviço normal de progressão, portanto respeitam a configur
 - **Java:** 25 ou superior
 - **Fabric API**
 - **Guard Villagers (Fabric/Quilt)**
+- **MidnightLib**
+- **Collective**
+- **Villager Names** — fornece identidade nominal aos guardas e villagers
 
 ---
 

@@ -161,7 +161,11 @@ using Guard Villagers' native patrol behavior.
 
 ➡️ Requires **MidnightLib**
 
-➡️ Requires **Java 21+**
+➡️ Requires **Collective**
+
+➡️ Requires **Villager Names**
+
+➡️ Requires **Java 25+**
 
 ---
 

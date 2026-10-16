@@ -91,6 +91,16 @@ class ResourceSchemaTest {
     }
 
     @Test
+    void identityDependenciesAreRequired() throws IOException {
+        JsonObject metadata = readJson(RESOURCES.resolve("fabric.mod.json"));
+        JsonObject dependencies = metadata.getAsJsonObject("depends");
+
+        assertTrue(dependencies.has("villagernames"));
+        assertTrue(dependencies.has("collective"));
+        assertTrue(Files.readString(Path.of("README.md")).contains("Villager Names"));
+    }
+
+    @Test
     void combatProgressionEntityTagsArePackaged() throws IOException {
         Path tags = RESOURCES.resolve("data/rallyguard/tags/entity_type");
         JsonObject targets = readJson(tags.resolve("xp_targets.json"));

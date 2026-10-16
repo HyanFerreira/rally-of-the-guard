@@ -31,9 +31,9 @@
 		"java": ">=25",
 		"fabric-api": "*",
 		"guardvillagers": "*",
-		"midnightlib": "*"
+		"midnightlib": "*",
+		"collective": "*",
+		"villagernames": "*"
 	},
-	"suggests": {
-		"another-mod": "*"
-	}
+	"suggests": {}
 }
