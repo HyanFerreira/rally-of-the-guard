@@ -18,7 +18,8 @@ import net.hfstack.rallyguard.network.codec.MoreCodecs;
 /**
  * S2C: servidor envia lista de guardas (id, nome, patrulhando).
  */
-public record GuardListS2CPayload(boolean squadsEnabled, List<SquadEntry> squads, List<Entry> entries)
+public record GuardListS2CPayload(boolean squadsEnabled, List<SquadEntry> squads,
+                                  List<NamedRouteEntry> namedRoutes, List<Entry> entries)
         implements CustomPacketPayload {
     public record Point(int x, int y, int z) {
     }
@@ -29,15 +30,40 @@ public record GuardListS2CPayload(boolean squadsEnabled, List<SquadEntry> squads
         }
     }
 
+    public record NamedRouteEntry(UUID id, String name, String dimensionId, int waitSeconds, List<Point> points) {
+        public NamedRouteEntry {
+            points = List.copyOf(points);
+        }
+    }
+
     public record Entry(int entityId, UUID guardId, String name, boolean patrolling, int status, boolean routeActive,
                         int routeWaitSeconds, List<Point> routePoints, Optional<Component> rank,
-                        Optional<Component> settlement, Optional<UUID> squadId, boolean captain) {
+                        Optional<Component> settlement, Optional<UUID> squadId, Optional<UUID> namedRouteId,
+                        boolean captain) {
         public Entry {
             routePoints = List.copyOf(routePoints);
             rank = rank == null ? Optional.empty() : rank;
             settlement = settlement == null ? Optional.empty() : settlement;
             squadId = squadId == null ? Optional.empty() : squadId;
+            namedRouteId = namedRouteId == null ? Optional.empty() : namedRouteId;
         }
+
+        public Entry(int entityId, UUID guardId, String name, boolean patrolling, int status, boolean routeActive,
+                     int routeWaitSeconds, List<Point> routePoints, Optional<Component> rank,
+                     Optional<Component> settlement, Optional<UUID> squadId, boolean captain) {
+            this(entityId, guardId, name, patrolling, status, routeActive, routeWaitSeconds, routePoints,
+                    rank, settlement, squadId, Optional.empty(), captain);
+        }
+    }
+
+    public GuardListS2CPayload(boolean squadsEnabled, List<SquadEntry> squads, List<Entry> entries) {
+        this(squadsEnabled, squads, List.of(), entries);
+    }
+
+    public GuardListS2CPayload {
+        squads = List.copyOf(squads);
+        namedRoutes = List.copyOf(namedRoutes);
+        entries = List.copyOf(entries);
     }
 
     public static final Type<GuardListS2CPayload> ID =
@@ -56,6 +82,19 @@ public record GuardListS2CPayload(boolean squadsEnabled, List<SquadEntry> squads
                         MoreCodecs.UUID_CODEC.encode(buf, squad.id());
                         buf.writeUtf(squad.name(), 48);
                         GuardCommandScopeCodec.writeOptionalUuid(buf, squad.officerGuardId());
+                    }
+                    buf.writeVarInt(value.namedRoutes().size());
+                    for (NamedRouteEntry route : value.namedRoutes()) {
+                        MoreCodecs.UUID_CODEC.encode(buf, route.id());
+                        buf.writeUtf(route.name(), 48);
+                        buf.writeUtf(route.dimensionId(), 128);
+                        buf.writeVarInt(route.waitSeconds());
+                        buf.writeVarInt(route.points().size());
+                        for (Point point : route.points()) {
+                            buf.writeInt(point.x());
+                            buf.writeInt(point.y());
+                            buf.writeInt(point.z());
+                        }
                     }
                     List<Entry> list = value.entries();
                     buf.writeVarInt(list.size());
@@ -76,6 +115,7 @@ public record GuardListS2CPayload(boolean squadsEnabled, List<SquadEntry> squads
                         ComponentSerialization.OPTIONAL_STREAM_CODEC.encode(buf, e.rank());
                         ComponentSerialization.OPTIONAL_STREAM_CODEC.encode(buf, e.settlement());
                         GuardCommandScopeCodec.writeOptionalUuid(buf, e.squadId());
+                        GuardCommandScopeCodec.writeOptionalUuid(buf, e.namedRouteId());
                         buf.writeBoolean(e.captain());
                     }
                 }
@@ -92,6 +132,22 @@ public record GuardListS2CPayload(boolean squadsEnabled, List<SquadEntry> squads
                                 buf.readUtf(48),
                                 GuardCommandScopeCodec.readOptionalUuid(buf)
                         ));
+                    }
+                    int routeCount = buf.readVarInt();
+                    if (routeCount < 0 || routeCount > 64) throw new IllegalArgumentException("Invalid named route count");
+                    List<NamedRouteEntry> namedRoutes = new ArrayList<>(routeCount);
+                    for (int i = 0; i < routeCount; i++) {
+                        UUID id = MoreCodecs.UUID_CODEC.decode(buf);
+                        String name = buf.readUtf(48);
+                        String dimensionId = buf.readUtf(128);
+                        int waitSeconds = buf.readVarInt();
+                        int pointCount = buf.readVarInt();
+                        if (pointCount < 0 || pointCount > 10) throw new IllegalArgumentException("Invalid named route point count");
+                        List<Point> points = new ArrayList<>(pointCount);
+                        for (int p = 0; p < pointCount; p++) {
+                            points.add(new Point(buf.readInt(), buf.readInt(), buf.readInt()));
+                        }
+                        namedRoutes.add(new NamedRouteEntry(id, name, dimensionId, waitSeconds, points));
                     }
                     int size = buf.readVarInt();
                     if (size < 0 || size > 4096) throw new IllegalArgumentException("Invalid guard count");
@@ -112,6 +168,7 @@ public record GuardListS2CPayload(boolean squadsEnabled, List<SquadEntry> squads
                         Optional<Component> rank = ComponentSerialization.OPTIONAL_STREAM_CODEC.decode(buf);
                         Optional<Component> settlement = ComponentSerialization.OPTIONAL_STREAM_CODEC.decode(buf);
                         Optional<UUID> squadId = GuardCommandScopeCodec.readOptionalUuid(buf);
+                        Optional<UUID> namedRouteId = GuardCommandScopeCodec.readOptionalUuid(buf);
                         boolean captain = buf.readBoolean();
                         list.add(new Entry(
                                 id,
@@ -125,10 +182,11 @@ public record GuardListS2CPayload(boolean squadsEnabled, List<SquadEntry> squads
                                 rank,
                                 settlement,
                                 squadId,
+                                namedRouteId,
                                 captain
                         ));
                     }
-                    return new GuardListS2CPayload(squadsEnabled, squads, list);
+                    return new GuardListS2CPayload(squadsEnabled, squads, namedRoutes, list);
                 }
             };
 

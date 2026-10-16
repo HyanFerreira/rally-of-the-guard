@@ -15,6 +15,8 @@ import net.hfstack.rallyguard.network.payload.ScopedGuardActionC2SPayload;
 import net.hfstack.rallyguard.network.payload.SquadDefinitionC2SPayload;
 import net.hfstack.rallyguard.network.payload.SquadOfficerC2SPayload;
 import net.hfstack.rallyguard.network.payload.FormationSelectionC2SPayload;
+import net.hfstack.rallyguard.network.payload.NamedRouteAssignmentC2SPayload;
+import net.hfstack.rallyguard.network.payload.NamedRouteMutationC2SPayload;
 
 public final class NetworkBootstrap {
     private NetworkBootstrap() {
@@ -44,6 +46,8 @@ public final class NetworkBootstrap {
         PayloadTypeRegistry.serverboundPlay().register(MoveHereC2SPayload.ID, MoveHereC2SPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(DefendAreaC2SPayload.ID, DefendAreaC2SPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(SetCombatStanceC2SPayload.ID, SetCombatStanceC2SPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(NamedRouteMutationC2SPayload.ID, NamedRouteMutationC2SPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(NamedRouteAssignmentC2SPayload.ID, NamedRouteAssignmentC2SPayload.CODEC);
 
         // S2C
         PayloadTypeRegistry.clientboundPlay().register(GuardListS2CPayload.ID, GuardListS2CPayload.CODEC);

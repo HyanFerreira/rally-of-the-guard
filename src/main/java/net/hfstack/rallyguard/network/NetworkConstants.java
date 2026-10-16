@@ -25,6 +25,10 @@ public final class NetworkConstants {
     public static final int ROUTE_PAUSE = 3;
     public static final int ROUTE_CLEAR = 4;
 
+    public static final int NAMED_ROUTE_CREATE = 1;
+    public static final int NAMED_ROUTE_UPDATE = 2;
+    public static final int NAMED_ROUTE_DELETE = 3;
+
     public static final int ATTACK_ALL = 1;
     public static final int ATTACK_INFANTRY = 2;
     public static final int ATTACK_RANGED = 3;

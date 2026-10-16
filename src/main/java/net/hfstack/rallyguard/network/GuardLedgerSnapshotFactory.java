@@ -17,6 +17,9 @@ import net.hfstack.rallyguard.network.payload.GuardListS2CPayload;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRouteState;
 import net.hfstack.rallyguard.order.GuardRoutes;
+import net.hfstack.rallyguard.route.NamedRouteRegistry;
+import net.hfstack.rallyguard.route.NamedRouteRegistryReadResult;
+import net.hfstack.rallyguard.route.NamedRouteRegistryRepository;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,6 +38,16 @@ public final class GuardLedgerSnapshotFactory {
         List<GuardListS2CPayload.SquadEntry> squads = RallyGuardApi.squads().list(player).stream()
                 .map(value -> new GuardListS2CPayload.SquadEntry(
                         value.id(), value.name(), value.officerGuardId()
+                )).toList();
+        NamedRouteRegistryReadResult routeResult = NamedRouteRegistryRepository.instance().readAndRepair(player);
+        NamedRouteRegistry routeRegistry = routeResult instanceof NamedRouteRegistryReadResult.Available available
+                ? available.registry() : NamedRouteRegistry.empty();
+        List<GuardListS2CPayload.NamedRouteEntry> namedRoutes = routeRegistry.routes().stream()
+                .map(route -> new GuardListS2CPayload.NamedRouteEntry(
+                        route.id(), route.name(), route.dimensionId(), route.waitSeconds(),
+                        route.points().stream()
+                                .map(point -> new GuardListS2CPayload.Point(point.getX(), point.getY(), point.getZ()))
+                                .toList()
                 )).toList();
         List<? extends Entity> loaded = player.level().getEntities(
                 BuiltInRegistries.ENTITY_TYPE.getValue(GUARD_TYPE),
@@ -69,9 +82,10 @@ public final class GuardLedgerSnapshotFactory {
                     presentation.rank(),
                     presentation.settlement(),
                     squad.squad().map(value -> value.id()),
+                    route.namedRouteId(),
                     captain
             ));
         }
-        return new GuardListS2CPayload(RallyConfig.squadsEnabled(), squads, guards);
+        return new GuardListS2CPayload(RallyConfig.squadsEnabled(), squads, namedRoutes, guards);
     }
 }

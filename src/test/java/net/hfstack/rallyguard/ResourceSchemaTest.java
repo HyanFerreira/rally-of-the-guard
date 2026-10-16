@@ -395,6 +395,40 @@ class ResourceSchemaTest {
     }
 
     @Test
+    void namedRouteConfigurationAndInterfaceLabelsExistInBothLanguages() throws IOException {
+        JsonObject english = readJson(RESOURCES.resolve("assets/rallyguard/lang/en_us.json"));
+        JsonObject portuguese = readJson(RESOURCES.resolve("assets/rallyguard/lang/pt_br.json"));
+        Set<String> keys = Set.of(
+                "rallyguard.midnightconfig.maxNamedRoutesPerPlayer",
+                "rallyguard.midnightconfig.maxNamedRouteNameLength",
+                "gui.rallyguard.named_route.title",
+                "gui.rallyguard.named_route.manage",
+                "gui.rallyguard.named_route.personal",
+                "gui.rallyguard.named_route.create",
+                "gui.rallyguard.named_route.update",
+                "gui.rallyguard.named_route.delete",
+                "gui.rallyguard.named_route.available",
+                "gui.rallyguard.named_route.assigned_guards",
+                "gui.rallyguard.named_route.created",
+                "gui.rallyguard.named_route.updated",
+                "gui.rallyguard.named_route.deleted",
+                "gui.rallyguard.named_route.assigned",
+                "gui.rallyguard.named_route.unassigned",
+                "gui.rallyguard.named_route.invalid_name",
+                "gui.rallyguard.named_route.duplicate_name",
+                "gui.rallyguard.named_route.limit",
+                "gui.rallyguard.named_route.not_found",
+                "gui.rallyguard.named_route.invalid",
+                "gui.rallyguard.named_route.wrong_dimension",
+                "gui.rallyguard.named_route.unsupported_data"
+        );
+        for (String key : keys) {
+            assertTrue(english.has(key), () -> "Missing English Named Route key: " + key);
+            assertTrue(portuguese.has(key), () -> "Missing Portuguese Named Route key: " + key);
+        }
+    }
+
+    @Test
     void guiUsabilityOverhaulDocumentationIsComplete() throws IOException {
         String readme = Files.readString(Path.of("README.md"));
         String changelog = Files.readString(Path.of("CHANGELOG.md"));

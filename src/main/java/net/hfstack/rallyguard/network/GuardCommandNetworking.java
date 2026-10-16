@@ -31,11 +31,14 @@ import net.hfstack.rallyguard.network.payload.GuardSquadAssignmentC2SPayload;
 import net.hfstack.rallyguard.network.payload.ScopedGuardActionC2SPayload;
 import net.hfstack.rallyguard.network.payload.SquadDefinitionC2SPayload;
 import net.hfstack.rallyguard.network.payload.SquadOfficerC2SPayload;
+import net.hfstack.rallyguard.network.payload.NamedRouteAssignmentC2SPayload;
+import net.hfstack.rallyguard.network.payload.NamedRouteMutationC2SPayload;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRouteState;
 import net.hfstack.rallyguard.order.GuardRoutes;
 import net.hfstack.rallyguard.order.move.MoveOrders;
 import net.hfstack.rallyguard.order.defend.DefendAreas;
+import net.hfstack.rallyguard.route.DefaultNamedRouteService;
 import net.hfstack.rallyguard.service.GuardBatchCommandExecutor;
 import net.hfstack.rallyguard.service.GuardCommandTargets;
 import net.minecraft.world.entity.Entity;
@@ -61,6 +64,7 @@ public final class GuardCommandNetworking {
 
     private static boolean REGISTERED = false;
     private static final GuardCommandService COMMANDS = RallyGuardApi.guardCommands();
+    private static final DefaultNamedRouteService NAMED_ROUTES = DefaultNamedRouteService.instance();
 
     public static synchronized void registerServer() {
         if (REGISTERED) return;
@@ -103,6 +107,14 @@ public final class GuardCommandNetworking {
         ServerPlayNetworking.registerGlobalReceiver(ScopedGuardActionC2SPayload.ID, (payload, context) -> {
             ServerPlayer player = context.player();
             context.server().execute(() -> handleScopedAction(player, payload));
+        });
+        ServerPlayNetworking.registerGlobalReceiver(NamedRouteMutationC2SPayload.ID, (payload, context) -> {
+            ServerPlayer player = context.player();
+            context.server().execute(() -> handleNamedRouteMutation(player, payload));
+        });
+        ServerPlayNetworking.registerGlobalReceiver(NamedRouteAssignmentC2SPayload.ID, (payload, context) -> {
+            ServerPlayer player = context.player();
+            context.server().execute(() -> handleNamedRouteAssignment(player, payload));
         });
     }
 
@@ -266,6 +278,40 @@ public final class GuardCommandNetworking {
             default -> {
             }
         }
+    }
+
+    private static void handleNamedRouteMutation(ServerPlayer player, NamedRouteMutationC2SPayload payload) {
+        List<BlockPos> points = payload.points().stream()
+                .map(point -> new BlockPos(point.x(), point.y(), point.z()))
+                .toList();
+        var result = switch (payload.action()) {
+            case NetworkConstants.NAMED_ROUTE_CREATE -> NAMED_ROUTES.create(
+                    player, payload.name(), payload.waitSeconds(), points
+            );
+            case NetworkConstants.NAMED_ROUTE_UPDATE -> payload.routeId()
+                    .map(id -> NAMED_ROUTES.update(player, id, payload.name(), payload.waitSeconds(), points))
+                    .orElse(null);
+            case NetworkConstants.NAMED_ROUTE_DELETE -> payload.routeId()
+                    .map(id -> NAMED_ROUTES.delete(player, id)).orElse(null);
+            default -> null;
+        };
+        if (result == null) {
+            player.sendOverlayMessage(Component.translatable("gui.rallyguard.named_route.invalid_request"));
+            return;
+        }
+        player.sendOverlayMessage(result.feedback());
+        if (result.succeeded()) sendGuardList(player);
+    }
+
+    private static void handleNamedRouteAssignment(ServerPlayer player, NamedRouteAssignmentC2SPayload payload) {
+        Entity entity = player.level().getEntity(payload.entityId());
+        if (!(entity instanceof GuardEntity guard)) {
+            player.sendOverlayMessage(Component.translatable("gui.rallyguard.command.not_found"));
+            return;
+        }
+        var result = NAMED_ROUTES.assign(player, guard, payload.routeId());
+        player.sendOverlayMessage(result.feedback());
+        if (result.succeeded()) sendGuardList(player);
     }
 
     private static void handleAttackTarget(ServerPlayer player, GuardAttackTargetC2SPayload payload) {
