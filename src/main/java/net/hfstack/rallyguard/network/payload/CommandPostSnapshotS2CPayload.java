@@ -33,7 +33,7 @@ public record CommandPostSnapshotS2CPayload(
         public void encode(RegistryFriendlyByteBuf buf, CommandPostSnapshotS2CPayload value) {
             buf.writeBlockPos(value.pos());
             MoreCodecs.UUID_CODEC.encode(buf, value.postId());
-            buf.writeUtf(value.name(), 32);
+            buf.writeUtf(value.name(), 128);
             buf.writeBoolean(value.active());
             buf.writeVarInt(value.radius());
             buf.writeUtf(value.formationId(), 32);
@@ -52,7 +52,7 @@ public record CommandPostSnapshotS2CPayload(
         public CommandPostSnapshotS2CPayload decode(RegistryFriendlyByteBuf buf) {
             BlockPos pos = buf.readBlockPos();
             UUID postId = MoreCodecs.UUID_CODEC.decode(buf);
-            String name = buf.readUtf(32);
+            String name = buf.readUtf(128);
             boolean active = buf.readBoolean();
             int radius = buf.readVarInt();
             String formation = buf.readUtf(32);

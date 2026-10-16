@@ -38,6 +38,16 @@ Principais mudanças:
 
 ## Funcionalidades
 
+### Posto de Comando
+
+- O **Posto de Comando** complementa o Livro de Comando com defesa territorial persistente.
+- O jogador que posiciona o bloco torna-se seu dono e pode renomeá-lo, ativá-lo, definir o raio e escolher a formação.
+- A tela separa guardas disponíveis e defensores atribuídos em duas colunas, mostrando também o Pelotão de cada guarda.
+- Transferências de guardas que já defendem outro posto exigem confirmação.
+- Guardas atribuídos usam a defesa de área existente em posições distintas da formação escolhida.
+- Desativar o posto remove apenas ordens originadas nele; uma ordem manual posterior permanece soberana.
+- O bloco não força chunks, não teleporta guardas descarregados e só administra entidades carregadas na dimensão atual.
+
 ### Contratação de Guardas
 
 - Clique com o botão direito em um guarda sem dono para abrir a tela de contratação.

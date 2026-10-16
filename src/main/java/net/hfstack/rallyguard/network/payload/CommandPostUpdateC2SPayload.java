@@ -23,7 +23,7 @@ public record CommandPostUpdateC2SPayload(
             buf.writeBlockPos(value.pos());
             buf.writeVarInt(value.action());
             buf.writeVarInt(value.guardEntityId());
-            buf.writeUtf(value.name(), 32);
+            buf.writeUtf(value.name(), 128);
             buf.writeBoolean(value.active());
             buf.writeVarInt(value.radius());
             buf.writeUtf(value.formationId(), 32);
@@ -32,7 +32,7 @@ public record CommandPostUpdateC2SPayload(
         @Override
         public CommandPostUpdateC2SPayload decode(RegistryFriendlyByteBuf buf) {
             return new CommandPostUpdateC2SPayload(
-                    buf.readBlockPos(), buf.readVarInt(), buf.readVarInt(), buf.readUtf(32),
+                    buf.readBlockPos(), buf.readVarInt(), buf.readVarInt(), buf.readUtf(128),
                     buf.readBoolean(), buf.readVarInt(), buf.readUtf(32)
             );
         }

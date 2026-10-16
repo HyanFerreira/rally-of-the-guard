@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [" P ", "LBL", "LLL"],
+  "key": {
+    "P": "rallyguard:commanders_ledger",
+    "B": "minecraft:bell",
+    "L": "#minecraft:planks"
+  },
+  "result": { "id": "rallyguard:command_post", "count": 1 }
+}

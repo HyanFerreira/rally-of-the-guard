@@ -53,6 +53,13 @@ public final class CommandPostController {
         }
     }
 
+    public static void release(ServerLevel level, CommandPostState state) {
+        for (UUID guardId : state.assignedGuardIds()) {
+            Entity entity = level.getEntity(guardId);
+            if (entity != null) DefendAreas.clearIfFromCommandPost(entity, state.postId());
+        }
+    }
+
     public static BlockPos formationPost(BlockPos center, CommandPostState state, int index) {
         FormationOffset offset = FormationLayouts.slot(
                 state.formation(), index, state.assignedGuardIds().size(), COLUMN_SPACING, ROW_SPACING

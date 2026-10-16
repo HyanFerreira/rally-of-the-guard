@@ -10,6 +10,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.hfstack.rallyguard.network.CommandPostNetworking;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -58,5 +59,14 @@ public final class CommandPostBlock extends BaseEntityBlock {
             CommandPostNetworking.open(serverPlayer, pos, post);
         }
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public void destroy(LevelAccessor level, BlockPos pos, BlockState state) {
+        if (level instanceof net.minecraft.server.level.ServerLevel serverLevel
+                && level.getBlockEntity(pos) instanceof CommandPostBlockEntity post) {
+            CommandPostController.release(serverLevel, post.state());
+        }
+        super.destroy(level, pos, state);
     }
 }

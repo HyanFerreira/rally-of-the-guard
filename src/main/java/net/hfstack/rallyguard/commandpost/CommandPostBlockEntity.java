@@ -17,6 +17,7 @@ import net.hfstack.rallyguard.formation.RallyFormation;
 public final class CommandPostBlockEntity extends BlockEntity {
     private CommandPostState state;
     private boolean futureSchema;
+    private CompoundTag futureData;
 
     public CommandPostBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.COMMAND_POST, pos, blockState);
@@ -64,17 +65,23 @@ public final class CommandPostBlockEntity extends BlockEntity {
         CommandPostStateCodec.ReadResult decoded = CommandPostStateCodec.decode(stored, state.postId());
         if (decoded instanceof CommandPostStateCodec.ReadResult.FutureSchema future) {
             futureSchema = true;
+            futureData = stored.copy();
             RallyOfTheGuard.LOGGER.warn("Command post at {} uses unsupported schema {}", worldPosition, future.schemaVersion());
             return;
         }
         CommandPostStateCodec.ReadResult.Available available = (CommandPostStateCodec.ReadResult.Available) decoded;
         state = available.state();
         futureSchema = false;
+        futureData = null;
     }
 
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
-        if (!futureSchema) output.store("command_post", CompoundTag.CODEC, CommandPostStateCodec.encode(state));
+        if (futureSchema && futureData != null) {
+            output.store("command_post", CompoundTag.CODEC, futureData);
+        } else {
+            output.store("command_post", CompoundTag.CODEC, CommandPostStateCodec.encode(state));
+        }
     }
 }

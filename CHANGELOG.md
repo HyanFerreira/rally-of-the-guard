@@ -1,5 +1,13 @@
 # Changelog
 
+## Command Post — 2026-10-16
+
+- Added the player-owned Command Post block for persistent territorial defense with configurable name, active state, radius, and formation.
+- Added a responsive two-column screen showing guard names, Squad membership, current assignments, and confirmed transfers from other posts.
+- Added server-authoritative updates and guard assignment with distance, ownership, entity, and formation validation.
+- Added origin-aware defend orders so disabling a post clears only its own orders and later manual orders are not overwritten.
+- Added a survival recipe, block drop, persistence coverage, formation-slot tests, and a Minecraft 26.1 smoke-test checklist.
+
 ## Unreleased — planned 1.4.0
 
 - Added persistent player-owned Named Routes with Unicode names, dimensions, wait times, ordered points, configurable limits, and future-schema protection.
