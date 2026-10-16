@@ -1,0 +1,39 @@
+package net.hfstack.rallyguard.registry;
+
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
+
+import java.util.Objects;
+
+public final class GlobalGuardRegistryRepository {
+    private static final GlobalGuardRegistryRepository INSTANCE = new GlobalGuardRegistryRepository();
+
+    private GlobalGuardRegistryRepository() {
+    }
+
+    public static GlobalGuardRegistryRepository instance() {
+        return INSTANCE;
+    }
+
+    public GlobalGuardRegistryRead read(ServerPlayer player) {
+        CompoundTag stored = Objects.requireNonNull(player, "player")
+                .getAttached(GlobalGuardRegistryAttachments.REGISTRY);
+        return GlobalGuardRegistryCodec.decode(stored);
+    }
+
+    public GlobalGuardRegistryRead readAndRepair(ServerPlayer player) {
+        GlobalGuardRegistryRead result = read(player);
+        if (result instanceof GlobalGuardRegistryRead.FutureSchema) return result;
+        if (result instanceof GlobalGuardRegistryRead.Available available && !available.repaired()) return result;
+        GlobalGuardRegistry registry = result instanceof GlobalGuardRegistryRead.Available available
+                ? available.registry() : GlobalGuardRegistry.empty();
+        player.setAttached(GlobalGuardRegistryAttachments.REGISTRY, GlobalGuardRegistryCodec.encode(registry));
+        return new GlobalGuardRegistryRead.Available(registry, false);
+    }
+
+    public boolean save(ServerPlayer player, GlobalGuardRegistry registry) {
+        if (read(player) instanceof GlobalGuardRegistryRead.FutureSchema) return false;
+        player.setAttached(GlobalGuardRegistryAttachments.REGISTRY, GlobalGuardRegistryCodec.encode(registry));
+        return true;
+    }
+}
