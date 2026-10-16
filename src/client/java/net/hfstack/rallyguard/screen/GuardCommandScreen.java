@@ -63,13 +63,15 @@ public class GuardCommandScreen extends Screen {
                 command.acceptSnapshot(payload);
             } else if (current instanceof SquadManagementScreen management) {
                 management.acceptSnapshot(payload);
+            } else if (current instanceof NamedRouteManagementScreen management) {
+                management.acceptSnapshot(payload);
             } else {
                 Minecraft.getInstance().setScreen(new GuardCommandScreen(payload));
             }
         });
     }
 
-    private void acceptSnapshot(GuardListS2CPayload payload) {
+    void acceptSnapshot(GuardListS2CPayload payload) {
         snapshot = payload;
         scope = new SquadScreenModel(payload, scope).scope();
         rebuildEntries();
@@ -205,7 +207,9 @@ public class GuardCommandScreen extends Screen {
 
     private void openSelectedRoute() {
         int index = selectedIndex();
-        if (index >= 0) Minecraft.getInstance().setScreen(new GuardRouteScreen(this, index, all.get(index)));
+        if (index >= 0) Minecraft.getInstance().setScreen(
+                new GuardRouteHubScreen(this, snapshot, index, all.get(index))
+        );
     }
 
     private void changePage(int delta) {
