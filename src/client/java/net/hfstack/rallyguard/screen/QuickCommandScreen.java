@@ -14,6 +14,8 @@ import net.minecraft.network.chat.Component;
 public final class QuickCommandScreen extends Screen {
     private static final int WHITE = 0xFFFFFFFF;
     private static final int MUTED = 0xFFCCCCCC;
+    private static final int CENTER_WIDTH = 168;
+    private static final int CENTER_HEIGHT = 48;
 
     public QuickCommandScreen() {
         super(Component.translatable("gui.rallyguard.quick.title"));
@@ -56,16 +58,21 @@ public final class QuickCommandScreen extends Screen {
 
     @Override
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        graphics.fill(0, 0, width, height, 0x66000000);
     }
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        graphics.centeredText(font, title, width / 2, height / 2 - 8, WHITE);
+        int centerX = (width - CENTER_WIDTH) / 2;
+        int centerY = (height - CENTER_HEIGHT) / 2;
+        graphics.fill(centerX, centerY, centerX + CENTER_WIDTH, centerY + CENTER_HEIGHT, 0xF0101010);
+        graphics.outline(centerX, centerY, CENTER_WIDTH, CENTER_HEIGHT, WHITE);
+        graphics.centeredText(font, title, width / 2, height / 2 - 10, WHITE);
         graphics.centeredText(
                 font,
                 Component.translatable("gui.rallyguard.quick.scope_hint"),
                 width / 2,
-                height / 2 + 5,
+                height / 2 + 6,
                 MUTED
         );
         super.extractRenderState(graphics, mouseX, mouseY, delta);

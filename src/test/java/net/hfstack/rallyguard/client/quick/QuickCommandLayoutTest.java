@@ -31,4 +31,21 @@ class QuickCommandLayoutTest {
             assertTrue(slot.y() + QuickCommandLayout.BUTTON_HEIGHT <= 236);
         }
     }
+
+    @Test
+    void centerRemainsClearForTheOpaqueCommandLabel() {
+        QuickCommandLayout layout = QuickCommandLayout.forScreen(854, 480);
+        int centerLeft = (854 - 168) / 2;
+        int centerRight = centerLeft + 168;
+        int centerTop = (480 - 48) / 2;
+        int centerBottom = centerTop + 48;
+
+        for (QuickCommandLayout.Slot slot : layout.slots()) {
+            boolean overlapsHorizontally = slot.x() < centerRight
+                    && slot.x() + QuickCommandLayout.BUTTON_WIDTH > centerLeft;
+            boolean overlapsVertically = slot.y() < centerBottom
+                    && slot.y() + QuickCommandLayout.BUTTON_HEIGHT > centerTop;
+            assertTrue(!overlapsHorizontally || !overlapsVertically);
+        }
+    }
 }
