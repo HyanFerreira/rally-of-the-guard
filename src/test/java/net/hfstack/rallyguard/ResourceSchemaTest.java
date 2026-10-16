@@ -335,6 +335,14 @@ class ResourceSchemaTest {
             assertTrue(english.has(key), () -> "Missing English combat stance key: " + key);
             assertTrue(portuguese.has(key), () -> "Missing Portuguese combat stance key: " + key);
         }
+
+        assertTrue(Files.readString(Path.of("README.md")).contains("Posturas de combate"));
+        assertTrue(Files.readString(Path.of("ROADMAP.md")).contains(
+                "**Combat Stances (1.4.0)** — implementação e testes automatizados concluídos"
+        ));
+        assertTrue(Files.isRegularFile(Path.of(
+                "docs", "testing", "26.1-combat-stances-smoke-test.md"
+        )));
     }
 
     private static void assertRecipeResult(String recipeName, String expectedItemId) throws IOException {

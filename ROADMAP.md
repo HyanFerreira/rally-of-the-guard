@@ -1092,33 +1092,40 @@ fixa porque protege uma região limitada e pode ser substituída pelo Rally.
 
 # Combat Stances
 
-Guardas e squads poderão receber comportamentos táticos.
+Implementação e testes automatizados concluídos; smoke test em jogo pendente.
 
-Possibilidades:
+O painel de combate aplica a postura a todos os guardas carregados do escopo
+atual. A escolha é persistida individualmente e continua ativa junto das ordens
+de movimento, patrulha, rota e defesa territorial.
 
 ### Defensive
 
-Reage principalmente quando:
-
-- o comandante é atacado;
-- outro guarda aliado é atacado;
-- uma ameaça entra em uma área protegida.
+É o padrão compatível: não interfere na percepção e reação nativas do Guard
+Villagers.
 
 ### Aggressive
 
-Procura e enfrenta hostis dentro de determinado alcance.
+Procura e enfrenta monstros hostis dentro de um raio configurável.
 
 ### Passive
 
-Não inicia combate.
+Abandona o alvo atual, não inicia combate e não recebe ordens explícitas de
+ataque.
 
 ### Hold Position
 
-Pode combater, mas evita perseguições longas.
+Pode combater, mas abandona perseguições longas e retorna por pathfinding à
+posição em que recebeu a postura, sem teleporte.
 
 ### Protect Commander
 
-Prioriza ameaças que estejam atacando o jogador comandante.
+Prioriza criaturas que estejam atacando o jogador comandante dentro de um raio
+configurável.
+
+O servidor revalida escopo, propriedade e elegibilidade por guarda. Aquisição
+proativa nunca escolhe aliados protegidos, usa distância e UUID para desempate e
+processa somente entidades carregadas na dimensão atual. O contrato público está
+na API 8 com `setCombatStance` e `SET_COMBAT_STANCE`.
 
 ---
 
@@ -1576,7 +1583,7 @@ O objetivo final é que Rally of the Guard se torne o complemento natural para j
 - [ ] **Formation Selection Hub (1.4.0)** — implementação concluída; smoke test em jogo pendente
 - [ ] **Move Here (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
 - [ ] **Defend Area (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
-- [ ] Combat stances
+- [ ] **Combat Stances (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
 - [ ] Quick Command / Radial Menu
 - [ ] Named Routes
 - [ ] Rally Point / Command Post

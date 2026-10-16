@@ -85,6 +85,7 @@ Pelo painel, o jogador pode:
 - Enviar `Mover para cá` ao escopo selecionado, filtrando todos, infantaria ou arqueiros, e indicar o destino com o próximo clique direito em bloco.
 - Enviar `Defender área` ao escopo selecionado, com o mesmo filtro de unidades, e escolher o centro territorial no mundo.
 - Restringir ordens de combate ao escopo selecionado.
+- Aplicar posturas `Defensiva`, `Agressiva`, `Passiva`, `Manter Posição` ou `Proteger Comandante` ao escopo selecionado.
 
 ### Pelotões e Oficiais
 
@@ -128,6 +129,22 @@ Dentro do território, patrulha, percepção e combate continuam sob controle da
 nativa do Guard Villagers. Alvos que deixam o raio são abandonados; guardas que
 passam da margem territorial retornam ao posto usando pathfinding, sem teleporte.
 Outra ordem explícita cancela a defesa.
+
+### Posturas de combate
+
+Na tela de Ordens de Combate, pressione `Postura de Combate...` e escolha uma
+postura para todos os guardas carregados do escopo atual:
+
+- `Defensiva`: mantém a reação nativa do Guard Villagers;
+- `Agressiva`: procura monstros hostis dentro do raio configurado;
+- `Passiva`: abandona alvos e rejeita ordens explícitas de ataque;
+- `Manter Posição`: combate por perto, abandona perseguições longas e retorna à
+  posição em que a postura foi recebida;
+- `Proteger Comandante`: prioriza criaturas que estejam atacando o dono.
+
+A postura persiste no próprio guarda e não substitui ordens de seguir, mover,
+patrulhar, rota ou defender área. IDs inválidos, Pelotões removidos e guardas que
+deixaram de pertencer ao comandante são rejeitados novamente pelo servidor.
 
 ### Rotas de Patrulha
 
@@ -314,6 +331,9 @@ Principais opções:
 - `combat.guardSearchRadius`: raio dos guardas que recebem ordens de combate.
 - `combat.allowPassiveTargets`: permite ordenar ataque contra mobs passivos.
 - `combat.allowPlayerTargets`: permite ordenar ataque contra jogadores.
+- `combat.combatStanceAggressiveRadius`: raio de aquisição da postura Agressiva, padrão 16 blocos.
+- `combat.combatStanceProtectRadius`: raio de busca da postura Proteger Comandante, padrão 24 blocos.
+- `combat.combatStanceHoldRadius`: limite de perseguição da postura Manter Posição, padrão 8 blocos.
 - `route.maxPoints`: máximo de pontos por rota, limitado a 10 pela interface atual.
 - `route.defaultWaitSeconds`: espera padrão em cada ponto.
 - `route.moveSpeed`: velocidade ao mover entre pontos.

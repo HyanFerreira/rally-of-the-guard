@@ -2,6 +2,11 @@
 
 ## Unreleased — planned 1.4.0
 
+- Added persistent Defensive, Aggressive, Passive, Hold Position, and Protect Commander combat stances for the current Ledger scope.
+- Added server-authoritative stance selection, configurable engagement radii, deterministic target selection, and protected-ally filtering.
+- Added a translated combat-stance screen with descriptive tooltips and made Passive guards reject explicit attack orders.
+- Advanced the public guard-command contract to API version 8 with `setCombatStance` and `SET_COMBAT_STANCE`.
+
 - Added persistent server-authoritative Defend Area orders with configurable radius, safe UUID-ordered posts, scope and unit-category filtering.
 - Kept Guard Villagers in control of native patrol and combat while bounding targets to the defended territory and returning guards that leave it without teleporting.
 - Added the translated `Defending` Ledger status and a shared single-click targeting session for Move Here and Defend Area.
