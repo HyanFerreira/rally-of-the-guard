@@ -259,7 +259,11 @@ class ResourceSchemaTest {
                 "gui.rallyguard.squad.move_confirm_title",
                 "gui.rallyguard.squad.move_confirm",
                 "gui.rallyguard.squad.batch_result",
-                "gui.rallyguard.squad.officer_not_captain"
+                "gui.rallyguard.squad.officer_not_captain",
+                "gui.rallyguard.command.roster",
+                "gui.rallyguard.command.individual_orders",
+                "gui.rallyguard.command.select_guard",
+                "gui.rallyguard.command.scope_orders"
         );
         for (String key : keys) {
             assertTrue(english.has(key), () -> "Missing English Squad key: " + key);

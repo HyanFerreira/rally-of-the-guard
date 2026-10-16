@@ -221,6 +221,10 @@
 
   "gui.rallyguard.command.title": "Painel de Comando",
   "gui.rallyguard.command.empty": "Nenhum guarda dispon\u00edvel neste mundo.",
+  "gui.rallyguard.command.roster": "Lista de Guardas",
+  "gui.rallyguard.command.individual_orders": "Ordens Individuais",
+  "gui.rallyguard.command.select_guard": "Selecione um guarda na lista.",
+  "gui.rallyguard.command.scope_orders": "Ordens para: %s",
   "gui.rallyguard.command.name": "Guarda",
   "gui.rallyguard.command.squad": "Pelotão",
   "gui.rallyguard.command.status": "Estado",
