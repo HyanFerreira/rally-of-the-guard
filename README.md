@@ -227,6 +227,16 @@ A patrulha fixa usa o comportamento nativo do Guard Villagers:
 - O guarda caminha até o ponto e guarda aquela posição.
 - Se encontrar mobs hostis, a IA normal do guarda continua funcionando.
 
+### Rotas Nomeadas
+
+- O botão `Rota` do Ledger permite escolher entre a rota individual do guarda e o acervo de Rotas Salvas.
+- Uma rota individual com pelo menos dois pontos pode ser salva com nome, dimensão e tempo de espera próprios.
+- O mesmo modelo pode ser atribuído e iniciado em vários guardas carregados do jogador.
+- A gestão usa duas colunas para distinguir guardas disponíveis dos já atribuídos à rota selecionada.
+- Transferir um guarda que já usa outra Rota Salva exige confirmação.
+- Atualizar o modelo sincroniza seus guardas carregados; excluir pausa e desvincula os membros carregados sem apagar a cópia individual dos pontos.
+- Rotas antigas continuam válidas como rotas individuais e são migradas automaticamente para o novo formato.
+
 ### Friendly Fire e Neutralidade
 
 - Guardas em rali ficam protegidos contra ataques do jogador dono.
@@ -362,6 +372,8 @@ Principais opções:
 - `squads.enabled`: ativa o gerenciamento de Pelotões e as ordens coletivas sem apagar dados quando desativado.
 - `squads.maxSquadsPerPlayer`: máximo de Pelotões personalizados por jogador, padrão 16.
 - `squads.maxMembersPerSquad`: máximo de membros carregados por Pelotão, padrão 32.
+- `route.maxNamedRoutesPerPlayer`: máximo de Rotas Salvas por jogador, padrão 32.
+- `route.maxNamedRouteNameLength`: máximo de caracteres Unicode no nome de uma Rota Salva, padrão 32.
 - `squads.maxSquadNameLength`: máximo de caracteres Unicode no nome, padrão 24.
 
 ---

@@ -1160,7 +1160,7 @@ usa botões nativos para foco, teclado e narração.
 
 # Named Routes
 
-O sistema atual de rotas poderá evoluir para rotas reutilizáveis.
+O sistema de rotas evoluiu para modelos reutilizáveis persistentes por jogador.
 
 Exemplos:
 
@@ -1172,9 +1172,12 @@ Castle Interior
 Northern Road
 ```
 
-Em vez de a rota existir exclusivamente no guarda, ela poderá ser salva como uma entidade lógica reutilizável.
+Em vez de a rota existir exclusivamente no guarda, ela pode ser salva como uma
+entidade lógica reutilizável com UUID, nome, dimensão, espera e pontos.
 
-Então vários guardas poderão receber a mesma rota.
+Vários guardas carregados podem receber e iniciar a mesma rota. Atualizar o
+modelo sincroniza as cópias carregadas; excluir pausa e desvincula guardas
+carregados, e referências descarregadas são reparadas de forma preguiçosa.
 
 Exemplo:
 
@@ -1188,7 +1191,10 @@ Assigned Guards:
 □ Arthur
 ```
 
-Isso tornará patrulhas grandes muito mais fáceis de configurar.
+O Ledger oferece um hub entre a rota individual e as Rotas Salvas. O gerenciador
+reutiliza o padrão de duas colunas, mostra a associação atual e confirma trocas
+entre modelos. Rotas individuais `v1` continuam compatíveis e migram para `v2`
+sem associação inventada.
 
 ---
 
@@ -1591,7 +1597,7 @@ O objetivo final é que Rally of the Guard se torne o complemento natural para j
 - [ ] **Combat Stances (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
 - [ ] **Quick Command / Radial Menu (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
 - [ ] **GUI Usability Overhaul (1.4.0)** — Ledger contextual, Pelotões em duas colunas, Villager Names obrigatório e Comando Rápido compacto em grade concluídos; smoke test em jogo pendente
-- [ ] Named Routes
+- [ ] **Named Routes (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
 - [ ] Rally Point / Command Post
 - [ ] Global Guard Registry
 - [ ] Raid integration

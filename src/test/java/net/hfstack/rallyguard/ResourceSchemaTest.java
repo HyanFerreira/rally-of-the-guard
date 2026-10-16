@@ -448,6 +448,20 @@ class ResourceSchemaTest {
         )));
     }
 
+    @Test
+    void namedRoutesReleaseDocumentationAndSmokeTestExist() throws IOException {
+        String readme = Files.readString(Path.of("README.md"));
+        String changelog = Files.readString(Path.of("CHANGELOG.md"));
+        String roadmap = Files.readString(Path.of("ROADMAP.md"));
+
+        assertTrue(readme.contains("### Rotas Nomeadas"));
+        assertTrue(changelog.contains("player-owned Named Routes"));
+        assertTrue(roadmap.contains("**Named Routes (1.4.0)**"));
+        assertTrue(Files.isRegularFile(Path.of(
+                "docs", "testing", "26.1-named-routes-smoke-test.md"
+        )));
+    }
+
     private static void assertRecipeResult(String recipeName, String expectedItemId) throws IOException {
         JsonObject recipe = readJson(RESOURCES.resolve(
                 "data/rallyguard/recipe/" + recipeName + ".json"

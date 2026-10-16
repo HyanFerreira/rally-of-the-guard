@@ -100,6 +100,14 @@ public final class DefaultNamedRouteService {
         return NamedRouteMutationResult.success("gui.rallyguard.named_route.assigned", route.id());
     }
 
+    public void repairMissingAssignment(GuardEntity guard, NamedRouteRegistry registry) {
+        GuardRouteState current = GuardRoutes.get(guard);
+        if (current.namedRouteId().isEmpty()) return;
+        boolean exists = registry.routes().stream()
+                .anyMatch(route -> route.id().equals(current.namedRouteId().orElseThrow()));
+        if (!exists) unlinkAndPause(guard, current);
+    }
+
     private NamedRouteMutationResult persist(ServerPlayer owner, NamedRouteRegistryEditor.EditResult edit,
                                              String successKey) {
         if (!(edit instanceof NamedRouteRegistryEditor.Success success)) return editorFailure(edit);

@@ -2,6 +2,11 @@
 
 ## Unreleased — planned 1.4.0
 
+- Added persistent player-owned Named Routes with Unicode names, dimensions, wait times, ordered points, configurable limits, and future-schema protection.
+- Added a route hub and responsive Saved Routes manager with two-column guard assignment, cross-route confirmation, and reuse of individual guard routes as templates.
+- Added server-authoritative create, update, delete, assign, unassign, dimension validation, loaded-guard synchronization, and lazy repair of removed route references.
+- Migrated individual guard route tags from v1 to v2 while preserving legacy points and progress and adding an optional Named Route identity.
+
 - Redesigned the Commander's Ledger around a selectable roster and one contextual action panel, separating individual orders from scope-wide orders.
 - Replaced repeated per-row Squad controls with a two-column membership workflow that shows each guard's current Squad and confirms cross-Squad transfers.
 - Made Villager Names and Collective required dependencies so guard identities remain readable throughout command and organization screens.

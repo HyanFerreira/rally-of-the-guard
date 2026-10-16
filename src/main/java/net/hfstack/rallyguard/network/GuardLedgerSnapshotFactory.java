@@ -20,6 +20,7 @@ import net.hfstack.rallyguard.order.GuardRoutes;
 import net.hfstack.rallyguard.route.NamedRouteRegistry;
 import net.hfstack.rallyguard.route.NamedRouteRegistryReadResult;
 import net.hfstack.rallyguard.route.NamedRouteRegistryRepository;
+import net.hfstack.rallyguard.route.DefaultNamedRouteService;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
@@ -60,6 +61,7 @@ public final class GuardLedgerSnapshotFactory {
                     GuardEligibilityContext.of(player, guard, GuardEligibilityOperation.SHOW_IN_COMMAND_LIST)
             );
             if (visibility instanceof GuardEligibilityDecision.Deny) continue;
+            DefaultNamedRouteService.instance().repairMissingAssignment(guard, routeRegistry);
             GuardRouteState route = GuardRoutes.get(guard);
             GuardPresentation presentation = GuardPresentationRegistry.resolve(
                     new GuardPresentationContext(player, guard, player.level())
