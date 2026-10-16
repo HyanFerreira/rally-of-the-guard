@@ -342,9 +342,9 @@ public final class SquadManagementScreen extends Screen {
         graphics.text(font, Component.translatable("gui.rallyguard.squad.available"), x + 14, y + 91, WHITE);
         graphics.text(font, Component.translatable("gui.rallyguard.squad.members", selectedName), rightX, y + 91, WHITE);
 
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
         drawGuardRows(graphics, availableGuards(), availablePage, x + 14, columnW, selectedAvailableGuard, true);
         drawGuardRows(graphics, memberGuards(), memberPage, rightX, columnW, selectedMemberGuard, false);
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
     }
 
     private void drawGuardRows(GuiGraphicsExtractor graphics, List<GuardListS2CPayload.Entry> guards, int page,

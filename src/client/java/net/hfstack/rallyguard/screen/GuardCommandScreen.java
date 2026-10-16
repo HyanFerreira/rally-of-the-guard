@@ -315,9 +315,9 @@ public class GuardCommandScreen extends Screen {
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         drawPanel(graphics);
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
         drawRoster(graphics);
         drawContext(graphics);
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
     }
 
     private void drawPanel(GuiGraphicsExtractor graphics) {
