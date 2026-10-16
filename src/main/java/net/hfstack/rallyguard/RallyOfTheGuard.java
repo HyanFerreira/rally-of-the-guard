@@ -7,6 +7,7 @@ import net.hfstack.rallyguard.command.RallyGuardCommands;
 import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.effect.ModEffects;
 import net.hfstack.rallyguard.event.GuardVillagersSpawnEggFix;
+import net.hfstack.rallyguard.event.CombatStanceTicker;
 import net.hfstack.rallyguard.event.DefendAreaTicker;
 import net.hfstack.rallyguard.event.GuardAllySafetyHandler;
 import net.hfstack.rallyguard.event.GuardRouteTicker;
@@ -62,6 +63,7 @@ public class RallyOfTheGuard implements ModInitializer {
         InteractGuardHandler.register();
         RallyFriendlyFireHandler.register();
         GuardAllySafetyHandler.register();
+        CombatStanceTicker.register();
         CombatProgressionHandler.register();
         HiredGuardsNeutralityHandler.register();
         GuardRouteTicker.register();

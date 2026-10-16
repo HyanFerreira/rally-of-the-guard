@@ -8,6 +8,29 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RallyConfigTest {
     @Test
+    void combatStanceRadiiDefaultAndClampToServerLimits() {
+        double originalAggressive = RallyConfig.combatStanceAggressiveRadius;
+        double originalProtect = RallyConfig.combatStanceProtectRadius;
+        int originalHold = RallyConfig.combatStanceHoldRadius;
+        try {
+            assertEquals(16.0, RallyConfig.combatStanceAggressiveRadius());
+            assertEquals(24.0, RallyConfig.combatStanceProtectRadius());
+            assertEquals(8, RallyConfig.combatStanceHoldRadius());
+
+            RallyConfig.combatStanceAggressiveRadius = 0.0;
+            RallyConfig.combatStanceProtectRadius = 999.0;
+            RallyConfig.combatStanceHoldRadius = 1;
+            assertEquals(4.0, RallyConfig.combatStanceAggressiveRadius());
+            assertEquals(64.0, RallyConfig.combatStanceProtectRadius());
+            assertEquals(4, RallyConfig.combatStanceHoldRadius());
+        } finally {
+            RallyConfig.combatStanceAggressiveRadius = originalAggressive;
+            RallyConfig.combatStanceProtectRadius = originalProtect;
+            RallyConfig.combatStanceHoldRadius = originalHold;
+        }
+    }
+
+    @Test
     void defendAreaRadiusDefaultsAndClampsToServerLimits() {
         int originalRadius = RallyConfig.defendAreaRadius;
         try {

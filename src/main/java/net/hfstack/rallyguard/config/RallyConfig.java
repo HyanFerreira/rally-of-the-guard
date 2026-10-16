@@ -146,6 +146,15 @@ public final class RallyConfig extends MidnightConfig {
     @Entry(category = "combat", min = 4, max = 64)
     public static int defendAreaRadius = 16;
 
+    @Entry(category = "combat", min = 4.0, max = 64.0)
+    public static double combatStanceAggressiveRadius = 16.0;
+
+    @Entry(category = "combat", min = 4.0, max = 64.0)
+    public static double combatStanceProtectRadius = 24.0;
+
+    @Entry(category = "combat", min = 4, max = 32)
+    public static int combatStanceHoldRadius = 8;
+
     @Entry(category = "route", min = 2, max = 10)
     public static int routeMaxPoints = 5;
 
@@ -363,6 +372,18 @@ public final class RallyConfig extends MidnightConfig {
 
     public static int defendAreaRadius() {
         return clamp(defendAreaRadius, 4, 64);
+    }
+
+    public static double combatStanceAggressiveRadius() {
+        return finiteClamp(combatStanceAggressiveRadius, 4.0, 64.0, 16.0);
+    }
+
+    public static double combatStanceProtectRadius() {
+        return finiteClamp(combatStanceProtectRadius, 4.0, 64.0, 24.0);
+    }
+
+    public static int combatStanceHoldRadius() {
+        return clamp(combatStanceHoldRadius, 4, 32);
     }
 
     public static int routeMaxPoints() {
