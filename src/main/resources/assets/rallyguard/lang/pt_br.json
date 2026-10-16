@@ -423,5 +423,19 @@
   "rank.rallyguard.soldier": "Soldado",
   "rank.rallyguard.veteran": "Veterano",
   "rank.rallyguard.elite": "Elite",
-  "block.rallyguard.command_post": "Posto de Comando"
+  "block.rallyguard.command_post": "Posto de Comando",
+  "gui.rallyguard.command_post.title": "Posto de Comando",
+  "gui.rallyguard.command_post.name": "Nome do posto",
+  "gui.rallyguard.command_post.save": "Salvar",
+  "gui.rallyguard.command_post.active": "Ativo",
+  "gui.rallyguard.command_post.inactive": "Inativo",
+  "gui.rallyguard.command_post.radius": "Raio: %s",
+  "gui.rallyguard.command_post.available": "Guardas disponíveis",
+  "gui.rallyguard.command_post.assigned": "Defensores do posto",
+  "gui.rallyguard.command_post.no_squad": "Sem pelotão",
+  "gui.rallyguard.command_post.other_post": "outro posto",
+  "gui.rallyguard.command_post.not_owner": "Somente o dono pode administrar este posto.",
+  "gui.rallyguard.command_post.invalid": "O Posto de Comando não está mais acessível.",
+  "gui.rallyguard.command_post.transfer_title": "Transferir defensor?",
+  "gui.rallyguard.command_post.transfer": "%s já defende outro posto. Transferir para este?"
 }

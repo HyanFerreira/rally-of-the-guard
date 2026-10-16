@@ -423,5 +423,19 @@
   "rank.rallyguard.soldier": "Soldier",
   "rank.rallyguard.veteran": "Veteran",
   "rank.rallyguard.elite": "Elite",
-  "block.rallyguard.command_post": "Command Post"
+  "block.rallyguard.command_post": "Command Post",
+  "gui.rallyguard.command_post.title": "Command Post",
+  "gui.rallyguard.command_post.name": "Post name",
+  "gui.rallyguard.command_post.save": "Save",
+  "gui.rallyguard.command_post.active": "Active",
+  "gui.rallyguard.command_post.inactive": "Inactive",
+  "gui.rallyguard.command_post.radius": "Radius: %s",
+  "gui.rallyguard.command_post.available": "Available guards",
+  "gui.rallyguard.command_post.assigned": "Post defenders",
+  "gui.rallyguard.command_post.no_squad": "No squad",
+  "gui.rallyguard.command_post.other_post": "another post",
+  "gui.rallyguard.command_post.not_owner": "Only the owner can manage this post.",
+  "gui.rallyguard.command_post.invalid": "The Command Post is no longer accessible.",
+  "gui.rallyguard.command_post.transfer_title": "Transfer defender?",
+  "gui.rallyguard.command_post.transfer": "%s already defends another post. Transfer here?"
 }

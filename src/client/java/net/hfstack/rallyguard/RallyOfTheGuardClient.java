@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.hfstack.rallyguard.network.payload.GuardListS2CPayload;
 import net.hfstack.rallyguard.network.payload.MusterRollSnapshotS2CPayload;
 import net.hfstack.rallyguard.network.payload.CloseMusterRollS2CPayload;
+import net.hfstack.rallyguard.network.payload.CommandPostSnapshotS2CPayload;
 import net.hfstack.rallyguard.client.move.MoveTargetingClient;
 import net.hfstack.rallyguard.screen.GuardCombatScreen;
 import net.hfstack.rallyguard.screen.HireGuardScreen;
@@ -41,6 +42,10 @@ public class RallyOfTheGuardClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(
                 CloseMusterRollS2CPayload.ID,
                 (payload, context) -> net.hfstack.rallyguard.screen.MusterRollScreen.closeFromServer()
+        );
+        ClientPlayNetworking.registerGlobalReceiver(
+                CommandPostSnapshotS2CPayload.ID,
+                (payload, context) -> net.hfstack.rallyguard.screen.CommandPostScreen.accept(payload)
         );
 
         combatOrdersKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
