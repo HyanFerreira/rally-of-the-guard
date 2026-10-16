@@ -1,6 +1,7 @@
 package net.hfstack.rallyguard.combat;
 
 import net.hfstack.rallyguard.api.command.GuardCommandScope;
+import net.hfstack.rallyguard.combat.stance.GuardCombatStance;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -28,6 +29,16 @@ class ScopedAttackPolicyTest {
         ));
         assertFalse(ScopedAttackPolicy.mayReceiveOrder(
                 GuardCommandScope.all(), Optional.empty(), true, true, false
+        ));
+    }
+
+    @Test
+    void passiveGuardsRejectExplicitAttackOrders() {
+        assertTrue(ScopedAttackPolicy.mayReceiveOrder(
+                GuardCommandScope.all(), Optional.empty(), true, true, true, GuardCombatStance.DEFENSIVE
+        ));
+        assertFalse(ScopedAttackPolicy.mayReceiveOrder(
+                GuardCommandScope.all(), Optional.empty(), true, true, true, GuardCombatStance.PASSIVE
         ));
     }
 }

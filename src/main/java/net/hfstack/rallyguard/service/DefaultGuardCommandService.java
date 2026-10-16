@@ -12,6 +12,10 @@ import net.hfstack.rallyguard.api.eligibility.GuardEligibility;
 import net.hfstack.rallyguard.api.eligibility.GuardEligibilityContext;
 import net.hfstack.rallyguard.api.eligibility.GuardEligibilityDecision;
 import net.hfstack.rallyguard.contract.GuardOwnership;
+import net.hfstack.rallyguard.combat.GuardCombatState;
+import net.hfstack.rallyguard.combat.stance.CombatStanceRead;
+import net.hfstack.rallyguard.combat.stance.CombatStances;
+import net.hfstack.rallyguard.combat.stance.GuardCombatStance;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRoutes;
 import net.hfstack.rallyguard.order.move.MoveOrderRead;
@@ -160,6 +164,38 @@ public final class DefaultGuardCommandService implements GuardCommandService {
             guard.setPatrolling(true);
             DefendAreas.set(guard, order.center(), order.post(), order.radius());
         }, "gui.rallyguard.command.defend_ordered");
+    }
+
+    @Override
+    public GuardCommandResult setCombatStance(
+            ServerPlayer commander,
+            GuardEntity guard,
+            GuardCombatStance stance
+    ) {
+        ServerPlayer requiredCommander = requireCommander(commander);
+        GuardCombatStance requiredStance = Objects.requireNonNull(stance, "stance");
+        GuardCommandResult rejection = validate(requiredCommander, guard);
+        if (rejection != null) return rejection;
+        if (CombatStances.read(guard) instanceof CombatStanceRead.Unsupported) {
+            return GuardCommandResult.unsupportedData();
+        }
+
+        BlockPos anchor = requiredStance == GuardCombatStance.HOLD_POSITION
+                ? guard.blockPosition().immutable()
+                : null;
+        return executeValidated(
+                requiredCommander,
+                guard,
+                GuardCommandType.SET_COMBAT_STANCE,
+                anchor,
+                () -> {
+                    CombatStances.set(guard, requiredStance, anchor);
+                    if (requiredStance == GuardCombatStance.PASSIVE) {
+                        GuardCombatState.disengage(guard);
+                    }
+                },
+                "gui.rallyguard.stance.changed"
+        );
     }
 
     private static GuardCommandResult execute(

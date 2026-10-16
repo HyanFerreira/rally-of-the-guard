@@ -2,6 +2,7 @@ package net.hfstack.rallyguard.combat;
 
 import net.hfstack.rallyguard.api.command.GuardCommandScope;
 import net.hfstack.rallyguard.squad.GuardScopeMatcher;
+import net.hfstack.rallyguard.combat.stance.GuardCombatStance;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -21,5 +22,17 @@ public final class ScopedAttackPolicy {
                 && combatReady
                 && withinRange
                 && GuardScopeMatcher.matches(scope, effectiveSquadId);
+    }
+
+    public static boolean mayReceiveOrder(
+            GuardCommandScope scope,
+            Optional<UUID> effectiveSquadId,
+            boolean ownedByCommander,
+            boolean combatReady,
+            boolean withinRange,
+            GuardCombatStance stance
+    ) {
+        return stance != GuardCombatStance.PASSIVE
+                && mayReceiveOrder(scope, effectiveSquadId, ownedByCommander, combatReady, withinRange);
     }
 }

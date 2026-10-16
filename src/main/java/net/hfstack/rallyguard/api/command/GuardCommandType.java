@@ -10,5 +10,6 @@ public enum GuardCommandType {
     PATROL,
     STOP_PATROL,
     MOVE_TO,
-    DEFEND_AREA
+    DEFEND_AREA,
+    SET_COMBAT_STANCE
 }

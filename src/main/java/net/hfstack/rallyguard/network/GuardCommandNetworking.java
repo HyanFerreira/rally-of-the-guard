@@ -19,6 +19,7 @@ import net.hfstack.rallyguard.combat.GuardCombatState;
 import net.hfstack.rallyguard.combat.GuardCombatRole;
 import net.hfstack.rallyguard.combat.ProtectedAllyPolicy;
 import net.hfstack.rallyguard.combat.ScopedAttackPolicy;
+import net.hfstack.rallyguard.combat.stance.CombatStances;
 import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.network.payload.GuardActionC2SPayload;
@@ -317,7 +318,8 @@ public final class GuardCommandNetworking {
                                         && !GuardOrders.isWaiting(guard)
                                         && !GuardRoutes.get(guard).active(),
                                 e.distanceToSqr(player) <= RallyConfig.combatGuardSearchRadius()
-                                        * RallyConfig.combatGuardSearchRadius()
+                                        * RallyConfig.combatGuardSearchRadius(),
+                                CombatStances.current(guard)
                         )
         );
 
