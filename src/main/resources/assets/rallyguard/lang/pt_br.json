@@ -422,5 +422,6 @@
   "rank.rallyguard.guardsman": "Guarda",
   "rank.rallyguard.soldier": "Soldado",
   "rank.rallyguard.veteran": "Veterano",
-  "rank.rallyguard.elite": "Elite"
+  "rank.rallyguard.elite": "Elite",
+  "block.rallyguard.command_post": "Posto de Comando"
 }

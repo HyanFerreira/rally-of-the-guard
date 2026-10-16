@@ -4,6 +4,8 @@ import net.fabricmc.api.ModInitializer;
 import net.hfstack.rallyguard.component.ModComponents;
 import net.hfstack.rallyguard.combat.stance.CombatStanceAttachments;
 import net.hfstack.rallyguard.command.RallyGuardCommands;
+import net.hfstack.rallyguard.commandpost.ModBlockEntities;
+import net.hfstack.rallyguard.commandpost.ModBlocks;
 import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.effect.ModEffects;
 import net.hfstack.rallyguard.event.GuardVillagersSpawnEggFix;
@@ -56,6 +58,8 @@ public class RallyOfTheGuard implements ModInitializer {
         SquadAttachments.initialize();
         NamedRouteAttachments.initialize();
         GuardProfileLifecycle.register(GuardProfileRepository.instance());
+        ModBlocks.register();
+        ModBlockEntities.register();
         ModItems.registerModItems();
         ModEffects.registerModEffects();
         ModScreenHandlers.init();
