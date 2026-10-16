@@ -305,6 +305,38 @@ class ResourceSchemaTest {
         )));
     }
 
+    @Test
+    void combatStanceLabelsAndConfigurationExistInBothSupportedLanguages() throws IOException {
+        JsonObject english = readJson(RESOURCES.resolve("assets/rallyguard/lang/en_us.json"));
+        JsonObject portuguese = readJson(RESOURCES.resolve("assets/rallyguard/lang/pt_br.json"));
+        Set<String> keys = Set.of(
+                "rallyguard.midnightconfig.combatStanceAggressiveRadius",
+                "rallyguard.midnightconfig.combatStanceAggressiveRadius.tooltip",
+                "rallyguard.midnightconfig.combatStanceProtectRadius",
+                "rallyguard.midnightconfig.combatStanceProtectRadius.tooltip",
+                "rallyguard.midnightconfig.combatStanceHoldRadius",
+                "rallyguard.midnightconfig.combatStanceHoldRadius.tooltip",
+                "gui.rallyguard.stance.button",
+                "gui.rallyguard.stance.title",
+                "gui.rallyguard.stance.defensive",
+                "gui.rallyguard.stance.aggressive",
+                "gui.rallyguard.stance.passive",
+                "gui.rallyguard.stance.hold_position",
+                "gui.rallyguard.stance.protect_commander",
+                "gui.rallyguard.stance.defensive.description",
+                "gui.rallyguard.stance.aggressive.description",
+                "gui.rallyguard.stance.passive.description",
+                "gui.rallyguard.stance.hold_position.description",
+                "gui.rallyguard.stance.protect_commander.description",
+                "gui.rallyguard.stance.invalid",
+                "gui.rallyguard.stance.changed"
+        );
+        for (String key : keys) {
+            assertTrue(english.has(key), () -> "Missing English combat stance key: " + key);
+            assertTrue(portuguese.has(key), () -> "Missing Portuguese combat stance key: " + key);
+        }
+    }
+
     private static void assertRecipeResult(String recipeName, String expectedItemId) throws IOException {
         JsonObject recipe = readJson(RESOURCES.resolve(
                 "data/rallyguard/recipe/" + recipeName + ".json"

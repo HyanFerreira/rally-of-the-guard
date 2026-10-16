@@ -19,7 +19,7 @@ public class GuardCombatScreen extends Screen {
     private static final int WARNING = 0xFFFFCC66;
 
     private static final int PANEL_W = 340;
-    private static final int PANEL_H = 150;
+    private static final int PANEL_H = 176;
     private static final int BTN_H = 20;
 
     private final Screen parent;
@@ -64,9 +64,14 @@ public class GuardCombatScreen extends Screen {
         this.addRenderableWidget(ranged);
 
         this.addRenderableWidget(Button.builder(
+                Component.translatable("gui.rallyguard.stance.button"),
+                b -> Minecraft.getInstance().setScreen(new GuardStanceScreen(parent, scope))
+        ).bounds(x + (PANEL_W - 140) / 2, y + 110, 140, BTN_H).build());
+
+        this.addRenderableWidget(Button.builder(
                 Component.translatable("gui.rallyguard.route.back"),
                 b -> closeToParent()
-        ).bounds(x + (PANEL_W - 70) / 2, y + 114, 70, BTN_H).build());
+        ).bounds(x + (PANEL_W - 70) / 2, y + 142, 70, BTN_H).build());
     }
 
     private static Entity currentTarget() {
