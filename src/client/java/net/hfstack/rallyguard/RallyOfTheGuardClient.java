@@ -11,6 +11,7 @@ import net.hfstack.rallyguard.client.move.MoveTargetingClient;
 import net.hfstack.rallyguard.screen.GuardCombatScreen;
 import net.hfstack.rallyguard.screen.HireGuardScreen;
 import net.hfstack.rallyguard.screen.ModScreenHandlers;
+import net.hfstack.rallyguard.screen.QuickCommandScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.KeyMapping;
@@ -20,6 +21,7 @@ import org.lwjgl.glfw.GLFW;
 
 public class RallyOfTheGuardClient implements ClientModInitializer {
     private static KeyMapping combatOrdersKey;
+    private static KeyMapping quickCommandKey;
     private static final KeyMapping.Category RALLYGUARD_CATEGORY =
             KeyMapping.Category.register(Identifier.fromNamespaceAndPath(RallyOfTheGuard.MOD_ID, "combat_orders"));
 
@@ -47,10 +49,19 @@ public class RallyOfTheGuardClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_R,
                 RALLYGUARD_CATEGORY
         ));
+        quickCommandKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "key.rallyguard.quick_command",
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_G,
+                RALLYGUARD_CATEGORY
+        ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (combatOrdersKey.consumeClick()) {
                 openCombatOrders(client);
+            }
+            while (quickCommandKey.consumeClick()) {
+                openQuickCommand(client);
             }
         });
     }
@@ -58,5 +69,10 @@ public class RallyOfTheGuardClient implements ClientModInitializer {
     private static void openCombatOrders(Minecraft client) {
         if (client.player == null || client.level == null || client.screen != null) return;
         client.setScreen(new GuardCombatScreen(null));
+    }
+
+    private static void openQuickCommand(Minecraft client) {
+        if (client.player == null || client.level == null || client.screen != null) return;
+        client.setScreen(new QuickCommandScreen());
     }
 }
