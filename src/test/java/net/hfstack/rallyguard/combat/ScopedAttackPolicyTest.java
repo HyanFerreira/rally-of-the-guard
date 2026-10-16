@@ -1,7 +1,7 @@
 package net.hfstack.rallyguard.combat;
 
 import net.hfstack.rallyguard.api.command.GuardCommandScope;
-import net.hfstack.rallyguard.combat.stance.GuardCombatStance;
+import net.hfstack.rallyguard.api.command.GuardCombatStance;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;

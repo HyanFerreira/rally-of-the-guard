@@ -2,7 +2,7 @@ package net.hfstack.rallyguard.screen;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.hfstack.rallyguard.api.command.GuardCommandScope;
-import net.hfstack.rallyguard.combat.stance.GuardCombatStance;
+import net.hfstack.rallyguard.api.command.GuardCombatStance;
 import net.hfstack.rallyguard.network.SetCombatStanceC2SPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;

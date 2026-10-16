@@ -4,7 +4,7 @@ import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.hfstack.rallyguard.api.RallyGuardApi;
 import net.hfstack.rallyguard.api.command.GuardBatchCommandResult;
-import net.hfstack.rallyguard.combat.stance.GuardCombatStance;
+import net.hfstack.rallyguard.api.command.GuardCombatStance;
 import net.hfstack.rallyguard.service.GuardCommandTargets;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;

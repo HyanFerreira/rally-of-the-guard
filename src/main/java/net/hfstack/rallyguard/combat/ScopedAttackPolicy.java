@@ -2,7 +2,7 @@ package net.hfstack.rallyguard.combat;
 
 import net.hfstack.rallyguard.api.command.GuardCommandScope;
 import net.hfstack.rallyguard.squad.GuardScopeMatcher;
-import net.hfstack.rallyguard.combat.stance.GuardCombatStance;
+import net.hfstack.rallyguard.api.command.GuardCombatStance;
 
 import java.util.Optional;
 import java.util.UUID;

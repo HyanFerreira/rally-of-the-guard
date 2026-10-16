@@ -2,7 +2,6 @@ package net.hfstack.rallyguard.api.command;
 
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.hfstack.rallyguard.api.RallyGuardApi;
-import net.hfstack.rallyguard.combat.stance.GuardCombatStance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import org.junit.jupiter.api.Test;

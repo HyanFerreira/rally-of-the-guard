@@ -15,7 +15,7 @@ import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.combat.GuardCombatState;
 import net.hfstack.rallyguard.combat.stance.CombatStanceRead;
 import net.hfstack.rallyguard.combat.stance.CombatStances;
-import net.hfstack.rallyguard.combat.stance.GuardCombatStance;
+import net.hfstack.rallyguard.api.command.GuardCombatStance;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRoutes;
 import net.hfstack.rallyguard.order.move.MoveOrderRead;

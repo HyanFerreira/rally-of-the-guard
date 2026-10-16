@@ -1,5 +1,6 @@
 package net.hfstack.rallyguard.combat.stance;
 
+import net.hfstack.rallyguard.api.command.GuardCombatStance;
 import net.minecraft.core.BlockPos;
 
 public final class CombatStancePolicy {

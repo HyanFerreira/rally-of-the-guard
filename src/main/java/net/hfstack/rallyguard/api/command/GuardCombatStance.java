@@ -1,8 +1,9 @@
-package net.hfstack.rallyguard.combat.stance;
+package net.hfstack.rallyguard.api.command;
 
 import java.util.Arrays;
 import java.util.Optional;
 
+/** Stable combat-stance identifiers exposed by {@link GuardCommandService}. */
 public enum GuardCombatStance {
     DEFENSIVE(0),
     AGGRESSIVE(1),

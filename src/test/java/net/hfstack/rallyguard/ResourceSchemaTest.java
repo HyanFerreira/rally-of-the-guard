@@ -159,7 +159,8 @@ class ResourceSchemaTest {
         String roadmap = Files.readString(Path.of("ROADMAP.md"));
         Path smokePath = Path.of("docs", "testing", "26.1-captain-promotion-smoke-test.md");
 
-        assertTrue(api.contains("API contract version: `7`"));
+        assertTrue(api.contains("API contract version: `8`"));
+        assertTrue(api.contains("setCombatStance(ServerPlayer, GuardEntity, GuardCombatStance)"));
         assertTrue(api.contains("RallyGuardApi.captains()"));
         assertTrue(readme.contains("Level 7"));
         assertTrue(readme.contains("4 unidades"));

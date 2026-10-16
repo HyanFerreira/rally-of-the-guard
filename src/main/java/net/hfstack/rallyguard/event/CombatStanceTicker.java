@@ -9,7 +9,7 @@ import net.hfstack.rallyguard.combat.stance.CombatStanceRead;
 import net.hfstack.rallyguard.combat.stance.CombatStanceState;
 import net.hfstack.rallyguard.combat.stance.CombatStanceTargetPolicy;
 import net.hfstack.rallyguard.combat.stance.CombatStances;
-import net.hfstack.rallyguard.combat.stance.GuardCombatStance;
+import net.hfstack.rallyguard.api.command.GuardCombatStance;
 import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.minecraft.core.BlockPos;
