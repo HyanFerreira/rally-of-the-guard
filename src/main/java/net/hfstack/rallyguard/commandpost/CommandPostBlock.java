@@ -4,6 +4,10 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.BlockHitResult;
+import net.hfstack.rallyguard.network.CommandPostNetworking;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -45,5 +49,14 @@ public final class CommandPostBlock extends BaseEntityBlock {
                 && level.getBlockEntity(pos) instanceof CommandPostBlockEntity post) {
             post.claim(player.getUUID());
         }
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (player instanceof ServerPlayer serverPlayer
+                && level.getBlockEntity(pos) instanceof CommandPostBlockEntity post) {
+            CommandPostNetworking.open(serverPlayer, pos, post);
+        }
+        return InteractionResult.SUCCESS;
     }
 }
