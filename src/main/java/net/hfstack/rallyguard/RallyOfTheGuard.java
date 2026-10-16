@@ -2,6 +2,7 @@ package net.hfstack.rallyguard;
 
 import net.fabricmc.api.ModInitializer;
 import net.hfstack.rallyguard.component.ModComponents;
+import net.hfstack.rallyguard.combat.stance.CombatStanceAttachments;
 import net.hfstack.rallyguard.command.RallyGuardCommands;
 import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.effect.ModEffects;
@@ -46,6 +47,7 @@ public class RallyOfTheGuard implements ModInitializer {
 
         ModComponents.initialize();
         GuardProfileAttachments.initialize();
+        CombatStanceAttachments.initialize();
         MoveOrderAttachments.initialize();
         DefendAreaAttachments.initialize();
         SquadAttachments.initialize();
