@@ -37,7 +37,7 @@ public class GuardCommandScreen extends Screen {
 
     private static final int PER_PAGE = 4;
     private static final int MAX_PANEL_W = 650;
-    private static final int PANEL_H = 266;
+    private static final int PANEL_H = 238;
     private static final int SCREEN_PAD = 12;
 
     private static final int MARGIN_L = 16;
@@ -57,7 +57,6 @@ public class GuardCommandScreen extends Screen {
     private static final int BTN_WAIT_W = 58;
     private static final int BTN_PATROL_W = 62;
     private static final int BTN_ROUTE_W = 42;
-    private static final int BTN_COMPACT_TACTICAL_WIDTH = 84;
     private static final int BTN_H = 18;
     private static final int BTN_GAP = 2;
 
@@ -237,16 +236,28 @@ public class GuardCommandScreen extends Screen {
         this.addRenderableWidget(prev);
         this.addRenderableWidget(next);
 
-        int tacticalWidth = BTN_COMPACT_TACTICAL_WIDTH;
-        int tacticalGroupWidth = tacticalWidth * 3 + BTN_GAP * 2;
+        int tacticalCount = snapshot.squadsEnabled() ? 4 : 3;
+        int tacticalWidth = Math.min(
+                88,
+                (panelW - 68 - BTN_GAP * (tacticalCount - 1)) / tacticalCount
+        );
+        int tacticalGroupWidth = tacticalWidth * tacticalCount + BTN_GAP * (tacticalCount - 1);
         int tacticalX = x + (panelW - tacticalGroupWidth) / 2;
-        int tacticalY = y + PANEL_H - 56;
+        int tacticalY = y + PANEL_H - 28;
 
         Button combat = Button.builder(
                 Component.translatable("gui.rallyguard.combat.button"),
                 b -> Minecraft.getInstance().setScreen(new GuardCombatScreen(this, scope))
         ).bounds(tacticalX, tacticalY, tacticalWidth, 20).build();
         this.addRenderableWidget(combat);
+
+        if (snapshot.squadsEnabled()) {
+            this.addRenderableWidget(Button.builder(
+                    Component.translatable("gui.rallyguard.squad.manage"),
+                    b -> Minecraft.getInstance().setScreen(new SquadManagementScreen(snapshot, scope))
+            ).bounds(tacticalX + tacticalWidth + BTN_GAP, tacticalY, tacticalWidth, 20).build());
+            tacticalX += tacticalWidth + BTN_GAP;
+        }
 
         this.addRenderableWidget(Button.builder(
                 Component.translatable("gui.rallyguard.move.button"),
@@ -261,12 +272,7 @@ public class GuardCommandScreen extends Screen {
         ).bounds(tacticalX + (tacticalWidth + BTN_GAP) * 2, tacticalY, tacticalWidth, 20).build());
 
         if (snapshot.squadsEnabled()) {
-            this.addRenderableWidget(Button.builder(
-                    Component.translatable("gui.rallyguard.squad.manage"),
-                    b -> Minecraft.getInstance().setScreen(new SquadManagementScreen(snapshot, scope))
-            ).bounds(x + (panelW - 76) / 2, y + PANEL_H - 28, 76, 20).build());
-
-            int batchY = y + PANEL_H - 84;
+            int batchY = y + PANEL_H - 56;
             int batchX = x + 12;
             addBatchButton(batchX, batchY, 62, "gui.rallyguard.command.summon", NetworkConstants.ACTION_SUMMON);
             boolean allFollowing = !all.isEmpty() && all.stream()
