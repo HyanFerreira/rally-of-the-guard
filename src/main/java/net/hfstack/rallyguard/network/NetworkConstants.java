@@ -19,6 +19,7 @@ public final class NetworkConstants {
     public static final int ACTION_FOLLOW = 3;
     public static final int ACTION_WAIT = 4;
     public static final int ACTION_ROUTE_PLACEHOLDER = 5;
+    public static final int ACTION_DISMISS = 6;
 
     public static final int ROUTE_SAVE = 1;
     public static final int ROUTE_START = 2;

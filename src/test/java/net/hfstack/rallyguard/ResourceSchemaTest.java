@@ -169,7 +169,8 @@ class ResourceSchemaTest {
         String roadmap = Files.readString(Path.of("ROADMAP.md"));
         Path smokePath = Path.of("docs", "testing", "26.1-captain-promotion-smoke-test.md");
 
-        assertTrue(api.contains("API contract version: `8`"));
+        assertTrue(api.contains("API contract version: `9`"));
+        assertTrue(api.contains("dismiss(ServerPlayer, GuardEntity)"));
         assertTrue(api.contains("setCombatStance(ServerPlayer, GuardEntity, GuardCombatStance)"));
         assertTrue(api.contains("RallyGuardApi.captains()"));
         assertTrue(readme.contains("Level 7"));
@@ -378,7 +379,7 @@ class ResourceSchemaTest {
                 "gui.rallyguard.quick.move",
                 "gui.rallyguard.quick.wait",
                 "gui.rallyguard.quick.defend",
-                "gui.rallyguard.quick.patrol"
+                "gui.rallyguard.quick.dismiss"
         );
         for (String key : keys) {
             assertTrue(english.has(key), () -> "Missing English Quick Command key: " + key);
@@ -387,7 +388,7 @@ class ResourceSchemaTest {
 
         assertTrue(Files.readString(Path.of("README.md")).contains("Comando Rápido"));
         assertTrue(Files.readString(Path.of("ROADMAP.md")).contains(
-                "**Quick Command / Radial Menu (1.4.0)** — implementação e testes automatizados concluídos"
+                "**Quick Command / Radial Menu (1.4.0)** — Follow, Wait, Dismiss"
         ));
         assertTrue(Files.isRegularFile(Path.of(
                 "docs", "testing", "26.1-quick-command-smoke-test.md"

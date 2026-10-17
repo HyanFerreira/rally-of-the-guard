@@ -13,10 +13,13 @@ import net.hfstack.rallyguard.api.profile.GuardProfileView;
 import net.hfstack.rallyguard.api.squad.GuardSquadView;
 import net.hfstack.rallyguard.contract.GuardOwnership;
 import net.hfstack.rallyguard.config.RallyConfig;
+import net.hfstack.rallyguard.api.command.GuardUnitCategory;
+import net.hfstack.rallyguard.combat.GuardCombatRole;
 import net.hfstack.rallyguard.network.payload.GuardListS2CPayload;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRouteState;
 import net.hfstack.rallyguard.order.GuardRoutes;
+import net.hfstack.rallyguard.order.temporary.GuardTaskSuspensions;
 import net.hfstack.rallyguard.route.NamedRouteRegistry;
 import net.hfstack.rallyguard.route.NamedRouteRegistryReadResult;
 import net.hfstack.rallyguard.route.NamedRouteRegistryRepository;
@@ -85,7 +88,10 @@ public final class GuardLedgerSnapshotFactory {
                     presentation.settlement(),
                     squad.squad().map(value -> value.id()),
                     route.namedRouteId(),
-                    captain
+                    captain,
+                    (GuardCombatRole.isRanged(guard)
+                            ? GuardUnitCategory.RANGED : GuardUnitCategory.INFANTRY).wireId(),
+                    GuardTaskSuspensions.hasSuspendedTask(guard)
             ));
         }
         return new GuardListS2CPayload(RallyConfig.squadsEnabled(), squads, namedRoutes, guards);

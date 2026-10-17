@@ -28,7 +28,7 @@ public record QuickCommandLayout(List<Slot> slots) {
         return new QuickCommandLayout(List.of(
                 new Slot(QuickCommandAction.FOLLOW, left, firstRow),
                 new Slot(QuickCommandAction.WAIT, right, firstRow),
-                new Slot(QuickCommandAction.PATROL, left, secondRow),
+                new Slot(QuickCommandAction.DISMISS, left, secondRow),
                 new Slot(QuickCommandAction.ATTACK, right, secondRow),
                 new Slot(QuickCommandAction.MOVE, left, thirdRow),
                 new Slot(QuickCommandAction.DEFEND, right, thirdRow)

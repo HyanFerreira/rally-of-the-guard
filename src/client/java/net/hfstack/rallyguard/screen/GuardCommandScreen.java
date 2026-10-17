@@ -1,8 +1,10 @@
 package net.hfstack.rallyguard.screen;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.hfstack.rallyguard.api.command.GuardCommandScope;
 import net.hfstack.rallyguard.api.command.GuardCommandScopeKind;
+import net.hfstack.rallyguard.api.command.GuardUnitCategory;
 import net.hfstack.rallyguard.network.NetworkConstants;
 import net.hfstack.rallyguard.network.payload.GuardActionC2SPayload;
 import net.hfstack.rallyguard.network.payload.GuardListS2CPayload;
@@ -26,7 +28,6 @@ public class GuardCommandScreen extends Screen {
     private static final int MAX_PANEL_WIDTH = 700;
     private static final int PANEL_HEIGHT = 300;
     private static final int SCREEN_PAD = 12;
-    private static final int PER_PAGE = 6;
     private static final int ROW_TOP = 64;
     private static final int ROW_HEIGHT = 32;
     private static final int BUTTON_HEIGHT = 20;
@@ -35,7 +36,7 @@ public class GuardCommandScreen extends Screen {
     public record Entry(int entityId, UUID guardId, String name, boolean patrolling, int status, boolean routeActive,
                         int routeWaitSeconds, List<GuardListS2CPayload.Point> routePoints,
                         Optional<Component> rank, Optional<Component> settlement,
-                        Optional<UUID> squadId, boolean captain) {
+                        Optional<UUID> squadId, boolean captain, int categoryId, boolean dismissible) {
     }
 
     private final List<Entry> all = new ArrayList<>();
@@ -76,7 +77,7 @@ public class GuardCommandScreen extends Screen {
         scope = new SquadScreenModel(payload, scope).scope();
         rebuildEntries();
         selectFirstIfNeeded();
-        page = Math.min(page, Math.max(0, (all.size() - 1) / PER_PAGE));
+        page = Math.min(page, Math.max(0, (all.size() - 1) / perPage()));
         ensureSelectedPage();
         rebuildButtons();
     }
@@ -87,7 +88,7 @@ public class GuardCommandScreen extends Screen {
             all.add(new Entry(
                     entry.entityId(), entry.guardId(), entry.name(), entry.patrolling(), entry.status(),
                     entry.routeActive(), entry.routeWaitSeconds(), entry.routePoints(), entry.rank(),
-                    entry.settlement(), entry.squadId(), entry.captain()
+                    entry.settlement(), entry.squadId(), entry.captain(), entry.categoryId(), entry.dismissible()
             ));
         }
     }
@@ -111,19 +112,23 @@ public class GuardCommandScreen extends Screen {
         int rightW = x + panelWidth() - 14 - rightX;
 
         if (snapshot.squadsEnabled()) {
-            addRenderableWidget(Button.builder(scopeLabel(), button -> cycleScope())
-                    .bounds(x + 14, y + 30, Math.min(170, leftW - 14), BUTTON_HEIGHT).build());
+            int topW = (panelWidth() - 28 - GAP * 2) / 3;
+            addRenderableWidget(Button.builder(scopeLabel(), button -> cycleScope(shiftDown() ? -1 : 1))
+                    .bounds(x + 14, y + 30, topW, BUTTON_HEIGHT).build());
+            addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.registry.button"),
+                            button -> GlobalGuardRegistryScreen.open(this))
+                    .bounds(x + 14 + topW + GAP, y + 30, topW, BUTTON_HEIGHT).build());
             addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.squad.manage"),
                             button -> Minecraft.getInstance().setScreen(new SquadManagementScreen(snapshot, scope)))
-                    .bounds(x + panelWidth() - 104, y + 30, 90, BUTTON_HEIGHT).build());
+                    .bounds(x + 14 + (topW + GAP) * 2, y + 30, topW, BUTTON_HEIGHT).build());
+        } else {
+            addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.registry.button"),
+                            button -> GlobalGuardRegistryScreen.open(this))
+                    .bounds(x + panelWidth() - 124, y + 30, 110, BUTTON_HEIGHT).build());
         }
-        int registryX = snapshot.squadsEnabled() ? x + panelWidth() - 198 : x + panelWidth() - 104;
-        addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.registry.button"),
-                        button -> GlobalGuardRegistryScreen.open(this))
-                .bounds(registryX, y + 30, 90, BUTTON_HEIGHT).build());
 
-        int start = page * PER_PAGE;
-        int end = Math.min(start + PER_PAGE, all.size());
+        int start = page * perPage();
+        int end = Math.min(start + perPage(), all.size());
         for (int i = start; i < end; i++) {
             Entry entry = all.get(i);
             int rowY = y + ROW_TOP + (i - start) * ROW_HEIGHT;
@@ -134,9 +139,9 @@ public class GuardCommandScreen extends Screen {
         }
 
         addRenderableWidget(Button.builder(Component.literal("<"), button -> changePage(-1))
-                .bounds(x + 14, y + PANEL_HEIGHT - 28, 24, BUTTON_HEIGHT).build());
+                .bounds(x + 14, y + panelHeight() - 28, 24, BUTTON_HEIGHT).build());
         addRenderableWidget(Button.builder(Component.literal(">"), button -> changePage(1))
-                .bounds(x + 42, y + PANEL_HEIGHT - 28, 24, BUTTON_HEIGHT).build());
+                .bounds(x + 42, y + panelHeight() - 28, 24, BUTTON_HEIGHT).build());
 
         Optional<Entry> selected = selected();
         int threeW = (rightW - GAP * 2) / 3;
@@ -144,10 +149,14 @@ public class GuardCommandScreen extends Screen {
         int individualY = y + 112;
         addIndividualButton(rightX, individualY, threeW, "gui.rallyguard.command.summon", NetworkConstants.ACTION_SUMMON);
         addIndividualButton(rightX + threeW + GAP, individualY, threeW,
-                selected.filter(entry -> entry.status() == GuardOrderStatus.FOLLOWING).isPresent()
-                        ? "gui.rallyguard.command.stop" : "gui.rallyguard.command.follow",
-                selected.filter(entry -> entry.status() == GuardOrderStatus.FOLLOWING).isPresent()
-                        ? NetworkConstants.ACTION_WAIT : NetworkConstants.ACTION_FOLLOW);
+                selected.filter(Entry::dismissible).isPresent()
+                        ? "gui.rallyguard.command.dismiss"
+                        : selected.filter(entry -> entry.status() == GuardOrderStatus.FOLLOWING).isPresent()
+                                ? "gui.rallyguard.command.stop" : "gui.rallyguard.command.follow",
+                selected.filter(Entry::dismissible).isPresent()
+                        ? NetworkConstants.ACTION_DISMISS
+                        : selected.filter(entry -> entry.status() == GuardOrderStatus.FOLLOWING).isPresent()
+                                ? NetworkConstants.ACTION_WAIT : NetworkConstants.ACTION_FOLLOW);
         addIndividualButton(rightX + (threeW + GAP) * 2, individualY, threeW,
                 "gui.rallyguard.command.wait", NetworkConstants.ACTION_WAIT);
 
@@ -162,24 +171,47 @@ public class GuardCommandScreen extends Screen {
         route.active = selected.isPresent();
         addRenderableWidget(route);
 
-        int scopeY = y + 202;
+        boolean compact = panelHeight() < PANEL_HEIGHT;
+        int scopeY = y + (compact ? 176 : 202);
         int fourW = (rightW - GAP * 3) / 4;
         addScopeButton(rightX, scopeY, fourW, "gui.rallyguard.command.summon", NetworkConstants.ACTION_SUMMON);
         addScopeButton(rightX + fourW + GAP, scopeY, fourW, "gui.rallyguard.command.follow", NetworkConstants.ACTION_FOLLOW);
         addScopeButton(rightX + (fourW + GAP) * 2, scopeY, fourW, "gui.rallyguard.command.wait", NetworkConstants.ACTION_WAIT);
-        addScopeButton(rightX + (fourW + GAP) * 3, scopeY, fourW, "gui.rallyguard.command.patrol", NetworkConstants.ACTION_TOGGLE_PATROL);
+        addScopeButton(rightX + (fourW + GAP) * 3, scopeY, fourW, "gui.rallyguard.command.dismiss", NetworkConstants.ACTION_DISMISS);
 
         int tacticalY = scopeY + 24;
+        if (compact) {
+            int tacticalW = (rightW - GAP * 3) / 4;
+            addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.combat.button"),
+                            button -> Minecraft.getInstance().setScreen(new GuardCombatScreen(this, scope)))
+                    .bounds(rightX, tacticalY, tacticalW, BUTTON_HEIGHT).build());
+            addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.move.button"),
+                            button -> Minecraft.getInstance().setScreen(new MoveCategoryScreen(this, scope)))
+                    .bounds(rightX + tacticalW + GAP, tacticalY, tacticalW, BUTTON_HEIGHT).build());
+            addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.defend.button"),
+                            button -> Minecraft.getInstance().setScreen(
+                                    new MoveCategoryScreen(this, scope, MoveCategoryScreen.Mode.DEFEND)))
+                    .bounds(rightX + (tacticalW + GAP) * 2, tacticalY, tacticalW, BUTTON_HEIGHT).build());
+            addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.command.routes"),
+                            button -> Minecraft.getInstance().setScreen(
+                                    new ScopedNamedRouteScreen(this, snapshot, scope)))
+                    .bounds(rightX + (tacticalW + GAP) * 3, tacticalY, tacticalW, BUTTON_HEIGHT).build());
+            return;
+        }
         addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.combat.button"),
                         button -> Minecraft.getInstance().setScreen(new GuardCombatScreen(this, scope)))
-                .bounds(rightX, tacticalY, threeW, BUTTON_HEIGHT).build());
+                .bounds(rightX, tacticalY, twoW, BUTTON_HEIGHT).build());
         addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.move.button"),
                         button -> Minecraft.getInstance().setScreen(new MoveCategoryScreen(this, scope)))
-                .bounds(rightX + threeW + GAP, tacticalY, threeW, BUTTON_HEIGHT).build());
+                .bounds(rightX + twoW + GAP, tacticalY, twoW, BUTTON_HEIGHT).build());
         addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.defend.button"),
                         button -> Minecraft.getInstance().setScreen(
                                 new MoveCategoryScreen(this, scope, MoveCategoryScreen.Mode.DEFEND)))
-                .bounds(rightX + (threeW + GAP) * 2, tacticalY, threeW, BUTTON_HEIGHT).build());
+                .bounds(rightX, tacticalY + 24, twoW, BUTTON_HEIGHT).build());
+        addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.command.routes"),
+                        button -> Minecraft.getInstance().setScreen(
+                                new ScopedNamedRouteScreen(this, snapshot, scope)))
+                .bounds(rightX + twoW + GAP, tacticalY + 24, twoW, BUTTON_HEIGHT).build());
     }
 
     private void addIndividualButton(int x, int y, int width, String key, int action) {
@@ -195,7 +227,9 @@ public class GuardCommandScreen extends Screen {
         Button button = Button.builder(Component.translatable(key), ignored ->
                 ClientPlayNetworking.send(new ScopedGuardActionC2SPayload(action, scope)))
                 .bounds(x, y, width, BUTTON_HEIGHT).build();
-        button.active = !all.isEmpty();
+        button.active = action == NetworkConstants.ACTION_DISMISS
+                ? all.stream().anyMatch(Entry::dismissible)
+                : !all.isEmpty();
         addRenderableWidget(button);
     }
 
@@ -217,9 +251,9 @@ public class GuardCommandScreen extends Screen {
     }
 
     private void changePage(int delta) {
-        int pages = Math.max(1, (all.size() + PER_PAGE - 1) / PER_PAGE);
+        int pages = Math.max(1, (all.size() + perPage() - 1) / perPage());
         page = Math.floorMod(page + delta, pages);
-        int start = page * PER_PAGE;
+        int start = page * perPage();
         if (start < all.size()) selectedGuard = all.get(start).guardId();
         rebuildButtons();
     }
@@ -237,18 +271,24 @@ public class GuardCommandScreen extends Screen {
                 .orElseGet(() -> Component.translatable("gui.rallyguard.squad.scope_all"));
     }
 
-    private void cycleScope() {
+    private void cycleScope(int delta) {
         List<GuardCommandScope> options = new ArrayList<>();
         options.add(GuardCommandScope.all());
         options.add(GuardCommandScope.unassigned());
         snapshot.squads().forEach(squad -> options.add(GuardCommandScope.squad(squad.id())));
         int current = options.indexOf(scope);
-        scope = options.get((current + 1) % options.size());
+        scope = options.get(Math.floorMod(current + delta, options.size()));
         page = 0;
         selectedGuard = null;
         rebuildEntries();
         selectFirstIfNeeded();
         rebuildButtons();
+    }
+
+    private static boolean shiftDown() {
+        var window = Minecraft.getInstance().getWindow();
+        return InputConstants.isKeyDown(window, InputConstants.KEY_LSHIFT)
+                || InputConstants.isKeyDown(window, InputConstants.KEY_RSHIFT);
     }
 
     private Optional<Entry> selected() {
@@ -266,7 +306,7 @@ public class GuardCommandScreen extends Screen {
 
     private void ensureSelectedPage() {
         int index = selectedIndex();
-        if (index >= 0) page = index / PER_PAGE;
+        if (index >= 0) page = index / perPage();
     }
 
     private void sendAction(int entityId, int action) {
@@ -277,6 +317,7 @@ public class GuardCommandScreen extends Screen {
         return switch (action) {
             case NetworkConstants.ACTION_SUMMON -> GuardOrderStatus.IDLE;
             case NetworkConstants.ACTION_FOLLOW -> GuardOrderStatus.FOLLOWING;
+            case NetworkConstants.ACTION_DISMISS -> GuardOrderStatus.IDLE;
             case NetworkConstants.ACTION_TOGGLE_PATROL -> GuardOrderStatus.PATROLLING;
             default -> GuardOrderStatus.WAITING;
         };
@@ -294,8 +335,14 @@ public class GuardCommandScreen extends Screen {
         return new Entry(
                 current.entityId(), current.guardId(), current.name(), patrolling, status, routeActive,
                 current.routeWaitSeconds(), current.routePoints(), current.rank(), current.settlement(),
-                current.squadId(), current.captain()
+                current.squadId(), current.captain(), current.categoryId(),
+                actionKeepsDismissible(status) && current.dismissible()
         );
+    }
+
+    private static boolean actionKeepsDismissible(int status) {
+        return status != GuardOrderStatus.WAITING && status != GuardOrderStatus.PATROLLING
+                && status != GuardOrderStatus.IDLE;
     }
 
     public void updateRouteEntry(int index, boolean active, int waitSeconds, List<GuardListS2CPayload.Point> points) {
@@ -303,7 +350,8 @@ public class GuardCommandScreen extends Screen {
         int status = active ? GuardOrderStatus.ROUTING : GuardOrderStatus.WAITING;
         all.set(index, new Entry(
                 current.entityId(), current.guardId(), current.name(), active, status, active, waitSeconds,
-                List.copyOf(points), current.rank(), current.settlement(), current.squadId(), current.captain()
+                List.copyOf(points), current.rank(), current.settlement(), current.squadId(), current.captain(),
+                current.categoryId(), false
         ));
     }
 
@@ -312,7 +360,7 @@ public class GuardCommandScreen extends Screen {
         all.set(index, new Entry(
                 current.entityId(), current.guardId(), current.name(), current.patrolling(), current.status(),
                 current.routeActive(), waitSeconds, List.copyOf(points), current.rank(), current.settlement(),
-                current.squadId(), current.captain()
+                current.squadId(), current.captain(), current.categoryId(), false
         ));
     }
 
@@ -331,10 +379,10 @@ public class GuardCommandScreen extends Screen {
     private void drawPanel(GuiGraphicsExtractor graphics) {
         int x = panelX();
         int y = panelY();
-        graphics.fill(x, y, x + panelWidth(), y + PANEL_HEIGHT, 0xF0101010);
-        graphics.outline(x, y, panelWidth(), PANEL_HEIGHT, WHITE);
+        graphics.fill(x, y, x + panelWidth(), y + panelHeight(), 0xF0101010);
+        graphics.outline(x, y, panelWidth(), panelHeight(), WHITE);
         graphics.centeredText(font, title, width / 2, y + 9, WHITE);
-        graphics.fill(x + leftWidth() + 14, y + 58, x + leftWidth() + 15, y + PANEL_HEIGHT - 10, 0x44FFFFFF);
+        graphics.fill(x + leftWidth() + 14, y + 58, x + leftWidth() + 15, y + panelHeight() - 10, 0x44FFFFFF);
     }
 
     private void drawRoster(GuiGraphicsExtractor graphics) {
@@ -345,8 +393,8 @@ public class GuardCommandScreen extends Screen {
             graphics.centeredText(font, Component.translatable("gui.rallyguard.command.empty"),
                     x + 14 + (leftWidth() - 14) / 2, y + 148, MUTED);
         }
-        int start = page * PER_PAGE;
-        int end = Math.min(start + PER_PAGE, all.size());
+        int start = page * perPage();
+        int end = Math.min(start + perPage(), all.size());
         SquadScreenModel model = new SquadScreenModel(snapshot, scope);
         for (int i = start; i < end; i++) {
             Entry entry = all.get(i);
@@ -363,8 +411,8 @@ public class GuardCommandScreen extends Screen {
             graphics.text(font, Component.literal(trimToWidth(detail, leftWidth() - 26)),
                     x + 20, rowY + 17, MUTED);
         }
-        int pages = Math.max(1, (all.size() + PER_PAGE - 1) / PER_PAGE);
-        graphics.text(font, Component.literal((page + 1) + " / " + pages), x + 74, y + PANEL_HEIGHT - 22, MUTED);
+        int pages = Math.max(1, (all.size() + perPage() - 1) / perPage());
+        graphics.text(font, Component.literal((page + 1) + " / " + pages), x + 74, y + panelHeight() - 22, MUTED);
     }
 
     private void drawContext(GuiGraphicsExtractor graphics) {
@@ -383,10 +431,12 @@ public class GuardCommandScreen extends Screen {
             String status = statusComponent(entry.status()).getString();
             String squad = new SquadScreenModel(snapshot, scope).squadName(entry.squadId())
                     .orElseGet(() -> Component.translatable("gui.rallyguard.squad.scope_unassigned").getString());
-            graphics.text(font, Component.literal(trimToWidth(status + " · " + squad, rightW)), rightX, y + 82, MUTED);
+            String category = categoryComponent(entry.categoryId()).getString();
+            graphics.text(font, Component.literal(trimToWidth(status + " · " + category + " · " + squad, rightW)),
+                    rightX, y + 82, MUTED);
         }
         graphics.text(font, Component.translatable("gui.rallyguard.command.scope_orders", scopeLabel()),
-                rightX, y + 186, MUTED);
+                rightX, y + (panelHeight() < PANEL_HEIGHT ? 162 : 186), MUTED);
     }
 
     private static Component statusComponent(int status) {
@@ -399,6 +449,13 @@ public class GuardCommandScreen extends Screen {
             case GuardOrderStatus.DEFENDING -> Component.translatable("gui.rallyguard.command.status.defending");
             default -> Component.translatable("gui.rallyguard.command.status.idle");
         };
+    }
+
+    private static Component categoryComponent(int categoryId) {
+        return GuardUnitCategory.fromWireId(categoryId).orElse(GuardUnitCategory.INFANTRY)
+                == GuardUnitCategory.RANGED
+                ? Component.translatable("gui.rallyguard.move.category.ranged")
+                : Component.translatable("gui.rallyguard.move.category.infantry");
     }
 
     private static Optional<Component> presentationComponent(Entry entry) {
@@ -415,11 +472,11 @@ public class GuardCommandScreen extends Screen {
     }
 
     private int panelWidth() {
-        return Math.min(MAX_PANEL_WIDTH, Math.max(500, width - SCREEN_PAD * 2));
+        return Math.min(MAX_PANEL_WIDTH, Math.max(280, width - SCREEN_PAD * 2));
     }
 
     private int leftWidth() {
-        return Math.max(220, (panelWidth() * 43) / 100);
+        return Math.max(120, (panelWidth() * 43) / 100);
     }
 
     private int panelX() {
@@ -427,7 +484,15 @@ public class GuardCommandScreen extends Screen {
     }
 
     private int panelY() {
-        return (height - PANEL_HEIGHT) / 2;
+        return (height - panelHeight()) / 2;
+    }
+
+    private int panelHeight() {
+        return Math.min(PANEL_HEIGHT, Math.max(220, height - SCREEN_PAD));
+    }
+
+    private int perPage() {
+        return panelHeight() < PANEL_HEIGHT ? 3 : 6;
     }
 
     @Override

@@ -1144,17 +1144,23 @@ Menu radial implementado:
 ```text
              FOLLOW
 
-      PATROL        ATTACK
+      DISMISS       ATTACK
 
       DEFEND          MOVE
 
               WAIT
 ```
 
-Seguir, Aguardar e Patrulhar enviam a ordem coletiva imediatamente. Atacar abre
+Seguir, Aguardar e Dispensar enviam a ordem coletiva imediatamente. Atacar abre
 a seleção de combate existente; Mover e Defender abrem a seleção de categoria
 e reutilizam a sessão de próximo clique no mundo. O painel não pausa o jogo e
 usa botões nativos para foco, teclado e narração.
+
+Convocar, Seguir, Mover e Defender são mobilizações temporárias. A primeira
+ordem persiste a rotina anterior do guarda sem empilhar snapshots; Dispensar a
+restaura. Aguardar, patrulha fixa e atribuição/edição de rota são alterações
+permanentes e descartam esse snapshot. O estado temporário de raids continua
+isolado. O contrato público avançou para a API 9 com `dismiss` e `DISMISS`.
 
 ---
 
@@ -1595,9 +1601,9 @@ O objetivo final é que Rally of the Guard se torne o complemento natural para j
 - [ ] **Move Here (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
 - [ ] **Defend Area (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
 - [ ] **Combat Stances (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
-- [ ] **Quick Command / Radial Menu (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
-- [ ] **GUI Usability Overhaul (1.4.0)** — Ledger contextual, Pelotões em duas colunas, Villager Names obrigatório e Comando Rápido compacto em grade concluídos; smoke test em jogo pendente
-- [ ] **Named Routes (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
+- [ ] **Quick Command / Radial Menu (1.4.0)** — Follow, Wait, Dismiss, Attack, Move Here e Defend Area implementados e cobertos automaticamente; smoke test em jogo pendente
+- [ ] **GUI Usability Overhaul (1.4.0)** — Ledger contextual e responsivo com categoria, Dispensar, Shift reverso; Pelotões em duas colunas com seleção direta; Villager Names obrigatório; testes automatizados concluídos; smoke test em jogo pendente
+- [ ] **Named Routes (1.4.0)** — rotas individuais e atribuição coletiva por escopo implementadas e testadas automaticamente; smoke test em jogo pendente
 - [ ] **Rally Point / Command Post (1.4.0)** — block, ownership, persistent settings, territorial formations, two-column assignment GUI and automated tests complete; in-game smoke test pending
 - [ ] **Global Guard Registry (1.4.0)** — persistent last-known records, lifecycle reconciliation, paged Ledger view, diagnostics and automated tests complete; in-game smoke test pending
 - [ ] **Village Defense & Raids (1.4.0)** — vanilla raid detection, validated manual/automatic reactions, isolated reports and automated tests complete; smoke test in progress (alert, Ignore, Defend village, center adjustment and basic report verified)

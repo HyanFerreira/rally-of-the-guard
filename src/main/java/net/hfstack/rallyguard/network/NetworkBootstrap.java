@@ -17,6 +17,7 @@ import net.hfstack.rallyguard.network.payload.SquadOfficerC2SPayload;
 import net.hfstack.rallyguard.network.payload.FormationSelectionC2SPayload;
 import net.hfstack.rallyguard.network.payload.NamedRouteAssignmentC2SPayload;
 import net.hfstack.rallyguard.network.payload.NamedRouteMutationC2SPayload;
+import net.hfstack.rallyguard.network.payload.ScopedNamedRouteAssignmentC2SPayload;
 import net.hfstack.rallyguard.network.payload.CommandPostSnapshotS2CPayload;
 import net.hfstack.rallyguard.network.payload.CommandPostUpdateC2SPayload;
 import net.hfstack.rallyguard.network.payload.OpenGlobalGuardRegistryC2SPayload;
@@ -57,6 +58,9 @@ public final class NetworkBootstrap {
         PayloadTypeRegistry.serverboundPlay().register(SetCombatStanceC2SPayload.ID, SetCombatStanceC2SPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(NamedRouteMutationC2SPayload.ID, NamedRouteMutationC2SPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(NamedRouteAssignmentC2SPayload.ID, NamedRouteAssignmentC2SPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(
+                ScopedNamedRouteAssignmentC2SPayload.ID, ScopedNamedRouteAssignmentC2SPayload.CODEC
+        );
         PayloadTypeRegistry.serverboundPlay().register(CommandPostUpdateC2SPayload.ID, CommandPostUpdateC2SPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(OpenGlobalGuardRegistryC2SPayload.ID, OpenGlobalGuardRegistryC2SPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(RaidResponseC2SPayload.ID, RaidResponseC2SPayload.CODEC);

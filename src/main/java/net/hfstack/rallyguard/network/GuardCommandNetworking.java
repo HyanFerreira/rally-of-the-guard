@@ -33,11 +33,13 @@ import net.hfstack.rallyguard.network.payload.SquadDefinitionC2SPayload;
 import net.hfstack.rallyguard.network.payload.SquadOfficerC2SPayload;
 import net.hfstack.rallyguard.network.payload.NamedRouteAssignmentC2SPayload;
 import net.hfstack.rallyguard.network.payload.NamedRouteMutationC2SPayload;
+import net.hfstack.rallyguard.network.payload.ScopedNamedRouteAssignmentC2SPayload;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRouteState;
 import net.hfstack.rallyguard.order.GuardRoutes;
 import net.hfstack.rallyguard.order.move.MoveOrders;
 import net.hfstack.rallyguard.order.defend.DefendAreas;
+import net.hfstack.rallyguard.order.temporary.GuardTaskSuspensions;
 import net.hfstack.rallyguard.route.DefaultNamedRouteService;
 import net.hfstack.rallyguard.service.GuardBatchCommandExecutor;
 import net.hfstack.rallyguard.service.GuardCommandTargets;
@@ -116,6 +118,10 @@ public final class GuardCommandNetworking {
             ServerPlayer player = context.player();
             context.server().execute(() -> handleNamedRouteAssignment(player, payload));
         });
+        ServerPlayNetworking.registerGlobalReceiver(ScopedNamedRouteAssignmentC2SPayload.ID, (payload, context) -> {
+            ServerPlayer player = context.player();
+            context.server().execute(() -> handleScopedNamedRouteAssignment(player, payload));
+        });
     }
 
     private static void sendGuardList(ServerPlayer player) {
@@ -181,6 +187,7 @@ public final class GuardCommandNetworking {
             case NetworkConstants.ACTION_SUMMON -> COMMANDS.summon(player, guard);
             case NetworkConstants.ACTION_FOLLOW -> COMMANDS.follow(player, guard);
             case NetworkConstants.ACTION_WAIT -> COMMANDS.wait(player, guard);
+            case NetworkConstants.ACTION_DISMISS -> COMMANDS.dismiss(player, guard);
             case NetworkConstants.ACTION_TOGGLE_PATROL -> COMMANDS.patrol(player, guard, player.blockPosition());
             default -> GuardCommandResult.invalidGuard();
         });
@@ -202,6 +209,7 @@ public final class GuardCommandNetworking {
             case NetworkConstants.ACTION_SUMMON -> COMMANDS.summon(player, guard);
             case NetworkConstants.ACTION_FOLLOW -> COMMANDS.follow(player, guard);
             case NetworkConstants.ACTION_WAIT -> COMMANDS.wait(player, guard);
+            case NetworkConstants.ACTION_DISMISS -> COMMANDS.dismiss(player, guard);
             case NetworkConstants.ACTION_TOGGLE_PATROL -> guard.isPatrolling()
                     ? COMMANDS.stopPatrol(player, guard)
                     : COMMANDS.patrol(player, guard, player.blockPosition());
@@ -239,6 +247,7 @@ public final class GuardCommandNetworking {
 
         switch (payload.action()) {
             case NetworkConstants.ROUTE_SAVE -> {
+                GuardTaskSuspensions.discard(guard);
                 GuardRoutes.set(guard, new GuardRouteState(false, 0, waitTicks, 0, points));
                 player.sendOverlayMessage(Component.translatable("gui.rallyguard.route.saved"));
             }
@@ -247,6 +256,7 @@ public final class GuardCommandNetworking {
                     player.sendOverlayMessage(Component.translatable("gui.rallyguard.route.need_points"));
                     return;
                 }
+                GuardTaskSuspensions.discard(guard);
                 GuardRouteState route = new GuardRouteState(true, 0, waitTicks, 0, points);
                 MoveOrders.clear(guard);
                 DefendAreas.clear(guard);
@@ -257,6 +267,7 @@ public final class GuardCommandNetworking {
                 player.sendOverlayMessage(Component.translatable("gui.rallyguard.route.started"));
             }
             case NetworkConstants.ROUTE_PAUSE -> {
+                GuardTaskSuspensions.discard(guard);
                 GuardRouteState current = GuardRoutes.get(guard);
                 GuardRoutes.set(guard, new GuardRouteState(false, current.currentIndex(), waitTicks, 0, points));
                 guard.setPatrolling(false);
@@ -267,6 +278,7 @@ public final class GuardCommandNetworking {
                 player.sendOverlayMessage(Component.translatable("gui.rallyguard.route.paused"));
             }
             case NetworkConstants.ROUTE_CLEAR -> {
+                GuardTaskSuspensions.discard(guard);
                 GuardRoutes.clear(guard);
                 guard.setPatrolling(false);
                 guard.setFollowing(false);
@@ -312,6 +324,31 @@ public final class GuardCommandNetworking {
         var result = NAMED_ROUTES.assign(player, guard, payload.routeId());
         player.sendOverlayMessage(result.feedback());
         if (result.succeeded()) sendGuardList(player);
+    }
+
+    private static void handleScopedNamedRouteAssignment(
+            ServerPlayer player,
+            ScopedNamedRouteAssignmentC2SPayload payload
+    ) {
+        if (!GuardCommandTargets.validScope(player, payload.scope())) {
+            player.sendOverlayMessage(Component.translatable("gui.rallyguard.squad.not_found"));
+            return;
+        }
+        GuardBatchCommandResult batch = GuardBatchCommandExecutor.executeCandidates(
+                GuardCommandTargets.loadedScopedGuards(player, payload.scope()),
+                guard -> {
+                    var result = NAMED_ROUTES.assign(player, guard, Optional.of(payload.routeId()));
+                    if (result.succeeded()) return GuardCommandResult.success("gui.rallyguard.named_route.assigned");
+                    if (result.outcome() == net.hfstack.rallyguard.route.NamedRouteMutationResult.Outcome.NOT_AVAILABLE) {
+                        return GuardCommandResult.invalidGuard();
+                    }
+                    return GuardCommandResult.denied(result.feedback());
+                }
+        );
+        player.sendOverlayMessage(Component.translatable(
+                "gui.rallyguard.squad.batch_result", batch.succeeded(), batch.rejected(), batch.unavailable()
+        ));
+        sendGuardList(player);
     }
 
     private static void handleAttackTarget(ServerPlayer player, GuardAttackTargetC2SPayload payload) {

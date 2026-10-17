@@ -39,8 +39,12 @@
 - Replaced repeated per-row Squad controls with a two-column membership workflow that shows each guard's current Squad and confirms cross-Squad transfers.
 - Made Villager Names and Collective required dependencies so guard identities remain readable throughout command and organization screens.
 - Reworked Quick Command into a compact two-column action panel with a dimmed background, consistent spacing, and full crosshair coverage.
+- Added persisted suspended-task snapshots and a `Dismiss` order that restores each guard's route, fixed patrol, movement, defense, follow, wait, or neutral routine after temporary Summon, Follow, Move Here, and Defend Area orders.
+- Added Infantry/Ranged identification to the Ledger, reverse scope cycling with `Shift`, scope-wide Named Route assignment, and direct Squad-selection tabs.
+- Replaced scope-wide fixed Patrol and Quick Command Patrol with the more useful Named Routes and Dismiss workflows.
+- Advanced the public guard-command contract to API version 9 with `dismiss` and `DISMISS`.
 
-- Added a remappable `G` Quick Command panel for Follow, Wait, Patrol, Attack, Move Here, and Defend Area.
+- Added a remappable `G` Quick Command panel for Follow, Wait, Dismiss, Attack, Move Here, and Defend Area.
 - Reused existing server-authoritative All Guards commands, combat selection, and world-targeting flows without adding a parallel command protocol.
 - Added a responsive non-pausing native-button layout with keyboard focus, narration, and English and Brazilian Portuguese labels.
 
@@ -82,7 +86,7 @@
 - Added a minimal synchronized Muster Roll promotion/demotion control with English and Brazilian Portuguese feedback.
 
 - Added persistent player-owned Squads with custom creation, rename, and deletion in the Commander's Ledger.
-- Added All Guards, Unassigned, and named-Squad Ledger scopes with collective summon, follow, wait, patrol, and combat orders.
+- Added All Guards, Unassigned, and named-Squad Ledger scopes with collective summon, follow, wait, dismiss, Named Route, and combat orders.
 - Added persistent guard-to-Squad assignment with lazy repair when a referenced Squad no longer exists.
 - Added one Captain Officer per Squad, with server-authoritative membership and Captain validation.
 - Added configurable Squad, loaded-member, and Unicode name-length limits.

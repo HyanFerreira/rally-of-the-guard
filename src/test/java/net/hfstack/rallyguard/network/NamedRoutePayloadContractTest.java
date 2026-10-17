@@ -3,6 +3,8 @@ package net.hfstack.rallyguard.network;
 import net.hfstack.rallyguard.network.payload.GuardListS2CPayload;
 import net.hfstack.rallyguard.network.payload.NamedRouteAssignmentC2SPayload;
 import net.hfstack.rallyguard.network.payload.NamedRouteMutationC2SPayload;
+import net.hfstack.rallyguard.network.payload.ScopedNamedRouteAssignmentC2SPayload;
+import net.hfstack.rallyguard.api.command.GuardCommandScope;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -46,5 +48,11 @@ class NamedRoutePayloadContractTest {
         assertEquals(NetworkConstants.NAMED_ROUTE_UPDATE, mutation.action());
         assertEquals(Optional.of(ROUTE_ID), mutation.routeId());
         assertEquals(Optional.of(ROUTE_ID), assignment.routeId());
+
+        GuardCommandScope scope = GuardCommandScope.unassigned();
+        ScopedNamedRouteAssignmentC2SPayload scoped =
+                new ScopedNamedRouteAssignmentC2SPayload(scope, ROUTE_ID);
+        assertEquals(scope, scoped.scope());
+        assertEquals(ROUTE_ID, scoped.routeId());
     }
 }

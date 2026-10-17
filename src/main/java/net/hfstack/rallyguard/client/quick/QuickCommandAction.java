@@ -11,7 +11,7 @@ public enum QuickCommandAction {
     MOVE(2, "gui.rallyguard.quick.move", Flow.MOVE, -1),
     WAIT(3, "gui.rallyguard.quick.wait", Flow.IMMEDIATE, NetworkConstants.ACTION_WAIT),
     DEFEND(4, "gui.rallyguard.quick.defend", Flow.DEFEND, -1),
-    PATROL(5, "gui.rallyguard.quick.patrol", Flow.IMMEDIATE, NetworkConstants.ACTION_TOGGLE_PATROL);
+    DISMISS(5, "gui.rallyguard.quick.dismiss", Flow.IMMEDIATE, NetworkConstants.ACTION_DISMISS);
 
     private final int id;
     private final String translationKey;

@@ -5,7 +5,7 @@ Rally exposes a small common-side API so integrations can issue tactical orders 
 ## Compatibility
 
 - Mod version: `1.4.0`
-- API contract version: `8`
+- API contract version: `9`
 - Entry point: `net.hfstack.rallyguard.api.RallyGuardApi`
 
 Integrations should check `RallyGuardApi.apiVersion()` before relying on a newer contract. Additive changes may keep the same contract version; incompatible changes require a new integer version and a coordinated minimum mod dependency.
@@ -159,6 +159,7 @@ The command contract exposes:
 - `stopPatrol`
 - `moveTo`
 - `defendArea`
+- `dismiss`
 - `setCombatStance`
 
 Every method must run on the logical server thread. The service validates that the guard is alive, loaded in the commander's world and tactically owned by that commander. It returns a `GuardCommandResult` with a machine-readable outcome and localized player feedback.
@@ -184,6 +185,15 @@ API version 8 adds
 `AGGRESSIVE`, `PASSIVE`, `HOLD_POSITION`, and `PROTECT_COMMANDER`. The service
 captures the server-side guard position as the `HOLD_POSITION` anchor. Future
 stance schemas return `UNSUPPORTED_DATA` and remain untouched.
+
+API version 9 adds `dismiss(ServerPlayer, GuardEntity)` and
+`GuardCommandType.DISMISS`. Rally records one persistent snapshot when a guard
+first receives a temporary Summon, Follow, Move Here, or Defend Area order.
+Further temporary orders do not overwrite that original snapshot. `dismiss`
+restores the saved route, fixed patrol, movement, defense, follow, wait, or
+neutral routine and then consumes the snapshot. Explicit Wait, Patrol, route
+editing/assignment, and raid defense remain authoritative permanent workflows;
+raid defense continues using its isolated raid snapshot.
 
 Rally's own packet receiver uses this same service. Integrations must call the service directly on the server and must not construct Rally network payloads.
 

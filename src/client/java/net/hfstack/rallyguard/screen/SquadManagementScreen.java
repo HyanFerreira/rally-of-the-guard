@@ -26,9 +26,8 @@ public final class SquadManagementScreen extends Screen {
     private static final int GOLD = 0xFFFFC94A;
     private static final int PANEL_HEIGHT = 320;
     private static final int MAX_PANEL_WIDTH = 700;
-    private static final int ROWS = 5;
     private static final int ROW_HEIGHT = 32;
-    private static final int LIST_TOP = 108;
+    private static final int SQUAD_TABS = 4;
 
     private GuardListS2CPayload snapshot;
     private final GuardCommandScope returnScope;
@@ -75,29 +74,42 @@ public final class SquadManagementScreen extends Screen {
         int columnW = columnWidth();
         int rightX = x + panelW - 14 - columnW;
 
-        nameBox = new EditBox(font, x + 14, y + 30, Math.max(80, panelW - 112), 20,
+        int renameW = 72;
+        int newW = 52;
+        int deleteW = 62;
+        int nameW = Math.max(100, panelW - 28 - renameW - newW - deleteW - 12);
+        nameBox = new EditBox(font, x + 14, y + 30, nameW, 20,
                 Component.translatable("gui.rallyguard.squad.name"));
         nameBox.setMaxLength(48);
         selected().ifPresent(squad -> nameBox.setValue(squad.name()));
         addRenderableWidget(nameBox);
 
-        addRenderableWidget(Button.builder(
+        Button rename = Button.builder(
                 selected().isPresent()
                         ? Component.translatable("gui.rallyguard.squad.rename")
                         : Component.translatable("gui.rallyguard.squad.create"),
                 button -> submitName()
-        ).bounds(x + panelW - 92, y + 30, 78, 20).build());
-
-        addRenderableWidget(Button.builder(Component.literal("<"), button -> changeSquad(-1))
-                .bounds(x + 14, y + 58, 24, 20).build());
-        addRenderableWidget(Button.builder(Component.literal(">"), button -> changeSquad(1))
-                .bounds(x + 42, y + 58, 24, 20).build());
+        ).bounds(x + 18 + nameW, y + 30, renameW, 20).build();
+        addRenderableWidget(rename);
         addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.squad.new"), button -> newSquad())
-                .bounds(x + 72, y + 58, 60, 20).build());
+                .bounds(x + 22 + nameW + renameW, y + 30, newW, 20).build());
         Button delete = Button.builder(Component.translatable("gui.rallyguard.squad.delete"), button -> confirmDelete())
-                .bounds(x + 136, y + 58, 66, 20).build();
+                .bounds(x + 26 + nameW + renameW + newW, y + 30, deleteW, 20).build();
         delete.active = selected().isPresent();
         addRenderableWidget(delete);
+
+        Button previousSquad = Button.builder(Component.literal("<"), button -> changeSquad(-1))
+                .bounds(x + 14, y + 58, 24, 20).build();
+        previousSquad.active = !snapshot.squads().isEmpty() && selectedSquad > 0;
+        addRenderableWidget(previousSquad);
+        Button nextSquad = Button.builder(Component.literal(">"), button -> changeSquad(1))
+                .bounds(x + 42, y + 58, 24, 20).build();
+        nextSquad.active = selectedSquad >= 0 && selectedSquad < snapshot.squads().size() - 1;
+        addRenderableWidget(nextSquad);
+        int squadTabsY = y + (compactLayout() ? 54 : 58);
+        previousSquad.setY(squadTabsY);
+        nextSquad.setY(squadTabsY);
+        addSquadTabs(x + 72, squadTabsY, panelW - 86);
 
         List<GuardListS2CPayload.Entry> available = availableGuards();
         List<GuardListS2CPayload.Entry> members = memberGuards();
@@ -124,7 +136,7 @@ public final class SquadManagementScreen extends Screen {
         remove.active = selected().isPresent() && selectedMember().isPresent();
         addRenderableWidget(remove);
 
-        int bottom = y + PANEL_HEIGHT - 28;
+        int bottom = y + panelHeight() - 28;
         addRenderableWidget(Button.builder(Component.literal("<"), button -> changeAvailablePage(-1))
                 .bounds(x + 14, bottom, 24, 20).build());
         addRenderableWidget(Button.builder(Component.literal(">"), button -> changeAvailablePage(1))
@@ -145,13 +157,30 @@ public final class SquadManagementScreen extends Screen {
                 .bounds(x + panelW - 84, bottom, 70, 20).build());
     }
 
+    private void addSquadTabs(int tabsX, int tabsY, int availableWidth) {
+        int count = Math.min(SQUAD_TABS, snapshot.squads().size());
+        if (count == 0) return;
+        int selectedExisting = Math.min(selectedSquad, snapshot.squads().size() - 1);
+        int start = Math.max(0, Math.min(selectedExisting - count + 1, snapshot.squads().size() - count));
+        int gap = 4;
+        int tabWidth = Math.max(48, (availableWidth - gap * (count - 1)) / count);
+        for (int offset = 0; offset < count; offset++) {
+            int index = start + offset;
+            GuardListS2CPayload.SquadEntry squad = snapshot.squads().get(index);
+            Button tab = Button.builder(Component.literal(squad.name()), button -> selectSquad(index))
+                    .bounds(tabsX + offset * (tabWidth + gap), tabsY, tabWidth, 20).build();
+            tab.active = index != selectedSquad;
+            addRenderableWidget(tab);
+        }
+    }
+
     private void addGuardRows(List<GuardListS2CPayload.Entry> guards, int page, int rowX, int rowW,
                               UUID selectedGuard, java.util.function.Consumer<GuardListS2CPayload.Entry> onSelect) {
-        int start = page * ROWS;
-        int end = Math.min(start + ROWS, guards.size());
+        int start = page * rowsPerPage();
+        int end = Math.min(start + rowsPerPage(), guards.size());
         for (int i = start; i < end; i++) {
             GuardListS2CPayload.Entry guard = guards.get(i);
-            int rowY = panelY() + LIST_TOP + (i - start) * ROW_HEIGHT;
+            int rowY = panelY() + listTop() + (i - start) * ROW_HEIGHT;
             Button row = Button.builder(Component.empty(), button -> onSelect.accept(guard))
                     .bounds(rowX, rowY, rowW, ROW_HEIGHT - 2).build();
             addRenderableWidget(row);
@@ -227,13 +256,25 @@ public final class SquadManagementScreen extends Screen {
 
     private void changeSquad(int delta) {
         if (snapshot.squads().isEmpty()) return;
-        selectedSquad = Math.floorMod(Math.min(selectedSquad, snapshot.squads().size() - 1) + delta,
-                snapshot.squads().size());
+        selectedSquad = Math.max(0, Math.min(
+                Math.min(selectedSquad, snapshot.squads().size() - 1) + delta,
+                snapshot.squads().size() - 1
+        ));
+        resetSquadSelection();
+        rebuildControls();
+    }
+
+    private void selectSquad(int index) {
+        selectedSquad = Math.max(0, Math.min(index, snapshot.squads().size() - 1));
+        resetSquadSelection();
+        rebuildControls();
+    }
+
+    private void resetSquadSelection() {
         selectedAvailableGuard = null;
         selectedMemberGuard = null;
         availablePage = 0;
         memberPage = 0;
-        rebuildControls();
     }
 
     private void changeAvailablePage(int delta) {
@@ -249,7 +290,7 @@ public final class SquadManagementScreen extends Screen {
     }
 
     private int cyclePage(int page, int delta, int entries) {
-        int pages = Math.max(1, (entries + ROWS - 1) / ROWS);
+        int pages = Math.max(1, (entries + rowsPerPage() - 1) / rowsPerPage());
         return Math.floorMod(page + delta, pages);
     }
 
@@ -303,8 +344,8 @@ public final class SquadManagementScreen extends Screen {
     }
 
     private void clampPages() {
-        availablePage = Math.min(availablePage, Math.max(0, (availableGuards().size() - 1) / ROWS));
-        memberPage = Math.min(memberPage, Math.max(0, (memberGuards().size() - 1) / ROWS));
+        availablePage = Math.min(availablePage, Math.max(0, (availableGuards().size() - 1) / rowsPerPage()));
+        memberPage = Math.min(memberPage, Math.max(0, (memberGuards().size() - 1) / rowsPerPage()));
     }
 
     private void retainValidSelections() {
@@ -332,15 +373,15 @@ public final class SquadManagementScreen extends Screen {
         int panelW = panelWidth();
         int columnW = columnWidth();
         int rightX = x + panelW - 14 - columnW;
-        graphics.fill(x, y, x + panelW, y + PANEL_HEIGHT, 0xF0101010);
-        graphics.outline(x, y, panelW, PANEL_HEIGHT, WHITE);
+        graphics.fill(x, y, x + panelW, y + panelHeight(), 0xF0101010);
+        graphics.outline(x, y, panelW, panelHeight(), WHITE);
         graphics.centeredText(font, title, width / 2, y + 10, WHITE);
 
         String selectedName = selected().map(GuardListS2CPayload.SquadEntry::name)
                 .orElseGet(() -> Component.translatable("gui.rallyguard.squad.new").getString());
-        graphics.text(font, Component.literal(selectedName), x + 210, y + 64, MUTED);
-        graphics.text(font, Component.translatable("gui.rallyguard.squad.available"), x + 14, y + 91, WHITE);
-        graphics.text(font, Component.translatable("gui.rallyguard.squad.members", selectedName), rightX, y + 91, WHITE);
+        int headingY = y + (compactLayout() ? 80 : 91);
+        graphics.text(font, Component.translatable("gui.rallyguard.squad.available"), x + 14, headingY, WHITE);
+        graphics.text(font, Component.translatable("gui.rallyguard.squad.members", selectedName), rightX, headingY, WHITE);
 
         super.extractRenderState(graphics, mouseX, mouseY, delta);
         drawGuardRows(graphics, availableGuards(), availablePage, x + 14, columnW, selectedAvailableGuard, true);
@@ -349,11 +390,11 @@ public final class SquadManagementScreen extends Screen {
 
     private void drawGuardRows(GuiGraphicsExtractor graphics, List<GuardListS2CPayload.Entry> guards, int page,
                                int rowX, int rowW, UUID selectedGuard, boolean showSquad) {
-        int start = page * ROWS;
-        int end = Math.min(start + ROWS, guards.size());
+        int start = page * rowsPerPage();
+        int end = Math.min(start + rowsPerPage(), guards.size());
         for (int i = start; i < end; i++) {
             GuardListS2CPayload.Entry guard = guards.get(i);
-            int rowY = panelY() + LIST_TOP + (i - start) * ROW_HEIGHT;
+            int rowY = panelY() + listTop() + (i - start) * ROW_HEIGHT;
             int color = guard.guardId().equals(selectedGuard) ? GOLD : WHITE;
             String captain = guard.captain()
                     ? " · " + Component.translatable("gui.rallyguard.muster.captain").getString() : "";
@@ -384,7 +425,23 @@ public final class SquadManagementScreen extends Screen {
     }
 
     private int panelY() {
-        return (height - PANEL_HEIGHT) / 2;
+        return (height - panelHeight()) / 2;
+    }
+
+    private int panelHeight() {
+        return Math.min(PANEL_HEIGHT, Math.max(220, height - 12));
+    }
+
+    private boolean compactLayout() {
+        return panelHeight() < PANEL_HEIGHT;
+    }
+
+    private int rowsPerPage() {
+        return compactLayout() ? 3 : 5;
+    }
+
+    private int listTop() {
+        return compactLayout() ? 92 : 108;
     }
 
     @Override

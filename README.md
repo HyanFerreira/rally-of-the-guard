@@ -105,7 +105,7 @@ Pelo painel, o jogador pode:
 
 - Ver guardas contratados carregados no mundo atual.
 - Selecionar um guarda na lista à esquerda e usar um único painel contextual de ordens individuais à direita.
-- Ver o estado atual de cada guarda.
+- Ver o estado atual, a categoria `Infantaria`/`Arqueiro` e o Pelotão de cada guarda.
 - Convocar um guarda para perto do jogador.
 - Mandar um guarda seguir.
 - Mandar um guarda aguardar.
@@ -113,7 +113,8 @@ Pelo painel, o jogador pode:
 - Parar uma patrulha.
 - Criar, iniciar, pausar, limpar e editar rotas de patrulha.
 - Filtrar a lista por todos os guardas, guardas sem Pelotão ou um Pelotão específico.
-- Enviar ordens coletivas de convocar, seguir, aguardar e patrulhar ao escopo selecionado.
+- Enviar ordens coletivas de convocar, seguir, aguardar e dispensar ao escopo selecionado.
+- Atribuir uma Rota Nomeada a todos os guardas do escopo selecionado, com confirmação antes de substituir outra rota.
 - Distinguir visualmente as ordens individuais das ordens coletivas do escopo atual.
 - Enviar `Mover para cá` ao escopo selecionado, filtrando todos, infantaria ou arqueiros, e indicar o destino com o próximo clique direito em bloco.
 - Enviar `Defender área` ao escopo selecionado, com o mesmo filtro de unidades, e escolher o centro territorial no mundo.
@@ -124,6 +125,7 @@ Pelo painel, o jogador pode:
 
 - O jogador pode criar, renomear e excluir Pelotões com nomes personalizados.
 - A tela usa duas colunas: guardas disponíveis ou de outros Pelotões à esquerda e membros do Pelotão selecionado à direita.
+- Pelotões visíveis podem ser selecionados diretamente por botões; anterior/próximo ficam bloqueados nos limites.
 - Cada linha mostra o nome fornecido pelo Villager Names, a patente e o Pelotão atual; transferências entre Pelotões pedem confirmação.
 - Cada guarda contratado pode pertencer a no máximo um Pelotão.
 - Um Capitão que já pertença ao Pelotão pode ser definido como seu único Oficial.
@@ -163,7 +165,18 @@ padrão é 16 blocos e pode ser alterado na configuração.
 Dentro do território, patrulha, percepção e combate continuam sob controle da IA
 nativa do Guard Villagers. Alvos que deixam o raio são abandonados; guardas que
 passam da margem territorial retornam ao posto usando pathfinding, sem teleporte.
-Outra ordem explícita cancela a defesa.
+Outra ordem explícita cancela a defesa. `Dispensar` encerra a mobilização e
+restaura a rotina anterior do guarda.
+
+### Ordens temporárias e Dispensar
+
+`Convocar`, `Seguir`, `Mover para cá` e `Defender área` são mobilizações
+temporárias. A primeira delas salva uma única cópia persistente da rotina do
+guarda; trocar entre ordens temporárias não substitui essa cópia. `Dispensar`
+restaura rota, patrulha fixa, movimento, defesa, seguir, aguardar ou o estado
+neutro anterior. `Aguardar`, patrulha fixa e atribuição/edição de rota são
+decisões permanentes e descartam a cópia suspensa. A restauração temporária de
+uma raid usa seu próprio estado e permanece independente.
 
 ### Posturas de combate
 
@@ -240,7 +253,7 @@ Regras atuais:
 ### Comando Rápido
 
 Pressione `G` para abrir um painel não pausante com seis ordens frequentes para
-todos os guardas carregados: `Seguir`, `Aguardar`, `Patrulhar`, `Atacar`,
+todos os guardas carregados: `Seguir`, `Aguardar`, `Dispensar`, `Atacar`,
 `Mover para cá` e `Defender área`. A tecla pode ser remapeada nos controles.
 O fundo é escurecido e as seis ações ficam reunidas em uma grade `2 × 3`
 dentro de um único painel central opaco, que também cobre a mira.
