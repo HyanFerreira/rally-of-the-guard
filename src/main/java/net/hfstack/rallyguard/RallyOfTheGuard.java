@@ -42,6 +42,7 @@ import net.hfstack.rallyguard.registry.GlobalGuardRegistryLifecycle;
 import net.hfstack.rallyguard.progression.CombatProgressionHandler;
 import net.hfstack.rallyguard.raid.RaidOpportunityDetector;
 import net.hfstack.rallyguard.raid.RaidBehaviorAttachments;
+import net.hfstack.rallyguard.raid.RaidGuardTaskAttachments;
 import net.hfstack.rallyguard.raid.RaidReportTracker;
 import net.hfstack.rallyguard.screen.ModScreenHandlers;
 import net.hfstack.rallyguard.squad.SquadAttachments;
@@ -67,6 +68,7 @@ public class RallyOfTheGuard implements ModInitializer {
         NamedRouteAttachments.initialize();
         GlobalGuardRegistryAttachments.initialize();
         RaidBehaviorAttachments.initialize();
+        RaidGuardTaskAttachments.initialize();
         GuardProfileLifecycle.register(GuardProfileRepository.instance());
         ModBlocks.register();
         ModBlockEntities.register();

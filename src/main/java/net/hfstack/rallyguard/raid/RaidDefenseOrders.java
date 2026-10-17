@@ -30,6 +30,22 @@ public final class RaidDefenseOrders {
     }
 
     public static void releaseIfFinished(GuardEntity guard, ServerLevel level) {
+        RaidGuardTaskSnapshot snapshot = RaidGuardTasks.read(guard).orElse(null);
+        if (snapshot != null) {
+            RaidOpportunityKey key = snapshot.raid();
+            Raid raid = level.dimension().identifier().toString().equals(key.dimensionId())
+                    ? level.getRaids().get(key.raidId())
+                    : null;
+            boolean stillActive = raid != null
+                    && raid.isActive()
+                    && !raid.isOver()
+                    && !raid.isStopped()
+                    && raid.getCenter().equals(key.center());
+            if (!stillActive) RaidGuardTasks.restore(guard, key);
+            return;
+        }
+
+        // Compatibility with temporary orders created before task snapshots existed.
         DefendAreaState order = DefendAreas.active(guard).orElse(null);
         if (order == null || order.raidId().isEmpty()) return;
         Raid raid = level.getRaids().get(order.raidId().getAsInt());
@@ -42,6 +58,7 @@ public final class RaidDefenseOrders {
     }
 
     private static boolean belongsTo(GuardEntity guard, RaidOpportunityKey key) {
+        if (RaidGuardTasks.belongsTo(guard, key)) return true;
         DefendAreaState order = DefendAreas.active(guard).orElse(null);
         return order != null
                 && order.raidId().isPresent()
@@ -50,6 +67,7 @@ public final class RaidDefenseOrders {
     }
 
     private static void releaseGuard(GuardEntity guard, RaidOpportunityKey key) {
+        if (RaidGuardTasks.restore(guard, key)) return;
         releaseGuard(guard, key.raidId(), key.center());
     }
 

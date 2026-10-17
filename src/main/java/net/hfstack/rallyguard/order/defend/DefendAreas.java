@@ -45,6 +45,14 @@ public final class DefendAreas {
         return true;
     }
 
+    public static boolean restore(Entity entity, DefendAreaState state) {
+        Objects.requireNonNull(entity, "entity");
+        Objects.requireNonNull(state, "state");
+        if (!DefendAreaPersistencePolicy.canReplace(read(entity))) return false;
+        entity.setAttached(DefendAreaAttachments.ORDER, DefendAreaCodec.encode(state));
+        return true;
+    }
+
     public static boolean clearIfFromCommandPost(Entity entity, UUID commandPostId) {
         Objects.requireNonNull(entity, "entity");
         Objects.requireNonNull(commandPostId, "commandPostId");

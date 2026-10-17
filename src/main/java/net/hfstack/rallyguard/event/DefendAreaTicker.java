@@ -46,7 +46,6 @@ public final class DefendAreaTicker {
 
         BlockPos post = order.post();
         guard.setFollowing(false);
-        guard.setPatrolling(true);
         if (!post.equals(guard.getPatrolPos())) guard.setPatrolPos(post);
 
         LivingEntity target = guard.getTarget();
@@ -61,19 +60,31 @@ public final class DefendAreaTicker {
         switch (DefendAreaBoundaryPolicy.decide(target != null, targetAllowed, beyondReturn)) {
             case PATROL -> {
                 if (order.raidId().isPresent() && distanceToPostSquared(guard, post) > 2.25) {
+                    guard.setPatrolling(false);
                     returnToPost(guard, post, GuardFollowAssistPolicy.CATCH_UP_SPEED);
+                } else {
+                    guard.setPatrolling(true);
                 }
             }
             case KEEP_COMBAT -> {
+                guard.setPatrolling(true);
                 // Native Guard Villagers AI retains control while fighting inside the territory.
             }
-            case DISENGAGE -> GuardCombatState.disengage(guard);
-            case RETURN_TO_POST -> returnToPost(guard, post, returnSpeed(order));
+            case DISENGAGE -> {
+                guard.setPatrolling(true);
+                GuardCombatState.disengage(guard);
+            }
+            case RETURN_TO_POST -> prepareReturn(guard, order, post);
             case DISENGAGE_AND_RETURN -> {
                 GuardCombatState.disengage(guard);
-                returnToPost(guard, post, returnSpeed(order));
+                prepareReturn(guard, order, post);
             }
         }
+    }
+
+    private static void prepareReturn(GuardEntity guard, DefendAreaState order, BlockPos post) {
+        guard.setPatrolling(order.raidId().isEmpty());
+        returnToPost(guard, post, returnSpeed(order));
     }
 
     private static double returnSpeed(DefendAreaState order) {

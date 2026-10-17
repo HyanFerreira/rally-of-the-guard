@@ -37,7 +37,7 @@ public final class RaidDefenseActions {
         List<GuardEntity> guards = GuardCommandTargets.loadedScopedGuards(player, GuardCommandScope.all());
         return switch (action) {
             case RALLY_GUARDS -> rally(player, guards);
-            case DEFEND_VILLAGE -> defend(player, player.level(), raid.getCenter(), key.raidId(), guards);
+            case DEFEND_VILLAGE -> defend(player, player.level(), raid.getCenter(), key, guards);
             case IGNORE -> new GuardBatchCommandResult(0, 0, 0);
         };
     }
@@ -53,7 +53,7 @@ public final class RaidDefenseActions {
             ServerPlayer player,
             ServerLevel level,
             BlockPos center,
-            int raidId,
+            RaidOpportunityKey raid,
             List<GuardEntity> guards
     ) {
         Set<BlockPos> reserved = new HashSet<>();
@@ -69,7 +69,7 @@ public final class RaidDefenseActions {
                         ),
                         reserved
                 ),
-                (guard, post) -> beginRaidDefense(player, guard, center, post, raidId)
+                (guard, post) -> beginRaidDefense(player, guard, center, post, raid)
         );
     }
 
@@ -78,14 +78,22 @@ public final class RaidDefenseActions {
             GuardEntity guard,
             BlockPos center,
             BlockPos post,
-            int raidId
+            RaidOpportunityKey raid
     ) {
+        boolean suspendedNow = RaidGuardTasks.suspend(guard, raid);
+        if (!suspendedNow && !RaidGuardTasks.belongsTo(guard, raid)) {
+            return GuardCommandResult.policyError();
+        }
         GuardCommandResult result = RallyGuardApi.guardCommands().defendArea(
                 player, guard, center, post, DEFENSE_RADIUS
         );
-        if (!result.succeeded()) return result;
+        if (!result.succeeded()) {
+            if (suspendedNow) RaidGuardTasks.discard(guard, raid);
+            return result;
+        }
 
-        DefendAreas.setFromRaid(guard, center, post, DEFENSE_RADIUS, raidId);
+        DefendAreas.setFromRaid(guard, center, post, DEFENSE_RADIUS, raid.raidId());
+        guard.setPatrolling(false);
         guard.getNavigation().moveTo(
                 post.getX() + 0.5,
                 post.getY(),
