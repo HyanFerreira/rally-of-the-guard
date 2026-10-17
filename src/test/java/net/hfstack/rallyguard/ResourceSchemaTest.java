@@ -101,6 +101,16 @@ class ResourceSchemaTest {
     }
 
     @Test
+    void publishedMetadataPointsToTheRallyProject() throws IOException {
+        JsonObject metadata = readJson(RESOURCES.resolve("fabric.mod.json"));
+        JsonObject contact = metadata.getAsJsonObject("contact");
+
+        assertEquals("https://github.com/HyanFerreira/rally-of-the-guard", contact.get("homepage").getAsString());
+        assertEquals("https://github.com/HyanFerreira/rally-of-the-guard", contact.get("sources").getAsString());
+        assertEquals("https://github.com/HyanFerreira/rally-of-the-guard/issues", contact.get("issues").getAsString());
+    }
+
+    @Test
     void combatProgressionEntityTagsArePackaged() throws IOException {
         Path tags = RESOURCES.resolve("data/rallyguard/tags/entity_type");
         JsonObject targets = readJson(tags.resolve("xp_targets.json"));

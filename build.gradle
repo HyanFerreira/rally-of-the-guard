@@ -54,6 +54,16 @@ repositories {
 loom {
 	splitEnvironmentSourceSets()
 
+	runs {
+		client2 {
+			inherit client
+			name "Minecraft Client 2"
+			runDir "run/client2"
+			programArg "--username"
+			programArg "RallyGuardTester2"
+		}
+	}
+
 	mods {
 		"rallyguard" {
 			sourceSet sourceSets.main

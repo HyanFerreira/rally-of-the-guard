@@ -3,8 +3,8 @@
 ![Rally of the Guard Banner](https://raw.githubusercontent.com/HyanFerreira/rally-of-the-guard/refs/heads/1.21.11/docs/media/rally-of-the-guard-banner.png)
 
 [CurseForge](https://www.curseforge.com/members/thecyber27/projects) |
-[GitHub](https://github.com/HyanFerreira) |
-[Issues](ISSUES_LINK_HERE)
+[GitHub](https://github.com/HyanFerreira/rally-of-the-guard) |
+[Issues](https://github.com/HyanFerreira/rally-of-the-guard/issues)
 
 ---
 
