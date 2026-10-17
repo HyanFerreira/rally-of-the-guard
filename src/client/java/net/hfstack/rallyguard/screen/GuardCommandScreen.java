@@ -117,6 +117,10 @@ public class GuardCommandScreen extends Screen {
                             button -> Minecraft.getInstance().setScreen(new SquadManagementScreen(snapshot, scope)))
                     .bounds(x + panelWidth() - 104, y + 30, 90, BUTTON_HEIGHT).build());
         }
+        int registryX = snapshot.squadsEnabled() ? x + panelWidth() - 198 : x + panelWidth() - 104;
+        addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.registry.button"),
+                        button -> GlobalGuardRegistryScreen.open(this))
+                .bounds(registryX, y + 30, 90, BUTTON_HEIGHT).build());
 
         int start = page * PER_PAGE;
         int end = Math.min(start + PER_PAGE, all.size());

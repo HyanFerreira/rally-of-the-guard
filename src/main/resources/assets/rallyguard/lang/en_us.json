@@ -437,5 +437,14 @@
   "gui.rallyguard.command_post.not_owner": "Only the owner can manage this post.",
   "gui.rallyguard.command_post.invalid": "The Command Post is no longer accessible.",
   "gui.rallyguard.command_post.transfer_title": "Transfer defender?",
-  "gui.rallyguard.command_post.transfer": "%s already defends another post. Transfer here?"
+  "gui.rallyguard.command_post.transfer": "%s already defends another post. Transfer here?",
+  "gui.rallyguard.registry.button": "Global registry",
+  "gui.rallyguard.registry.title": "Global Guard Registry",
+  "gui.rallyguard.registry.summary": "%s registered guards",
+  "gui.rallyguard.registry.guard": "Guard",
+  "gui.rallyguard.registry.location": "Last known location",
+  "gui.rallyguard.registry.availability": "Availability",
+  "gui.rallyguard.registry.loaded": "Loaded",
+  "gui.rallyguard.registry.unloaded": "Chunk unloaded",
+  "gui.rallyguard.registry.empty": "No hired guards have been registered yet."
 }

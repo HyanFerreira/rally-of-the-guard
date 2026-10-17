@@ -437,5 +437,14 @@
   "gui.rallyguard.command_post.not_owner": "Somente o dono pode administrar este posto.",
   "gui.rallyguard.command_post.invalid": "O Posto de Comando não está mais acessível.",
   "gui.rallyguard.command_post.transfer_title": "Transferir defensor?",
-  "gui.rallyguard.command_post.transfer": "%s já defende outro posto. Transferir para este?"
+  "gui.rallyguard.command_post.transfer": "%s já defende outro posto. Transferir para este?",
+  "gui.rallyguard.registry.button": "Registro global",
+  "gui.rallyguard.registry.title": "Registro Global de Guardas",
+  "gui.rallyguard.registry.summary": "%s guardas registrados",
+  "gui.rallyguard.registry.guard": "Guarda",
+  "gui.rallyguard.registry.location": "Última localização conhecida",
+  "gui.rallyguard.registry.availability": "Disponibilidade",
+  "gui.rallyguard.registry.loaded": "Carregado",
+  "gui.rallyguard.registry.unloaded": "Chunk descarregado",
+  "gui.rallyguard.registry.empty": "Nenhum guarda contratado foi registrado ainda."
 }
