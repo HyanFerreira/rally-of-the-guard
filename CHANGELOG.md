@@ -10,6 +10,7 @@
 - Added automated policy/session/report coverage and a Minecraft 26.1 smoke-test checklist.
 - Improved safe-post selection to accept non-colliding village vegetation and dirt paths, reject fluids and known hazards, and search deterministic alternatives before reporting that no safe post exists.
 - Made raid-issued defense orders temporary: guards consistently run to their posts at follow catch-up speed, then resume their exact suspended route, patrol, movement, follow, wait, or defense task when that raid ends, including after a temporary chunk unload.
+- Kept manual opportunities, temporary defense orders, and reports bound to the same active raid when vanilla adjusts its center after the alert opens.
 
 ## Global Guard Registry — 2026-10-16
 

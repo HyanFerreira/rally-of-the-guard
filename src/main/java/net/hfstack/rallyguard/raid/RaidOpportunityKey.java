@@ -9,4 +9,10 @@ public record RaidOpportunityKey(int raidId, String dimensionId, BlockPos center
         if (center == null) throw new IllegalArgumentException("center is required");
         center = center.immutable();
     }
+
+    public boolean identifiesSameRaid(RaidOpportunityKey other) {
+        return other != null
+                && raidId == other.raidId
+                && dimensionId.equals(other.dimensionId);
+    }
 }

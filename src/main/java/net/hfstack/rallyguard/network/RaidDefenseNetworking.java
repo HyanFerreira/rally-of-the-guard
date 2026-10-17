@@ -73,11 +73,10 @@ public final class RaidDefenseNetworking {
                 ? level.getRaids().get(key.raidId()) : null;
         int loadedGuards = GuardCommandTargets.loadedScopedGuards(player, GuardCommandScope.all()).size();
         boolean valid = raid != null
-                && raid.getCenter().equals(key.center())
                 && RaidOpportunityPolicy.eligible(
                         raid.isActive() && !raid.isOver() && !raid.isStopped(),
                         player.isSpectator(),
-                        player.distanceToSqr(key.center().getCenter()),
+                        player.distanceToSqr(raid.getCenter().getCenter()),
                         loadedGuards,
                         false
                 );

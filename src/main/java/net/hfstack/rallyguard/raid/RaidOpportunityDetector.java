@@ -59,7 +59,7 @@ public final class RaidOpportunityDetector {
         OptionalInt raidId = level.getRaids().getId(raid);
         if (raidId.isEmpty()) return;
 
-        RaidOpportunityKey key = key(level, raidId.getAsInt(), raid);
+        RaidOpportunityKey key = trackedKey(level, raidId.getAsInt(), raid);
         TRACKED.putIfAbsent(key, new TrackedRaid(level.dimension().identifier().toString(), raidId.getAsInt()));
         int loadedGuards = GuardCommandTargets.loadedScopedGuards(player, GuardCommandScope.all()).size();
         boolean eligible = RaidOpportunityPolicy.eligible(
@@ -98,8 +98,7 @@ public final class RaidOpportunityDetector {
             TrackedRaid tracked = entry.getValue();
             ServerLevel level = findLevel(server, tracked.dimensionId());
             Raid raid = level == null ? null : level.getRaids().get(tracked.raidId());
-            if (raid != null && raid.isActive() && !raid.isOver() && !raid.isStopped()
-                    && raid.getCenter().equals(entry.getKey().center())) continue;
+            if (raid != null && raid.isActive() && !raid.isOver() && !raid.isStopped()) continue;
             RaidDefenseOrders.release(server, entry.getKey());
             RaidReports.finish(entry.getKey(), server, raid == null);
             SESSIONS.clearFinished(entry.getKey());
@@ -116,6 +115,14 @@ public final class RaidOpportunityDetector {
 
     static RaidOpportunityKey key(ServerLevel level, int raidId, Raid raid) {
         return new RaidOpportunityKey(raidId, level.dimension().identifier().toString(), raid.getCenter());
+    }
+
+    private static RaidOpportunityKey trackedKey(ServerLevel level, int raidId, Raid raid) {
+        RaidOpportunityKey current = key(level, raidId, raid);
+        return TRACKED.keySet().stream()
+                .filter(existing -> existing.identifiesSameRaid(current))
+                .findFirst()
+                .orElse(current);
     }
 
     private static void clear() {

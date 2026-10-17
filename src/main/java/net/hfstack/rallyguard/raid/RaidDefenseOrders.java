@@ -39,8 +39,7 @@ public final class RaidDefenseOrders {
             boolean stillActive = raid != null
                     && raid.isActive()
                     && !raid.isOver()
-                    && !raid.isStopped()
-                    && raid.getCenter().equals(key.center());
+                    && !raid.isStopped();
             if (!stillActive) RaidGuardTasks.restore(guard, key);
             return;
         }
