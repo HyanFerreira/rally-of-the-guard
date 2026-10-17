@@ -135,14 +135,16 @@ public class GuardRouteScreen extends Screen {
                 }
         ).bounds(x + 118, controlsY, 104, BTN_H).build());
 
-        this.addRenderableWidget(Button.builder(
+        Button saveNames = Button.builder(
                 Component.translatable("gui.rallyguard.route.save_names"),
                 b -> {
                     capturePointNames();
                     saveOnly();
                     rebuildButtons();
                 }
-        ).bounds(x + 228, controlsY, 104, BTN_H).build());
+        ).bounds(x + 228, controlsY, 104, BTN_H).build();
+        saveNames.active = !points.isEmpty();
+        this.addRenderableWidget(saveNames);
 
         Button previous = Button.builder(Component.literal("<"), b -> {
             capturePointNames();
@@ -324,9 +326,9 @@ public class GuardRouteScreen extends Screen {
         }
 
         if (points.size() < 2) {
-            ctx.text(this.font,
+            ctx.centeredText(this.font,
                     Component.translatable("gui.rallyguard.route.need_points"),
-                    x + 230, y + panelHeight() - 50, WARNING);
+                    this.width / 2, y + panelHeight() - 72, WARNING);
         }
     }
 
