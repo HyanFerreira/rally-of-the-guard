@@ -38,6 +38,16 @@ Principais mudanças:
 
 ## Funcionalidades
 
+### Registro Global de Guardas
+
+- O Livro de Comando possui uma visão global persistente de todos os guardas contratados já registrados.
+- Guardas descarregados continuam visíveis com nome, patente, Pelotão, dimensão e última posição conhecida.
+- A disponibilidade diferencia dados atuais de informações preservadas de chunks descarregados.
+- A distância aproximada aparece somente quando jogador e guarda estão na mesma dimensão.
+- A consulta é paginada pelo servidor e nunca força chunks, teleporta unidades ou envia ordens a entidades indisponíveis.
+- Mortes confirmadas e reversões de contratação removem o registro; apenas ficar descarregado não remove uma unidade.
+- Operadores podem usar `/rallyguard registry count` e `/rallyguard registry refresh` para diagnóstico.
+
 ### Posto de Comando
 
 - O **Posto de Comando** complementa o Livro de Comando com defesa territorial persistente.

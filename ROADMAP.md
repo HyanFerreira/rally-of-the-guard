@@ -1599,7 +1599,7 @@ O objetivo final é que Rally of the Guard se torne o complemento natural para j
 - [ ] **GUI Usability Overhaul (1.4.0)** — Ledger contextual, Pelotões em duas colunas, Villager Names obrigatório e Comando Rápido compacto em grade concluídos; smoke test em jogo pendente
 - [ ] **Named Routes (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
 - [ ] **Rally Point / Command Post (1.4.0)** — block, ownership, persistent settings, territorial formations, two-column assignment GUI and automated tests complete; in-game smoke test pending
-- [ ] Global Guard Registry
+- [ ] **Global Guard Registry (1.4.0)** — persistent last-known records, lifecycle reconciliation, paged Ledger view, diagnostics and automated tests complete; in-game smoke test pending
 - [ ] Raid integration
 - [ ] Multiplayer shared command
 - [ ] Extended weapon compatibility

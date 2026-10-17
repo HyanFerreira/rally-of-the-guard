@@ -1,5 +1,13 @@
 # Changelog
 
+## Global Guard Registry — 2026-10-16
+
+- Added a persistent per-player registry of hired guards with last known name, dimension, position, profile, Squad and order.
+- Reconciled loaded guards on load, unload, join, ownership changes and a bounded periodic pass without forcing chunks.
+- Removed confirmed deaths and recruitment rollbacks while preserving unloaded guards indefinitely.
+- Added a server-paged, read-only Global Registry view to the Commander's Ledger with loaded state and same-dimension distance.
+- Added operator diagnostics, schema-future protection, codec/editor tests and a Minecraft 26.1 smoke-test checklist.
+
 ## Command Post — 2026-10-16
 
 - Added the player-owned Command Post block for persistent territorial defense with configurable name, active state, radius, and formation.
