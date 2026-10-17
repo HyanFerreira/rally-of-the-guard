@@ -63,6 +63,29 @@ loom {
 
 }
 
+fabricApi {
+	configureTests {
+		createSourceSet = true
+		modId = "rallyguard-gametest"
+		enableGameTests = true
+		enableClientGameTests = true
+		eula = true
+		clearRunDirectory = true
+		username = "RallyGuardTest"
+	}
+}
+
+tasks.named("runClientGameTest") {
+	mustRunAfter tasks.named("build")
+}
+
+tasks.register("automatedSmokeTest") {
+	group = "verification"
+	description = "Builds the mod and runs unit, server GameTest, and client GameTest suites."
+	dependsOn tasks.named("build")
+	dependsOn tasks.named("runClientGameTest")
+}
+
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"

@@ -1,0 +1,21 @@
+{
+	"schemaVersion": 1,
+	"id": "rallyguard-gametest",
+	"version": "1.0.0",
+	"name": "Rally of the Guard Game Tests",
+	"environment": "*",
+	"entrypoints": {
+		"fabric-gametest": [
+			"net.hfstack.rallyguard.gametest.RallyGuardGameTests"
+		],
+		"fabric-client-gametest": [
+			"net.hfstack.rallyguard.gametest.RallyGuardClientGameTests"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.18.4",
+		"minecraft": "~26.1",
+		"fabric-api": "*",
+		"rallyguard": "*"
+	}
+}
