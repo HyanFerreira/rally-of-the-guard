@@ -291,6 +291,8 @@
   "gui.rallyguard.route.remove": "Remover",
   "gui.rallyguard.route.add_current": "+ Pos. atual",
   "gui.rallyguard.route.default_point_name": "Ponto %s",
+  "gui.rallyguard.route.edit_point_name": "Editar nome do ponto",
+  "gui.rallyguard.route.save_point_name": "Salvar nome do ponto",
   "gui.rallyguard.route.start": "Iniciar",
   "gui.rallyguard.route.pause": "Pausar",
   "gui.rallyguard.route.clear": "Limpar",

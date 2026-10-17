@@ -421,6 +421,8 @@ class ResourceSchemaTest {
                 "gui.rallyguard.named_route.point_name",
                 "gui.rallyguard.named_route.save_changes",
                 "gui.rallyguard.route.default_point_name",
+                "gui.rallyguard.route.edit_point_name",
+                "gui.rallyguard.route.save_point_name",
                 "gui.rallyguard.named_route.update",
                 "gui.rallyguard.named_route.delete",
                 "gui.rallyguard.named_route.move_confirm_title",

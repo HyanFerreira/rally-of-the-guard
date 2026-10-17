@@ -26,8 +26,6 @@ public final class NamedRouteEditorScreen extends Screen {
     private static final int ROW_TOP = 76;
     private static final int ROW_HEIGHT = 30;
     private static final int EDIT_BUTTON_WIDTH = 20;
-    private static final Component EDIT_ICON = Component.literal("\u270e");
-    private static final Component SAVE_ICON = Component.literal("\u2713");
 
     private final NamedRouteManagementScreen parent;
     private final UUID routeId;
@@ -126,25 +124,26 @@ public final class NamedRouteEditorScreen extends Screen {
         label.setMaxLength(32);
         label.setValue(RoutePointNames.displayName(point.label(), pointIndex));
         label.setEditable(false);
+        label.active = false;
         labelBoxes.add(label);
         addRenderableWidget(label);
 
-        boolean[] editing = {false};
-        addRenderableWidget(Button.builder(EDIT_ICON, button -> {
-            if (!editing[0]) {
-                editing[0] = true;
+        addRenderableWidget(new EditSaveIconButton(
+                x + 14 + labelWidth + GuiLayout.CONTROL_GAP, y + 4, EDIT_BUTTON_WIDTH, button -> {
+            if (!button.isSaving()) {
                 label.setEditable(true);
+                label.active = true;
                 setInitialFocus(label);
-                button.setMessage(SAVE_ICON);
+                button.setSaving(true);
                 return;
             }
             label.setValue(RoutePointNames.displayName(label.getValue(), pointIndex));
             captureDraft();
-            editing[0] = false;
             label.setEditable(false);
-            button.setMessage(EDIT_ICON);
-        }).bounds(x + 14 + labelWidth + GuiLayout.CONTROL_GAP, y + 4,
-                EDIT_BUTTON_WIDTH, GuiLayout.BUTTON_HEIGHT).build());
+            label.active = false;
+            label.setFocused(false);
+            button.setSaving(false);
+        }));
 
         int actionsX = x + panelW - 14 - actionsWidth;
         Button up = Button.builder(Component.literal("↑"), button -> movePoint(pointIndex, -1))

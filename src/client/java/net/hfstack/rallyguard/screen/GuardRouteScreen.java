@@ -28,8 +28,6 @@ public class GuardRouteScreen extends Screen {
     private static final int ROW_H = 24;
     private static final int BTN_H = 18;
     private static final int EDIT_BUTTON_W = 20;
-    private static final Component EDIT_ICON = Component.literal("\u270e");
-    private static final Component SAVE_ICON = Component.literal("\u2713");
 
     private final GuardCommandScreen parent;
     private final int entryIndex;
@@ -86,26 +84,27 @@ public class GuardRouteScreen extends Screen {
             pointName.setMaxLength(32);
             pointName.setValue(RoutePointNames.displayName(points.get(i).label(), i));
             pointName.setEditable(false);
+            pointName.active = false;
             pointNameBoxes.add(pointName);
             addRenderableWidget(pointName);
 
-            boolean[] editing = {false};
-            this.addRenderableWidget(Button.builder(EDIT_ICON, button -> {
-                if (!editing[0]) {
-                    editing[0] = true;
+            this.addRenderableWidget(new EditSaveIconButton(
+                    x + 16 + nameW + GuiLayout.CONTROL_GAP, rowY + 2, EDIT_BUTTON_W, button -> {
+                if (!button.isSaving()) {
                     pointName.setEditable(true);
+                    pointName.active = true;
                     setInitialFocus(pointName);
-                    button.setMessage(SAVE_ICON);
+                    button.setSaving(true);
                     return;
                 }
                 pointName.setValue(RoutePointNames.displayName(pointName.getValue(), idx));
                 capturePointNames();
-                editing[0] = false;
                 pointName.setEditable(false);
-                button.setMessage(EDIT_ICON);
+                pointName.active = false;
+                pointName.setFocused(false);
+                button.setSaving(false);
                 saveOnly();
-            }).bounds(x + 16 + nameW + GuiLayout.CONTROL_GAP, rowY + 2, EDIT_BUTTON_W, GuiLayout.BUTTON_HEIGHT)
-                    .build());
+            }));
 
             this.addRenderableWidget(Button.builder(
                     Component.translatable("gui.rallyguard.route.use_current"),
