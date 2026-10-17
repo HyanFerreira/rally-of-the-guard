@@ -450,6 +450,7 @@
   "commands.rallyguard.registry.count": "Registro global: %s guardas.",
   "commands.rallyguard.registry.refreshed": "Registro global reconciliado: %s guardas.",
   "commands.rallyguard.registry.unavailable": "O Registro Global usa dados incompatíveis e permaneceu somente leitura.",
-  "gui.rallyguard.raid.response_recorded": "Resposta à raid registrada.",
+  "gui.rallyguard.raid.ignored": "Oportunidade de raid ignorada.",
+  "gui.rallyguard.raid.batch_result": "Resposta à raid: %s receberam ordens, %s rejeitados, %s indisponíveis.",
   "gui.rallyguard.raid.response_invalid": "Essa oportunidade de raid não está mais disponível."
 }

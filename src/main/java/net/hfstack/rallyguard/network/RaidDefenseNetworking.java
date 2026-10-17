@@ -2,10 +2,12 @@ package net.hfstack.rallyguard.network;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.hfstack.rallyguard.api.command.GuardCommandScope;
+import net.hfstack.rallyguard.api.command.GuardBatchCommandResult;
 import net.hfstack.rallyguard.network.payload.RaidResponseC2SPayload;
 import net.hfstack.rallyguard.raid.RaidOpportunityDetector;
 import net.hfstack.rallyguard.raid.RaidOpportunityKey;
 import net.hfstack.rallyguard.raid.RaidOpportunityPolicy;
+import net.hfstack.rallyguard.raid.RaidDefenseActions;
 import net.hfstack.rallyguard.raid.RaidResponseAction;
 import net.hfstack.rallyguard.service.GuardCommandTargets;
 import net.minecraft.network.chat.Component;
@@ -60,8 +62,18 @@ public final class RaidDefenseNetworking {
             return;
         }
 
-        // Action execution is integrated in the next phase; IGNORE already needs no side effect.
-        player.sendOverlayMessage(Component.translatable("gui.rallyguard.raid.response_recorded"));
+        if (action == RaidResponseAction.IGNORE) {
+            player.sendOverlayMessage(Component.translatable("gui.rallyguard.raid.ignored"));
+            return;
+        }
+
+        GuardBatchCommandResult result = RaidDefenseActions.execute(action, player, raid);
+        player.sendOverlayMessage(Component.translatable(
+                "gui.rallyguard.raid.batch_result",
+                result.succeeded(),
+                result.rejected(),
+                result.unavailable()
+        ));
     }
 
     private static void reject(ServerPlayer player) {

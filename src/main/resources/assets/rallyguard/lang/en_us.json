@@ -450,6 +450,7 @@
   "commands.rallyguard.registry.count": "Global registry: %s guards.",
   "commands.rallyguard.registry.refreshed": "Global registry reconciled: %s guards.",
   "commands.rallyguard.registry.unavailable": "The Global Registry uses incompatible data and remained read-only.",
-  "gui.rallyguard.raid.response_recorded": "Raid response recorded.",
+  "gui.rallyguard.raid.ignored": "Raid opportunity ignored.",
+  "gui.rallyguard.raid.batch_result": "Raid response: %s ordered, %s rejected, %s unavailable.",
   "gui.rallyguard.raid.response_invalid": "That raid opportunity is no longer available."
 }
