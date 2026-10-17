@@ -1600,7 +1600,7 @@ O objetivo final é que Rally of the Guard se torne o complemento natural para j
 - [ ] **Named Routes (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
 - [ ] **Rally Point / Command Post (1.4.0)** — block, ownership, persistent settings, territorial formations, two-column assignment GUI and automated tests complete; in-game smoke test pending
 - [ ] **Global Guard Registry (1.4.0)** — persistent last-known records, lifecycle reconciliation, paged Ledger view, diagnostics and automated tests complete; in-game smoke test pending
-- [ ] Raid integration
+- [ ] **Village Defense & Raids (1.4.0)** — vanilla raid detection, validated manual/automatic reactions, isolated reports and automated tests complete; in-game smoke test pending
 - [ ] Multiplayer shared command
 - [ ] Extended weapon compatibility
 - [ ] Additional loaders and Minecraft versions

@@ -38,6 +38,17 @@ Principais mudanças:
 
 ## Funcionalidades
 
+### Defesa de vilas e raids
+
+- O servidor detecta raids vanilla ativas a até 128 blocos de jogadores que possuam ao menos um guarda contratado carregado.
+- No modo `Normal`, um alerta compacto permite `Reunir guardas`, `Defender vila` ou `Ignorar`; cada resposta é validada novamente pelo servidor.
+- `Reunir guardas` usa a convocação existente, enquanto `Defender vila` distribui postos seguros e determinísticos no buffer territorial vanilla de 16 blocos.
+- O painel de Comando Rápido permite escolher `Normal`, `Reunir na vila` ou `Reunir no comandante` como comportamento persistente por jogador.
+- Automação e respostas manuais consideram somente guardas carregados, pertencentes ao jogador e na dimensão da raid; nenhum chunk é forçado.
+- Ao final, um relatório mostra guardas mobilizados, inimigos derrotados com contribuição observada, perdas carregadas e MVP por abates confirmados.
+- Unloads e expiração são informados como relatório parcial; o sistema não estima mortes nem contribuições que não observou.
+- A mesma raid mantém decisões, ordens e relatórios independentes para cada comandante em multiplayer.
+
 ### Registro Global de Guardas
 
 - O Livro de Comando possui uma visão global persistente de todos os guardas contratados já registrados.

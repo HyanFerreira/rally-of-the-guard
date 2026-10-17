@@ -462,6 +462,20 @@ class ResourceSchemaTest {
         )));
     }
 
+    @Test
+    void raidDefenseReleaseDocumentationAndSmokeTestExist() throws IOException {
+        String readme = Files.readString(Path.of("README.md"));
+        String changelog = Files.readString(Path.of("CHANGELOG.md"));
+        String roadmap = Files.readString(Path.of("ROADMAP.md"));
+
+        assertTrue(readme.contains("### Defesa de vilas e raids"));
+        assertTrue(changelog.contains("Village Defense & Raids"));
+        assertTrue(roadmap.contains("**Village Defense & Raids (1.4.0)**"));
+        assertTrue(Files.isRegularFile(Path.of(
+                "docs", "testing", "26.1-village-defense-raids-smoke-test.md"
+        )));
+    }
+
     private static void assertRecipeResult(String recipeName, String expectedItemId) throws IOException {
         JsonObject recipe = readJson(RESOURCES.resolve(
                 "data/rallyguard/recipe/" + recipeName + ".json"

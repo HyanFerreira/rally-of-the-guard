@@ -10,6 +10,14 @@ Rally exposes a small common-side API so integrations can issue tactical orders 
 
 Integrations should check `RallyGuardApi.apiVersion()` before relying on a newer contract. Additive changes may keep the same contract version; incompatible changes require a new integer version and a coordinated minimum mod dependency.
 
+## Raid defense integration
+
+Village Defense observes vanilla raid objects; it does not expose or persist a second raid definition. Opportunity and response payloads are implementation details rather than a public API contract. Server validation binds a response to the player's active 30-second session and repeats raid ID, dimension, center, 128-block distance, ownership, and loaded-guard checks before issuing orders.
+
+Manual and automatic reactions reuse `GuardCommandService.summon` and `GuardCommandService.defendArea`, so registered eligibility and tactical-order policies remain authoritative. Only loaded guards in the commander's current dimension are candidates, and safe-post resolution never loads a chunk. The raid defense radius follows vanilla `Raid.VILLAGE_RADIUS_BUFFER` (16 blocks in Minecraft 26.1).
+
+Report sessions are isolated by player and raid, expire after 30 minutes, and consume the existing combat-contribution ledger without estimating unavailable facts. Guard or relevant entity unloads produce a partial-data disclosure. No new public mutation surface or API version increment is introduced by this feature.
+
 ## Guard profiles
 
 Obtain the read-only profile facade and look up a loaded guard with:

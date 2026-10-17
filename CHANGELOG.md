@@ -1,5 +1,14 @@
 # Changelog
 
+## Village Defense & Raids — 2026-10-16
+
+- Added server-side detection of nearby active vanilla raids for players with loaded hired guards, with per-player deduplication and no forced chunk loading.
+- Added a compact translated alert for rallying guards, defending the village with deterministic safe posts, or ignoring the opportunity.
+- Added persistent per-player `Normal`, `Rally to Village`, and `Rally to Commander` behavior settings through the Quick Command panel.
+- Revalidated raid identity, dimension, center, distance, session, ownership, and loaded availability before every manual response.
+- Added isolated multiplayer raid reports for deployed guards, observed guard-assisted defeats, confirmed-kill MVP, loaded guard losses, and partial-data disclosure after unloads or expiry.
+- Added automated policy/session/report coverage and a Minecraft 26.1 smoke-test checklist.
+
 ## Global Guard Registry — 2026-10-16
 
 - Added a persistent per-player registry of hired guards with last known name, dimension, position, profile, Squad and order.

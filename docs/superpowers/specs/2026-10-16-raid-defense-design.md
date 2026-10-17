@@ -1,5 +1,7 @@
 # Defesa de Vilas e Raids — Design
 
+**Status:** Implementado em 2026-10-16; smoke test em jogo pendente.
+
 ## Papel
 
 A integração de raids conecta as unidades já contratadas a uma emergência
