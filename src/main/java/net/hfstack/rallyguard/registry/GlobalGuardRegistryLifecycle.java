@@ -44,7 +44,7 @@ public final class GlobalGuardRegistryLifecycle {
                 remove(guard, level.getServer());
             }
         });
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> reconcileOwner(handler.getPlayer(), server));
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> reconcile(handler.getPlayer(), server));
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             if (server.getTickCount() % RECONCILE_INTERVAL == 0) reconcileLoaded(server);
         });
@@ -94,7 +94,7 @@ public final class GlobalGuardRegistryLifecycle {
         );
     }
 
-    private static void reconcileOwner(ServerPlayer owner, MinecraftServer server) {
+    public static void reconcile(ServerPlayer owner, MinecraftServer server) {
         for (ServerLevel level : server.getAllLevels()) {
             for (Entity entity : loadedGuards(level)) {
                 if (entity instanceof GuardEntity guard && GuardOwnership.isOwnedBy(guard, owner.getUUID())) {

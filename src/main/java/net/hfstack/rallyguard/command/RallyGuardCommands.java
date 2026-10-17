@@ -12,6 +12,9 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.hfstack.rallyguard.registry.GlobalGuardRegistryLifecycle;
+import net.hfstack.rallyguard.registry.GlobalGuardRegistryRead;
+import net.hfstack.rallyguard.registry.GlobalGuardRegistryRepository;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -59,7 +62,44 @@ public final class RallyGuardCommands {
                                                         EntityArgument.getEntity(context, "target")
                                                 ))))
                         )
+                        .then(Commands.literal("registry")
+                                .then(Commands.literal("count").executes(RallyGuardCommands::registryCount))
+                                .then(Commands.literal("refresh").executes(RallyGuardCommands::registryRefresh)))
         ));
+    }
+
+    private static int registryCount(CommandContext<CommandSourceStack> context) {
+        ServerPlayer player = context.getSource().getPlayer();
+        if (player == null) {
+            context.getSource().sendFailure(Component.translatable("commands.rallyguard.guard.player_required"));
+            return 0;
+        }
+        GlobalGuardRegistryRead result = GlobalGuardRegistryRepository.instance().readAndRepair(player);
+        if (!(result instanceof GlobalGuardRegistryRead.Available available)) {
+            context.getSource().sendFailure(Component.translatable("commands.rallyguard.registry.unavailable"));
+            return 0;
+        }
+        int count = available.registry().guards().size();
+        context.getSource().sendSuccess(
+                () -> Component.translatable("commands.rallyguard.registry.count", count), false
+        );
+        return count;
+    }
+
+    private static int registryRefresh(CommandContext<CommandSourceStack> context) {
+        ServerPlayer player = context.getSource().getPlayer();
+        if (player == null) {
+            context.getSource().sendFailure(Component.translatable("commands.rallyguard.guard.player_required"));
+            return 0;
+        }
+        GlobalGuardRegistryLifecycle.reconcile(player, context.getSource().getServer());
+        GlobalGuardRegistryRead result = GlobalGuardRegistryRepository.instance().readAndRepair(player);
+        int count = result instanceof GlobalGuardRegistryRead.Available available
+                ? available.registry().guards().size() : 0;
+        context.getSource().sendSuccess(
+                () -> Component.translatable("commands.rallyguard.registry.refreshed", count), false
+        );
+        return count;
     }
 
     private static int addToNearby(CommandContext<CommandSourceStack> context, double xpPoints) {
