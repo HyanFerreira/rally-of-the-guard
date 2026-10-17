@@ -6,7 +6,8 @@
     "GuardEntityMixin",
     "GuardEntityCrossbowMixin",
     "GuardEntityMeleeGoalMixin",
-    "GuardFollowHeroGoalMixin"
+    "GuardFollowHeroGoalMixin",
+    "WalkBackToCheckPointGoalMixin"
   ],
   "injectors": {
     "defaultRequire": 1

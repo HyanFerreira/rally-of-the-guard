@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.order.GuardRouteState;
 import net.hfstack.rallyguard.order.GuardRoutes;
+import net.hfstack.rallyguard.order.PatrolMovementPolicy;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
@@ -22,7 +23,7 @@ public final class GuardRouteTicker {
 
     private static final Identifier GUARD_ID = Identifier.fromNamespaceAndPath("guardvillagers", "guard");
     private static final int TICK_INTERVAL = 10;
-    private static final double ARRIVAL_DISTANCE_SQUARED = 2.5 * 2.5;
+    private static final double ARRIVAL_DISTANCE_SQUARED = 1.25 * 1.25;
     private static final int STUCK_TICKS_BEFORE_TELEPORT = 20 * 8;
     private static final double MIN_PROGRESS_SQUARED = 0.75 * 0.75;
     private static final Map<UUID, RouteProgress> ROUTE_PROGRESS = new HashMap<>();
@@ -71,6 +72,7 @@ public final class GuardRouteTicker {
                 target.getZ() + 0.5
         );
         if (distance > ARRIVAL_DISTANCE_SQUARED) {
+            CalmPatrolMovement.clear(guard);
             if (shouldTeleportStuckGuard(guard, distance)) {
                 guard.snapTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5, guard.getYRot(), guard.getXRot());
                 guard.setDeltaMovement(0.0, 0.0, 0.0);
@@ -79,11 +81,19 @@ public final class GuardRouteTicker {
                 return;
             }
 
-            guard.getNavigation().moveTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5, RallyConfig.routeMoveSpeed());
+            guard.getNavigation().moveTo(
+                    target.getX() + 0.5, target.getY(), target.getZ() + 0.5,
+                    PatrolMovementPolicy.walkingSpeed(RallyConfig.routeMoveSpeed())
+            );
             return;
         }
 
         ROUTE_PROGRESS.remove(guard.getUUID());
+        CalmPatrolMovement.holdAt(
+                guard,
+                target,
+                PatrolMovementPolicy.allowsIdleStep(true, route.waitTicks())
+        );
 
         int dwellTicks = route.dwellTicks() + TICK_INTERVAL;
         if (dwellTicks < route.waitTicks()) {
@@ -93,6 +103,7 @@ public final class GuardRouteTicker {
 
         int nextIndex = (route.currentIndex() + 1) % route.points().size();
         GuardRouteState next = route.withProgress(nextIndex, 0);
+        CalmPatrolMovement.clear(guard);
         guard.setPatrolPos(next.currentPoint());
         guard.getNavigation().stop();
         GuardRoutes.set(guard, next);

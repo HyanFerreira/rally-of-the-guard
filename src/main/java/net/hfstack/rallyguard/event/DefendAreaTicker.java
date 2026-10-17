@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.hfstack.rallyguard.combat.GuardCombatState;
 import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.order.GuardFollowAssistPolicy;
+import net.hfstack.rallyguard.order.PatrolMovementPolicy;
 import net.hfstack.rallyguard.order.defend.DefendAreaBoundaryPolicy;
 import net.hfstack.rallyguard.order.defend.DefendAreaState;
 import net.hfstack.rallyguard.order.defend.DefendAreas;
@@ -60,10 +61,12 @@ public final class DefendAreaTicker {
         switch (DefendAreaBoundaryPolicy.decide(target != null, targetAllowed, beyondReturn)) {
             case PATROL -> {
                 if (order.raidId().isPresent() && distanceToPostSquared(guard, post) > 2.25) {
+                    CalmPatrolMovement.clear(guard);
                     guard.setPatrolling(false);
                     returnToPost(guard, post, GuardFollowAssistPolicy.CATCH_UP_SPEED);
                 } else {
                     guard.setPatrolling(true);
+                    holdOrReturnToPost(guard, post);
                 }
             }
             case KEEP_COMBAT -> {
@@ -104,5 +107,18 @@ public final class DefendAreaTicker {
                 post.getZ() + 0.5,
                 speed
         );
+    }
+
+    private static void holdOrReturnToPost(GuardEntity guard, BlockPos post) {
+        if (guard.getTarget() != null) {
+            CalmPatrolMovement.clear(guard);
+            return;
+        }
+        if (distanceToPostSquared(guard, post) > 1.25 * 1.25) {
+            CalmPatrolMovement.clear(guard);
+            returnToPost(guard, post, PatrolMovementPolicy.walkingSpeed(RallyConfig.routeMoveSpeed()));
+            return;
+        }
+        CalmPatrolMovement.holdAt(guard, post, true);
     }
 }
