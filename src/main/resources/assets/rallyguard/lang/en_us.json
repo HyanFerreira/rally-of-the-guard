@@ -452,5 +452,19 @@
   "commands.rallyguard.registry.unavailable": "The Global Registry uses incompatible data and remained read-only.",
   "gui.rallyguard.raid.ignored": "Raid opportunity ignored.",
   "gui.rallyguard.raid.batch_result": "Raid response: %s ordered, %s rejected, %s unavailable.",
-  "gui.rallyguard.raid.response_invalid": "That raid opportunity is no longer available."
+  "gui.rallyguard.raid.response_invalid": "That raid opportunity is no longer available.",
+  "gui.rallyguard.raid.title": "Village Under Attack",
+  "gui.rallyguard.raid.message": "%s loaded guards are ready to respond.",
+  "gui.rallyguard.raid.choose": "Choose a response:",
+  "gui.rallyguard.raid.rally": "Rally guards",
+  "gui.rallyguard.raid.defend": "Defend village",
+  "gui.rallyguard.raid.ignore": "Ignore",
+  "gui.rallyguard.raid.automatic_result": "Automatic raid response: %s ordered, %s rejected, %s unavailable.",
+  "gui.rallyguard.raid.behavior.button": "Raid behavior",
+  "gui.rallyguard.raid.behavior.title": "Raid Behavior",
+  "gui.rallyguard.raid.behavior.hint": "Choose how future raids are handled.",
+  "gui.rallyguard.raid.behavior.normal": "Normal — show alert",
+  "gui.rallyguard.raid.behavior.village": "Rally to village",
+  "gui.rallyguard.raid.behavior.commander": "Rally to commander",
+  "gui.rallyguard.raid.behavior.saved": "Raid behavior: %s"
 }

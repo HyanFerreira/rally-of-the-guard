@@ -51,4 +51,13 @@ class QuickCommandLayoutTest {
             assertTrue(slot.y() + QuickCommandLayout.BUTTON_HEIGHT <= panelBottom - QuickCommandLayout.PANEL_PADDING);
         }
     }
+
+    @Test
+    void raidSettingsRowRemainsInsideTheUnifiedPanel() {
+        int panelTop = (240 - QuickCommandLayout.PANEL_HEIGHT) / 2;
+        int settingsTop = panelTop + QuickCommandLayout.RAID_SETTINGS_TOP;
+        assertTrue(settingsTop >= panelTop);
+        assertTrue(settingsTop + QuickCommandLayout.BUTTON_HEIGHT
+                <= panelTop + QuickCommandLayout.PANEL_HEIGHT - QuickCommandLayout.PANEL_PADDING);
+    }
 }

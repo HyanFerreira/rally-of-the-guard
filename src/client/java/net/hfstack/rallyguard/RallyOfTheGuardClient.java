@@ -9,6 +9,8 @@ import net.hfstack.rallyguard.network.payload.MusterRollSnapshotS2CPayload;
 import net.hfstack.rallyguard.network.payload.CloseMusterRollS2CPayload;
 import net.hfstack.rallyguard.network.payload.CommandPostSnapshotS2CPayload;
 import net.hfstack.rallyguard.network.payload.GlobalGuardRegistryS2CPayload;
+import net.hfstack.rallyguard.network.payload.RaidOpportunityS2CPayload;
+import net.hfstack.rallyguard.network.payload.RaidBehaviorS2CPayload;
 import net.hfstack.rallyguard.client.move.MoveTargetingClient;
 import net.hfstack.rallyguard.screen.GuardCombatScreen;
 import net.hfstack.rallyguard.screen.HireGuardScreen;
@@ -52,6 +54,14 @@ public class RallyOfTheGuardClient implements ClientModInitializer {
                 GlobalGuardRegistryS2CPayload.ID,
                 (payload, context) -> net.hfstack.rallyguard.screen.GlobalGuardRegistryScreen.accept(payload)
         );
+        ClientPlayNetworking.registerGlobalReceiver(
+                RaidOpportunityS2CPayload.ID,
+                (payload, context) -> net.hfstack.rallyguard.screen.RaidOpportunityScreen.accept(payload)
+        );
+        ClientPlayNetworking.registerGlobalReceiver(
+                RaidBehaviorS2CPayload.ID,
+                (payload, context) -> net.hfstack.rallyguard.screen.RaidBehaviorScreen.accept(payload)
+        );
 
         combatOrdersKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.rallyguard.combat_orders",
@@ -67,6 +77,7 @@ public class RallyOfTheGuardClient implements ClientModInitializer {
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            net.hfstack.rallyguard.screen.RaidOpportunityScreen.clientTick(client);
             while (combatOrdersKey.consumeClick()) {
                 openCombatOrders(client);
             }

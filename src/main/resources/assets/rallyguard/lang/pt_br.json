@@ -452,5 +452,19 @@
   "commands.rallyguard.registry.unavailable": "O Registro Global usa dados incompatíveis e permaneceu somente leitura.",
   "gui.rallyguard.raid.ignored": "Oportunidade de raid ignorada.",
   "gui.rallyguard.raid.batch_result": "Resposta à raid: %s receberam ordens, %s rejeitados, %s indisponíveis.",
-  "gui.rallyguard.raid.response_invalid": "Essa oportunidade de raid não está mais disponível."
+  "gui.rallyguard.raid.response_invalid": "Essa oportunidade de raid não está mais disponível.",
+  "gui.rallyguard.raid.title": "Vila sob ataque",
+  "gui.rallyguard.raid.message": "%s guardas carregados estão prontos para reagir.",
+  "gui.rallyguard.raid.choose": "Escolha uma reação:",
+  "gui.rallyguard.raid.rally": "Reunir guardas",
+  "gui.rallyguard.raid.defend": "Defender vila",
+  "gui.rallyguard.raid.ignore": "Ignorar",
+  "gui.rallyguard.raid.automatic_result": "Resposta automática: %s receberam ordens, %s rejeitados, %s indisponíveis.",
+  "gui.rallyguard.raid.behavior.button": "Comportamento em raids",
+  "gui.rallyguard.raid.behavior.title": "Comportamento em raids",
+  "gui.rallyguard.raid.behavior.hint": "Escolha como as próximas raids serão tratadas.",
+  "gui.rallyguard.raid.behavior.normal": "Normal — mostrar alerta",
+  "gui.rallyguard.raid.behavior.village": "Reunir na vila",
+  "gui.rallyguard.raid.behavior.commander": "Reunir no comandante",
+  "gui.rallyguard.raid.behavior.saved": "Comportamento em raids: %s"
 }

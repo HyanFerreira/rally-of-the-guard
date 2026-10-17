@@ -4,13 +4,14 @@ import java.util.List;
 
 public record QuickCommandLayout(List<Slot> slots) {
     public static final int PANEL_WIDTH = 312;
-    public static final int PANEL_HEIGHT = 140;
+    public static final int PANEL_HEIGHT = 174;
     public static final int BUTTON_WIDTH = 136;
     public static final int BUTTON_HEIGHT = 20;
     public static final int PANEL_PADDING = 14;
     public static final int COLUMN_GAP = 12;
     public static final int ROW_GAP = 6;
     public static final int ACTIONS_TOP = 50;
+    public static final int RAID_SETTINGS_TOP = 138;
 
     public QuickCommandLayout {
         slots = List.copyOf(slots);

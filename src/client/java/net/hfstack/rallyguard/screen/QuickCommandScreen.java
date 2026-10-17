@@ -35,6 +35,12 @@ public final class QuickCommandScreen extends Screen {
                     QuickCommandLayout.BUTTON_HEIGHT
             ).build());
         }
+        int panelX = (width - QuickCommandLayout.PANEL_WIDTH) / 2;
+        int panelY = (height - QuickCommandLayout.PANEL_HEIGHT) / 2;
+        addRenderableWidget(Button.builder(
+                Component.translatable("gui.rallyguard.raid.behavior.button"),
+                button -> Minecraft.getInstance().setScreen(new RaidBehaviorScreen(this))
+        ).bounds(panelX + 76, panelY + QuickCommandLayout.RAID_SETTINGS_TOP, 160, 20).build());
     }
 
     private void select(QuickCommandAction action) {

@@ -8,7 +8,9 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 
-public record RaidOpportunityS2CPayload(int raidId, String dimensionId, BlockPos center, int loadedGuards)
+public record RaidOpportunityS2CPayload(
+        int raidId, String dimensionId, BlockPos center, int loadedGuards, int behaviorId
+)
         implements CustomPacketPayload {
     public static final Type<RaidOpportunityS2CPayload> ID = new Type<>(
             Identifier.fromNamespaceAndPath(RallyOfTheGuard.MOD_ID, "raid_opportunity")
@@ -20,12 +22,13 @@ public record RaidOpportunityS2CPayload(int raidId, String dimensionId, BlockPos
             buf.writeUtf(value.dimensionId(), 128);
             buf.writeBlockPos(value.center());
             buf.writeVarInt(value.loadedGuards());
+            buf.writeVarInt(value.behaviorId());
         }
 
         @Override
         public RaidOpportunityS2CPayload decode(RegistryFriendlyByteBuf buf) {
             return new RaidOpportunityS2CPayload(
-                    buf.readVarInt(), buf.readUtf(128), buf.readBlockPos(), buf.readVarInt()
+                    buf.readVarInt(), buf.readUtf(128), buf.readBlockPos(), buf.readVarInt(), buf.readVarInt()
             );
         }
     };
@@ -38,8 +41,8 @@ public record RaidOpportunityS2CPayload(int raidId, String dimensionId, BlockPos
         center = center.immutable();
     }
 
-    public RaidOpportunityS2CPayload(RaidOpportunityKey key, int loadedGuards) {
-        this(key.raidId(), key.dimensionId(), key.center(), loadedGuards);
+    public RaidOpportunityS2CPayload(RaidOpportunityKey key, int loadedGuards, int behaviorId) {
+        this(key.raidId(), key.dimensionId(), key.center(), loadedGuards, behaviorId);
     }
 
     @Override

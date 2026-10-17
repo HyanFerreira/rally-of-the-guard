@@ -58,4 +58,14 @@ class RaidOpportunitySessionsTest {
         assertFalse(sessions.alreadySeen(player, RAID));
         assertFalse(sessions.consume(player, RAID, 1).isPresent());
     }
+
+    @Test
+    void automaticResponseMayDeduplicateWithoutOpeningAClientSession() {
+        UUID player = UUID.randomUUID();
+        RaidOpportunitySessions sessions = new RaidOpportunitySessions();
+        sessions.markSeen(player, RAID);
+
+        assertTrue(sessions.alreadySeen(player, RAID));
+        assertFalse(sessions.consume(player, RAID, 1).isPresent());
+    }
 }

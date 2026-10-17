@@ -11,6 +11,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.raid.Raid;
+import net.hfstack.rallyguard.api.command.GuardBatchCommandResult;
+import net.minecraft.network.chat.Component;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -66,10 +68,24 @@ public final class RaidOpportunityDetector {
                 loadedGuards,
                 SESSIONS.alreadySeen(player.getUUID(), key)
         );
-        if (!eligible || !ServerPlayNetworking.canSend(player, RaidOpportunityS2CPayload.ID)) return;
+        if (!eligible) return;
+
+        RaidBehavior behavior = RaidBehaviors.get(player);
+        if (behavior.automaticAction().isPresent()) {
+            SESSIONS.markSeen(player.getUUID(), key);
+            GuardBatchCommandResult result = RaidDefenseActions.execute(
+                    behavior.automaticAction().orElseThrow(), player, raid
+            );
+            player.sendOverlayMessage(Component.translatable(
+                    "gui.rallyguard.raid.automatic_result",
+                    result.succeeded(), result.rejected(), result.unavailable()
+            ));
+            return;
+        }
+        if (!ServerPlayNetworking.canSend(player, RaidOpportunityS2CPayload.ID)) return;
 
         SESSIONS.open(player.getUUID(), key, tick, SESSION_LIFETIME_TICKS);
-        ServerPlayNetworking.send(player, new RaidOpportunityS2CPayload(key, loadedGuards));
+        ServerPlayNetworking.send(player, new RaidOpportunityS2CPayload(key, loadedGuards, behavior.wireId()));
     }
 
     private static void forgetFinishedRaids(MinecraftServer server) {

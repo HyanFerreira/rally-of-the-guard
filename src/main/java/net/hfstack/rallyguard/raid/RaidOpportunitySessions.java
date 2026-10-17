@@ -21,6 +21,10 @@ public final class RaidOpportunitySessions {
         sessions.put(playerId, new Session(key, saturatedAdd(currentTick, lifetimeTicks)));
     }
 
+    public void markSeen(UUID playerId, RaidOpportunityKey key) {
+        seen.computeIfAbsent(playerId, ignored -> new HashSet<>()).add(key);
+    }
+
     public Optional<RaidOpportunityKey> consume(UUID playerId, RaidOpportunityKey expected, long currentTick) {
         Session session = sessions.get(playerId);
         if (session == null) {

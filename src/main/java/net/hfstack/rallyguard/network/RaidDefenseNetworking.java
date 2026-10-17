@@ -4,10 +4,14 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.hfstack.rallyguard.api.command.GuardCommandScope;
 import net.hfstack.rallyguard.api.command.GuardBatchCommandResult;
 import net.hfstack.rallyguard.network.payload.RaidResponseC2SPayload;
+import net.hfstack.rallyguard.network.payload.RaidBehaviorC2SPayload;
+import net.hfstack.rallyguard.network.payload.RaidBehaviorS2CPayload;
 import net.hfstack.rallyguard.raid.RaidOpportunityDetector;
 import net.hfstack.rallyguard.raid.RaidOpportunityKey;
 import net.hfstack.rallyguard.raid.RaidOpportunityPolicy;
 import net.hfstack.rallyguard.raid.RaidDefenseActions;
+import net.hfstack.rallyguard.raid.RaidBehavior;
+import net.hfstack.rallyguard.raid.RaidBehaviors;
 import net.hfstack.rallyguard.raid.RaidResponseAction;
 import net.hfstack.rallyguard.service.GuardCommandTargets;
 import net.minecraft.network.chat.Component;
@@ -28,6 +32,25 @@ public final class RaidDefenseNetworking {
             ServerPlayer player = context.player();
             context.server().execute(() -> handle(player, payload));
         });
+        ServerPlayNetworking.registerGlobalReceiver(RaidBehaviorC2SPayload.ID, (payload, context) -> {
+            ServerPlayer player = context.player();
+            context.server().execute(() -> handleBehavior(player, payload));
+        });
+    }
+
+    private static void handleBehavior(ServerPlayer player, RaidBehaviorC2SPayload payload) {
+        if (payload.behaviorId() != RaidBehaviorC2SPayload.QUERY) {
+            RaidBehavior behavior = RaidBehavior.fromWireId(payload.behaviorId()).orElse(null);
+            if (behavior == null) {
+                reject(player);
+                return;
+            }
+            RaidBehaviors.set(player, behavior);
+            player.sendOverlayMessage(Component.translatable(
+                    "gui.rallyguard.raid.behavior.saved", Component.translatable(behavior.translationKey())
+            ));
+        }
+        ServerPlayNetworking.send(player, new RaidBehaviorS2CPayload(RaidBehaviors.get(player).wireId()));
     }
 
     private static void handle(ServerPlayer player, RaidResponseC2SPayload payload) {
