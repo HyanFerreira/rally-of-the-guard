@@ -311,6 +311,7 @@
   "gui.rallyguard.named_route.current_none": "Current route: none",
   "gui.rallyguard.named_route.current_individual": "Current route: individual (%s points)",
   "gui.rallyguard.named_route.current_saved": "Current route: %s (saved)",
+  "gui.rallyguard.named_route.individual_edit_warning": "Assigned to %s: changing points or wait creates an individual route.",
   "gui.rallyguard.named_route.saved_routes": "Saved Routes",
   "gui.rallyguard.named_route.name": "Route name",
   "gui.rallyguard.named_route.create": "Save as New",

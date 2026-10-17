@@ -60,6 +60,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public final class GuardCommandNetworking {
     private GuardCommandNetworking() {
@@ -258,7 +259,9 @@ public final class GuardCommandNetworking {
                     return;
                 }
                 GuardTaskSuspensions.discard(guard);
-                GuardRouteState route = new GuardRouteState(true, 0, waitTicks, 0, points);
+                GuardRouteState current = GuardRoutes.get(guard);
+                Optional<UUID> namedRouteId = matchingNamedRouteId(current, points, waitTicks);
+                GuardRouteState route = new GuardRouteState(true, 0, waitTicks, 0, points, namedRouteId);
                 MoveOrders.clear(guard);
                 DefendAreas.clear(guard);
                 GuardRoutes.applyToGuard(guard, route);
@@ -270,7 +273,10 @@ public final class GuardCommandNetworking {
             case NetworkConstants.ROUTE_PAUSE -> {
                 GuardTaskSuspensions.discard(guard);
                 GuardRouteState current = GuardRoutes.get(guard);
-                GuardRoutes.set(guard, new GuardRouteState(false, current.currentIndex(), waitTicks, 0, points));
+                Optional<UUID> namedRouteId = matchingNamedRouteId(current, points, waitTicks);
+                GuardRoutes.set(guard, new GuardRouteState(
+                        false, current.currentIndex(), waitTicks, 0, points, namedRouteId
+                ));
                 guard.setPatrolling(false);
                 guard.setFollowing(false);
                 guard.setPatrolPos(null);
@@ -291,6 +297,12 @@ public final class GuardCommandNetworking {
             default -> {
             }
         }
+    }
+
+    private static Optional<UUID> matchingNamedRouteId(GuardRouteState current, List<BlockPos> points,
+                                                        int waitTicks) {
+        if (!current.points().equals(points) || current.waitTicks() != waitTicks) return Optional.empty();
+        return current.namedRouteId();
     }
 
     private static void handleNamedRouteMutation(ServerPlayer player, NamedRouteMutationC2SPayload payload) {

@@ -311,6 +311,7 @@
   "gui.rallyguard.named_route.current_none": "Rota atual: nenhuma",
   "gui.rallyguard.named_route.current_individual": "Rota atual: individual (%s pontos)",
   "gui.rallyguard.named_route.current_saved": "Rota atual: %s (salva)",
+  "gui.rallyguard.named_route.individual_edit_warning": "Vinculado a %s: alterar pontos ou espera cria uma rota individual.",
   "gui.rallyguard.named_route.saved_routes": "Rotas Salvas",
   "gui.rallyguard.named_route.name": "Nome da rota",
   "gui.rallyguard.named_route.create": "Salvar como Nova",

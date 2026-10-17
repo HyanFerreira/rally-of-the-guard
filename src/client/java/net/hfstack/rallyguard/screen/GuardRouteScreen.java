@@ -23,22 +23,25 @@ public class GuardRouteScreen extends Screen {
     private static final int MAX_PANEL_W = 520;
     private static final int MIN_PANEL_H = 236;
     private static final int SCREEN_PAD = 12;
-    private static final int ROW_TOP = 52;
+    private static final int ROW_TOP = 64;
     private static final int ROW_H = 24;
     private static final int BTN_H = 18;
 
     private final GuardCommandScreen parent;
     private final int entryIndex;
     private final GuardCommandScreen.Entry guard;
+    private final java.util.Optional<String> assignedRouteName;
     private final List<GuardListS2CPayload.Point> points = new ArrayList<>();
     private boolean active;
     private int waitSeconds;
 
-    public GuardRouteScreen(GuardCommandScreen parent, int entryIndex, GuardCommandScreen.Entry guard) {
+    public GuardRouteScreen(GuardCommandScreen parent, int entryIndex, GuardCommandScreen.Entry guard,
+                            java.util.Optional<String> assignedRouteName) {
         super(Component.translatable("gui.rallyguard.route.title"));
         this.parent = parent;
         this.entryIndex = entryIndex;
         this.guard = guard;
+        this.assignedRouteName = assignedRouteName == null ? java.util.Optional.empty() : assignedRouteName;
         this.active = guard.routeActive();
         this.waitSeconds = guard.routeWaitSeconds() > 0 ? guard.routeWaitSeconds() : RallyConfig.routeDefaultWaitSeconds();
         this.points.addAll(guard.routePoints());
@@ -228,7 +231,11 @@ public class GuardRouteScreen extends Screen {
         int waitW = this.font.width(wait);
         ctx.text(this.font, Component.literal(wait), x + panelW - 16 - waitW, y + 30, MUTED);
 
-        ctx.fill(x + 6, y + 44, x + panelW - 6, y + 45, 0x33FFFFFF);
+        assignedRouteName.ifPresent(name -> ctx.text(this.font,
+                Component.translatable("gui.rallyguard.named_route.individual_edit_warning", name),
+                x + 16, y + 44, WARNING));
+
+        ctx.fill(x + 6, y + 56, x + panelW - 6, y + 57, 0x33FFFFFF);
     }
 
     private void drawRows(GuiGraphicsExtractor ctx) {

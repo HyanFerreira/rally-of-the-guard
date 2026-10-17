@@ -32,7 +32,9 @@ public final class GuardRouteHubScreen extends Screen {
         int x = (width - PANEL_WIDTH) / 2;
         int y = (height - PANEL_HEIGHT) / 2;
         addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.named_route.edit_guard_route"),
-                        button -> Minecraft.getInstance().setScreen(new GuardRouteScreen(parent, entryIndex, guard)))
+                        button -> Minecraft.getInstance().setScreen(new GuardRouteScreen(
+                                parent, entryIndex, guard, assignedRouteName()
+                        )))
                 .bounds(x + 24, y + 56, PANEL_WIDTH - 48, 20).build());
         addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.named_route.library"),
                         button -> Minecraft.getInstance().setScreen(
@@ -88,6 +90,17 @@ public final class GuardRouteHubScreen extends Screen {
                     return Component.translatable("gui.rallyguard.named_route.current_none").getString();
                 })
                 .orElse(Component.translatable("gui.rallyguard.named_route.current_none").getString());
+    }
+
+    private java.util.Optional<String> assignedRouteName() {
+        return snapshot.entries().stream()
+                .filter(entry -> entry.guardId().equals(guard.guardId()))
+                .map(GuardListS2CPayload.Entry::namedRouteId)
+                .flatMap(java.util.Optional::stream)
+                .flatMap(routeId -> snapshot.namedRoutes().stream()
+                        .filter(route -> route.id().equals(routeId))
+                        .map(GuardListS2CPayload.NamedRouteEntry::name))
+                .findFirst();
     }
 
     @Override
