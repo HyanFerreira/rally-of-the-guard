@@ -3,7 +3,7 @@ package net.hfstack.rallyguard.route;
 import java.util.List;
 
 public record NamedRouteRegistry(int schemaVersion, List<NamedRouteDefinition> routes) {
-    public static final int CURRENT_SCHEMA_VERSION = 1;
+    public static final int CURRENT_SCHEMA_VERSION = 2;
 
     public NamedRouteRegistry {
         routes = List.copyOf(routes);

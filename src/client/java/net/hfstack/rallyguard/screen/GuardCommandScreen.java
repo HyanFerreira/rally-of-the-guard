@@ -66,6 +66,8 @@ public class GuardCommandScreen extends Screen {
                 management.acceptSnapshot(payload);
             } else if (current instanceof NamedRouteManagementScreen management) {
                 management.acceptSnapshot(payload);
+            } else if (current instanceof NamedRouteEditorScreen editor) {
+                editor.acceptSnapshot(payload);
             } else {
                 Minecraft.getInstance().setScreen(new GuardCommandScreen(payload));
             }

@@ -17,11 +17,12 @@ class NamedRouteRegistryEditorTest {
     void createNormalizesNameAndPreservesOrderedDefinition() {
         NamedRouteRegistryEditor.Success result = success(NamedRouteRegistryEditor.create(
                 NamedRouteRegistry.empty(), ROUTE_ID, "  Village Walls  ", "minecraft:overworld",
-                30, POINTS, 32, 32, 5
+                30, POINTS, List.of("  Warehouse  ", "North Gate"), 32, 32, 5
         ));
 
         assertEquals("Village Walls", result.affected().name());
         assertEquals(POINTS, result.affected().points());
+        assertEquals(List.of("Warehouse", "North Gate"), result.affected().pointLabels());
         assertEquals(List.of(result.affected()), result.registry().routes());
     }
 

@@ -16,7 +16,7 @@ definição contém:
 - nome Unicode validado;
 - dimensão em que a rota existe;
 - tempo de espera por ponto;
-- lista ordenada de pontos.
+- lista ordenada de pontos, cada um com nome opcional.
 
 O registro usa attachment persistente com cópia após a morte, seguindo o mesmo
 padrão do registro de Pelotões. Dados inválidos conhecidos são reparados e
@@ -46,7 +46,9 @@ desvinculados de forma preguiçosa na próxima sincronização com o proprietár
 
 ## Fluxo de interface
 
-O botão `Rota` do Ledger abrirá um hub com duas opções claras:
+O botão `Rota` do Ledger abre um hub que primeiro informa se o guarda não possui
+rota, usa uma rota individual ou está atribuído a uma rota salva. Em seguida,
+oferece duas opções claras:
 
 1. `Rota deste guarda`, que preserva o editor atual;
 2. `Rotas salvas`, que abre o gerenciador de modelos reutilizáveis.
@@ -57,14 +59,22 @@ duas colunas, no mesmo padrão visual dos Pelotões: disponíveis à esquerda e
 atribuídos à direita. Aplicar uma rota inicia a patrulha; remover a associação
 pausa a rota no guarda sem apagar o modelo.
 
-Criar uma rota salva poderá partir da rota individual do guarda selecionado.
-Editar pontos continua usando a posição atual do jogador, evitando um segundo
-sistema de marcação no mundo nesta fase.
+Criar uma rota salva a partir da rota individual do guarda selecionado também
+atribui o próprio guarda ao novo modelo e inicia a patrulha. A operação é
+atômica: se a atribuição falhar, o modelo recém-criado é removido.
+
+Uma tela dedicada permite ver, nomear e reordenar os pontos, substituir uma
+coordenada pela posição atual, adicionar/remover pontos e alterar a espera. Os
+nomes são opcionais; pontos sem nome recebem apenas um rótulo localizado na GUI.
+Copiar novamente os pontos da rota individual exige confirmação e só altera o
+modelo depois que o jogador salva.
 
 ## Compatibilidade
 
 - rotas individuais existentes continuam válidas e sem associação nomeada;
 - o formato individual será migrado de `v1` para `v2` sem perder pontos;
+- o registro de rotas salvas migra de `v1` para `v2`, preservando coordenadas e
+  inicializando os nomes opcionais como vazios;
 - Named Routes não força chunks nem modifica guardas de outro jogador;
 - somente guardas carregados na dimensão do comandante aparecem para atribuição;
 - nomes e feedback terão traduções em inglês e português brasileiro.

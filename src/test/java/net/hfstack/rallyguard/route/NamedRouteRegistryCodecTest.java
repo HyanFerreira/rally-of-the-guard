@@ -18,9 +18,11 @@ class NamedRouteRegistryCodecTest {
 
     @Test
     void roundTripPreservesDimensionWaitAndOrderedPoints() {
-        NamedRouteRegistry original = new NamedRouteRegistry(1, List.of(new NamedRouteDefinition(
+        NamedRouteRegistry original = new NamedRouteRegistry(NamedRouteRegistry.CURRENT_SCHEMA_VERSION,
+                List.of(new NamedRouteDefinition(
                 WALLS_ID, "Village Walls", "minecraft:overworld", 30,
-                List.of(new BlockPos(1, 64, 2), new BlockPos(8, 65, 9))
+                List.of(new BlockPos(1, 64, 2), new BlockPos(8, 65, 9)),
+                List.of("Warehouse", "North Gate")
         )));
 
         NamedRouteRegistryReadResult.Available result = available(NamedRouteRegistryCodec.decode(
@@ -71,7 +73,7 @@ class NamedRouteRegistryCodecTest {
     @Test
     void futureSchemaRemainsReadOnly() {
         CompoundTag root = new CompoundTag();
-        root.putInt("schema_version", 2);
+        root.putInt("schema_version", NamedRouteRegistry.CURRENT_SCHEMA_VERSION + 1);
         root.putString("future", "keep");
         CompoundTag before = root.copy();
 
@@ -79,8 +81,23 @@ class NamedRouteRegistryCodecTest {
                 NamedRouteRegistryReadResult.FutureSchema.class, NamedRouteRegistryCodec.decode(root)
         );
 
-        assertEquals(2, result.schemaVersion());
+        assertEquals(NamedRouteRegistry.CURRENT_SCHEMA_VERSION + 1, result.schemaVersion());
         assertEquals(before, root);
+    }
+
+    @Test
+    void versionOneRoutesMigrateWithOptionalLabelsEmpty() {
+        CompoundTag root = new CompoundTag();
+        root.putInt("schema_version", 1);
+        ListTag routes = new ListTag();
+        routes.add(definition(WALLS_ID, "Legacy", "minecraft:overworld", 10));
+        root.put("routes", routes);
+
+        NamedRouteRegistryReadResult.Available result = available(NamedRouteRegistryCodec.decode(root));
+
+        assertEquals(NamedRouteRegistry.CURRENT_SCHEMA_VERSION, result.registry().schemaVersion());
+        assertEquals(List.of("", ""), result.registry().routes().getFirst().pointLabels());
+        assertTrue(result.repaired());
     }
 
     @Test

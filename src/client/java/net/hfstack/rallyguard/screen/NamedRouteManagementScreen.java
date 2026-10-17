@@ -122,15 +122,11 @@ public final class NamedRouteManagementScreen extends Screen {
         delete.active = selectedRouteId != null;
         addRenderableWidget(delete);
 
-        addRenderableWidget(Button.builder(Component.literal("-5s"), button -> changeWait(-5))
-                .bounds(detailX, y + 58, 42, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("+5s"), button -> changeWait(5))
-                .bounds(detailX + 48, y + 58, 42, 20).build());
-        Button useGuard = Button.builder(Component.translatable("gui.rallyguard.named_route.use_guard_route"),
-                        button -> copySourceRoute())
-                .bounds(detailX + 98, y + 58, 130, 20).build();
-        useGuard.active = sourceEntry().map(entry -> entry.routePoints().size() >= 2).orElse(false);
-        addRenderableWidget(useGuard);
+        Button editPoints = Button.builder(Component.translatable("gui.rallyguard.named_route.edit_points"),
+                        button -> openEditor())
+                .bounds(detailX, y + 58, 130, 20).build();
+        editPoints.active = selectedRouteId != null;
+        addRenderableWidget(editPoints);
 
         List<GuardListS2CPayload.Entry> available = availableGuards();
         List<GuardListS2CPayload.Entry> assigned = assignedGuards();
@@ -191,7 +187,9 @@ public final class NamedRouteManagementScreen extends Screen {
         int action = selectedRouteId == null
                 ? NetworkConstants.NAMED_ROUTE_CREATE : NetworkConstants.NAMED_ROUTE_UPDATE;
         List<NamedRouteMutationC2SPayload.Point> points = draftPoints.stream()
-                .map(point -> new NamedRouteMutationC2SPayload.Point(point.x(), point.y(), point.z())).toList();
+                .map(point -> new NamedRouteMutationC2SPayload.Point(
+                        point.x(), point.y(), point.z(), point.label()
+                )).toList();
         ClientPlayNetworking.send(new NamedRouteMutationC2SPayload(
                 action, Optional.ofNullable(selectedRouteId), draftName, draftWaitSeconds, points,
                 selectedRouteId == null
@@ -254,19 +252,10 @@ public final class NamedRouteManagementScreen extends Screen {
         setInitialFocus(nameBox);
     }
 
-    private void copySourceRoute() {
-        selectedRoute().ifPresent(route -> Minecraft.getInstance().setScreen(new ConfirmScreen(
-                confirmed -> {
-                    if (confirmed) {
-                        captureName();
-                        useSourceDraft();
-                        rebuildControls();
-                    }
-                    Minecraft.getInstance().setScreen(this);
-                },
-                Component.translatable("gui.rallyguard.named_route.replace_points_title"),
-                Component.translatable("gui.rallyguard.named_route.replace_points", route.name())
-        )));
+    private void openEditor() {
+        selectedRoute().ifPresent(route -> Minecraft.getInstance().setScreen(
+                new NamedRouteEditorScreen(this, snapshot, route, sourceGuardId)
+        ));
     }
 
     private void useSourceDraft() {
@@ -278,12 +267,6 @@ public final class NamedRouteManagementScreen extends Screen {
             draftWaitSeconds = RallyConfig.routeDefaultWaitSeconds();
             draftPoints = List.of();
         });
-    }
-
-    private void changeWait(int delta) {
-        captureName();
-        draftWaitSeconds = Math.max(0, Math.min(600, draftWaitSeconds + delta));
-        rebuildControls();
     }
 
     private void captureName() {

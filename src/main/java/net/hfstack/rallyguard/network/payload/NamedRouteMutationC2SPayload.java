@@ -17,7 +17,14 @@ public record NamedRouteMutationC2SPayload(int action, Optional<UUID> routeId, S
                                            int sourceGuardEntityId) implements CustomPacketPayload {
     public static final int NO_SOURCE_GUARD = -1;
 
-    public record Point(int x, int y, int z) {
+    public record Point(int x, int y, int z, String label) {
+        public Point {
+            label = label == null ? "" : label;
+        }
+
+        public Point(int x, int y, int z) {
+            this(x, y, z, "");
+        }
     }
 
     public static final Type<NamedRouteMutationC2SPayload> ID = new Type<>(
@@ -35,6 +42,7 @@ public record NamedRouteMutationC2SPayload(int action, Optional<UUID> routeId, S
                 buf.writeInt(point.x());
                 buf.writeInt(point.y());
                 buf.writeInt(point.z());
+                buf.writeUtf(point.label(), 32);
             }
             buf.writeVarInt(value.sourceGuardEntityId() + 1);
         }
@@ -48,7 +56,9 @@ public record NamedRouteMutationC2SPayload(int action, Optional<UUID> routeId, S
             int size = buf.readVarInt();
             if (size < 0 || size > 10) throw new IllegalArgumentException("Invalid named route point count");
             List<Point> points = new ArrayList<>(size);
-            for (int i = 0; i < size; i++) points.add(new Point(buf.readInt(), buf.readInt(), buf.readInt()));
+            for (int i = 0; i < size; i++) {
+                points.add(new Point(buf.readInt(), buf.readInt(), buf.readInt(), buf.readUtf(32)));
+            }
             int sourceGuardEntityId = buf.readVarInt() - 1;
             return new NamedRouteMutationC2SPayload(
                     action, routeId, name, waitSeconds, points, sourceGuardEntityId

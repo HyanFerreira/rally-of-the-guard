@@ -25,6 +25,7 @@ public final class NamedRouteRegistryCodec {
     private static final String X = "x";
     private static final String Y = "y";
     private static final String Z = "z";
+    private static final String LABEL = "label";
     private static final int MAX_STORED_ROUTES = 64;
     private static final int MAX_STORED_NAME_CODE_POINTS = 48;
     private static final int MAX_STORED_POINTS = 10;
@@ -44,11 +45,14 @@ public final class NamedRouteRegistryCodec {
             entry.putString(DIMENSION, definition.dimensionId());
             entry.putInt(WAIT_SECONDS, definition.waitSeconds());
             ListTag points = new ListTag();
-            for (BlockPos point : definition.points()) {
+            for (int i = 0; i < definition.points().size(); i++) {
+                BlockPos point = definition.points().get(i);
                 CompoundTag storedPoint = new CompoundTag();
                 storedPoint.putInt(X, point.getX());
                 storedPoint.putInt(Y, point.getY());
                 storedPoint.putInt(Z, point.getZ());
+                String label = definition.pointLabels().get(i);
+                if (!label.isBlank()) storedPoint.putString(LABEL, label);
                 points.add(storedPoint);
             }
             entry.put(POINTS, points);
@@ -101,24 +105,28 @@ public final class NamedRouteRegistryCodec {
             int waitSeconds = readInt(entry.get(WAIT_SECONDS), 0, repairs);
             int boundedWait = Math.max(0, Math.min(MAX_WAIT_SECONDS, waitSeconds));
             if (boundedWait != waitSeconds) repairs.mark();
-            List<BlockPos> points = decodePoints(entry.get(POINTS), repairs);
-            if (points.size() < 2) {
+            DecodedPoints decodedPoints = decodePoints(entry.get(POINTS), repairs);
+            if (decodedPoints.points().size() < 2) {
                 repairs.mark();
                 continue;
             }
-            decoded.add(new NamedRouteDefinition(id.get(), name, dimension.toString(), boundedWait, points));
+            decoded.add(new NamedRouteDefinition(
+                    id.get(), name, dimension.toString(), boundedWait,
+                    decodedPoints.points(), decodedPoints.labels()
+            ));
         }
         return new NamedRouteRegistryReadResult.Available(
                 new NamedRouteRegistry(NamedRouteRegistry.CURRENT_SCHEMA_VERSION, decoded), repairs.repaired()
         );
     }
 
-    private static List<BlockPos> decodePoints(Tag stored, RepairTracker repairs) {
+    private static DecodedPoints decodePoints(Tag stored, RepairTracker repairs) {
         if (!(stored instanceof ListTag list)) {
             repairs.mark();
-            return List.of();
+            return new DecodedPoints(List.of(), List.of());
         }
         List<BlockPos> points = new ArrayList<>();
+        List<String> labels = new ArrayList<>();
         for (Tag value : list) {
             if (points.size() >= MAX_STORED_POINTS) {
                 repairs.mark();
@@ -132,8 +140,12 @@ public final class NamedRouteRegistryCodec {
                 continue;
             }
             points.add(new BlockPos(x.intValue(), y.intValue(), z.intValue()));
+            String rawLabel = point.getString(LABEL).orElse("");
+            String label = boundCodePoints(rawLabel.trim(), NamedRouteDefinition.MAX_POINT_LABEL_CODE_POINTS);
+            if (!label.equals(rawLabel)) repairs.mark();
+            labels.add(label);
         }
-        return points;
+        return new DecodedPoints(points, labels);
     }
 
     private static int readInt(Tag value, int fallback, RepairTracker repairs) {
@@ -166,5 +178,8 @@ public final class NamedRouteRegistryCodec {
         private boolean repaired;
         void mark() { repaired = true; }
         boolean repaired() { return repaired; }
+    }
+
+    private record DecodedPoints(List<BlockPos> points, List<String> labels) {
     }
 }

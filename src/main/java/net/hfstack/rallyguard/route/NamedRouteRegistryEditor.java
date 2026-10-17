@@ -16,6 +16,13 @@ public final class NamedRouteRegistryEditor {
     public static EditResult create(NamedRouteRegistry registry, UUID id, String rawName, String dimensionId,
                                     int waitSeconds, List<BlockPos> points, int maximumRoutes,
                                     int maximumNameCodePoints, int maximumPoints) {
+        return create(registry, id, rawName, dimensionId, waitSeconds, points, emptyLabels(points), maximumRoutes,
+                maximumNameCodePoints, maximumPoints);
+    }
+
+    public static EditResult create(NamedRouteRegistry registry, UUID id, String rawName, String dimensionId,
+                                    int waitSeconds, List<BlockPos> points, List<String> pointLabels,
+                                    int maximumRoutes, int maximumNameCodePoints, int maximumPoints) {
         Objects.requireNonNull(registry, "registry");
         Objects.requireNonNull(id, "id");
         if (registry.routes().size() >= maximumRoutes) return new Failure(FailureReason.LIMIT_REACHED);
@@ -28,7 +35,7 @@ public final class NamedRouteRegistryEditor {
             return new Failure(FailureReason.DUPLICATE_NAME);
         }
         Optional<NamedRouteDefinition> definition = definition(
-                id, name.get(), dimensionId, waitSeconds, points, maximumPoints
+                id, name.get(), dimensionId, waitSeconds, points, pointLabels, maximumPoints
         );
         if (definition.isEmpty()) return new Failure(FailureReason.INVALID_ROUTE);
         List<NamedRouteDefinition> routes = new ArrayList<>(registry.routes());
@@ -39,6 +46,13 @@ public final class NamedRouteRegistryEditor {
     public static EditResult update(NamedRouteRegistry registry, UUID id, String rawName, String dimensionId,
                                     int waitSeconds, List<BlockPos> points, int maximumNameCodePoints,
                                     int maximumPoints) {
+        return update(registry, id, rawName, dimensionId, waitSeconds, points, emptyLabels(points),
+                maximumNameCodePoints, maximumPoints);
+    }
+
+    public static EditResult update(NamedRouteRegistry registry, UUID id, String rawName, String dimensionId,
+                                    int waitSeconds, List<BlockPos> points, List<String> pointLabels,
+                                    int maximumNameCodePoints, int maximumPoints) {
         Objects.requireNonNull(registry, "registry");
         Objects.requireNonNull(id, "id");
         int index = indexOf(registry, id);
@@ -49,7 +63,7 @@ public final class NamedRouteRegistryEditor {
             return new Failure(FailureReason.DUPLICATE_NAME);
         }
         Optional<NamedRouteDefinition> definition = definition(
-                id, name.get(), dimensionId, waitSeconds, points, maximumPoints
+                id, name.get(), dimensionId, waitSeconds, points, pointLabels, maximumPoints
         );
         if (definition.isEmpty()) return new Failure(FailureReason.INVALID_ROUTE);
         List<NamedRouteDefinition> routes = new ArrayList<>(registry.routes());
@@ -69,13 +83,30 @@ public final class NamedRouteRegistryEditor {
 
     private static Optional<NamedRouteDefinition> definition(UUID id, String name, String dimensionId,
                                                               int waitSeconds, List<BlockPos> points,
+                                                              List<String> pointLabels,
                                                               int maximumPoints) {
         Identifier dimension = dimensionId == null ? null : Identifier.tryParse(dimensionId);
         if (dimension == null || points == null || maximumPoints < 2 || points.size() < 2
-                || points.size() > maximumPoints || waitSeconds < 0 || waitSeconds > 600) {
+                || points.size() > maximumPoints || pointLabels == null || pointLabels.size() != points.size()
+                || waitSeconds < 0 || waitSeconds > 600) {
             return Optional.empty();
         }
-        return Optional.of(new NamedRouteDefinition(id, name, dimension.toString(), waitSeconds, points));
+        List<String> normalizedLabels = pointLabels.stream().map(NamedRouteRegistryEditor::normalizeLabel).toList();
+        return Optional.of(new NamedRouteDefinition(
+                id, name, dimension.toString(), waitSeconds, points, normalizedLabels
+        ));
+    }
+
+    private static List<String> emptyLabels(List<BlockPos> points) {
+        if (points == null) return List.of();
+        return points.stream().map(point -> "").toList();
+    }
+
+    private static String normalizeLabel(String raw) {
+        String value = raw == null ? "" : raw.trim();
+        int maximum = NamedRouteDefinition.MAX_POINT_LABEL_CODE_POINTS;
+        if (value.codePointCount(0, value.length()) <= maximum) return value;
+        return value.substring(0, value.offsetByCodePoints(0, maximum));
     }
 
     private static int indexOf(NamedRouteRegistry registry, UUID id) {

@@ -22,7 +22,8 @@ class NamedRoutePayloadContractTest {
         GuardListS2CPayload.Point first = new GuardListS2CPayload.Point(1, 64, 1);
         GuardListS2CPayload.Point second = new GuardListS2CPayload.Point(8, 64, 8);
         GuardListS2CPayload.NamedRouteEntry route = new GuardListS2CPayload.NamedRouteEntry(
-                ROUTE_ID, "Village Walls", "minecraft:overworld", 30, List.of(first, second)
+                ROUTE_ID, "Village Walls", "minecraft:overworld", 30,
+                List.of(new GuardListS2CPayload.Point(1, 64, 1, "Warehouse"), second)
         );
         GuardListS2CPayload.Entry guard = new GuardListS2CPayload.Entry(
                 7, GUARD_ID, "Aldric", true, 4, true, 30, List.of(first, second),
@@ -33,6 +34,7 @@ class NamedRoutePayloadContractTest {
         );
 
         assertEquals(ROUTE_ID, payload.namedRoutes().getFirst().id());
+        assertEquals("Warehouse", payload.namedRoutes().getFirst().points().getFirst().label());
         assertEquals(Optional.of(ROUTE_ID), payload.entries().getFirst().namedRouteId());
     }
 

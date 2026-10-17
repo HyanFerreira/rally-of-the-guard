@@ -49,9 +49,13 @@ public final class GuardLedgerSnapshotFactory {
         List<GuardListS2CPayload.NamedRouteEntry> namedRoutes = routeRegistry.routes().stream()
                 .map(route -> new GuardListS2CPayload.NamedRouteEntry(
                         route.id(), route.name(), route.dimensionId(), route.waitSeconds(),
-                        route.points().stream()
-                                .map(point -> new GuardListS2CPayload.Point(point.getX(), point.getY(), point.getZ()))
-                                .toList()
+                        java.util.stream.IntStream.range(0, route.points().size())
+                                .mapToObj(index -> {
+                                    var point = route.points().get(index);
+                                    return new GuardListS2CPayload.Point(
+                                            point.getX(), point.getY(), point.getZ(), route.pointLabels().get(index)
+                                    );
+                                }).toList()
                 )).toList();
         List<? extends Entity> loaded = player.level().getEntities(
                 BuiltInRegistries.ENTITY_TYPE.getValue(GUARD_TYPE),

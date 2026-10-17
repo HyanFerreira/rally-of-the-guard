@@ -297,6 +297,9 @@ public final class GuardCommandNetworking {
         List<BlockPos> points = payload.points().stream()
                 .map(point -> new BlockPos(point.x(), point.y(), point.z()))
                 .toList();
+        List<String> pointLabels = payload.points().stream()
+                .map(NamedRouteMutationC2SPayload.Point::label)
+                .toList();
         var result = switch (payload.action()) {
             case NetworkConstants.NAMED_ROUTE_CREATE -> {
                 Entity source = payload.sourceGuardEntityId() == NamedRouteMutationC2SPayload.NO_SOURCE_GUARD
@@ -312,10 +315,12 @@ public final class GuardCommandNetworking {
                             "gui.rallyguard.named_route.guard_unavailable"
                     );
                 }
-                yield NAMED_ROUTES.create(player, payload.name(), payload.waitSeconds(), points);
+                yield NAMED_ROUTES.create(player, payload.name(), payload.waitSeconds(), points, pointLabels);
             }
             case NetworkConstants.NAMED_ROUTE_UPDATE -> payload.routeId()
-                    .map(id -> NAMED_ROUTES.update(player, id, payload.name(), payload.waitSeconds(), points))
+                    .map(id -> NAMED_ROUTES.update(
+                            player, id, payload.name(), payload.waitSeconds(), points, pointLabels
+                    ))
                     .orElse(null);
             case NetworkConstants.NAMED_ROUTE_DELETE -> payload.routeId()
                     .map(id -> NAMED_ROUTES.delete(player, id)).orElse(null);

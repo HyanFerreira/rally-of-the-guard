@@ -22,7 +22,14 @@ import net.hfstack.rallyguard.api.command.GuardUnitCategory;
 public record GuardListS2CPayload(boolean squadsEnabled, List<SquadEntry> squads,
                                   List<NamedRouteEntry> namedRoutes, List<Entry> entries)
         implements CustomPacketPayload {
-    public record Point(int x, int y, int z) {
+    public record Point(int x, int y, int z, String label) {
+        public Point {
+            label = label == null ? "" : label;
+        }
+
+        public Point(int x, int y, int z) {
+            this(x, y, z, "");
+        }
     }
 
     public record SquadEntry(UUID id, String name, Optional<UUID> officerGuardId) {
@@ -103,6 +110,7 @@ public record GuardListS2CPayload(boolean squadsEnabled, List<SquadEntry> squads
                             buf.writeInt(point.x());
                             buf.writeInt(point.y());
                             buf.writeInt(point.z());
+                            buf.writeUtf(point.label(), 32);
                         }
                     }
                     List<Entry> list = value.entries();
@@ -120,6 +128,7 @@ public record GuardListS2CPayload(boolean squadsEnabled, List<SquadEntry> squads
                             buf.writeInt(point.x());
                             buf.writeInt(point.y());
                             buf.writeInt(point.z());
+                            buf.writeUtf(point.label(), 32);
                         }
                         ComponentSerialization.OPTIONAL_STREAM_CODEC.encode(buf, e.rank());
                         ComponentSerialization.OPTIONAL_STREAM_CODEC.encode(buf, e.settlement());
@@ -156,7 +165,7 @@ public record GuardListS2CPayload(boolean squadsEnabled, List<SquadEntry> squads
                         if (pointCount < 0 || pointCount > 10) throw new IllegalArgumentException("Invalid named route point count");
                         List<Point> points = new ArrayList<>(pointCount);
                         for (int p = 0; p < pointCount; p++) {
-                            points.add(new Point(buf.readInt(), buf.readInt(), buf.readInt()));
+                            points.add(new Point(buf.readInt(), buf.readInt(), buf.readInt(), buf.readUtf(32)));
                         }
                         namedRoutes.add(new NamedRouteEntry(id, name, dimensionId, waitSeconds, points));
                     }
@@ -174,7 +183,7 @@ public record GuardListS2CPayload(boolean squadsEnabled, List<SquadEntry> squads
                         int pointCount = buf.readVarInt();
                         List<Point> routePoints = new ArrayList<>(pointCount);
                         for (int p = 0; p < pointCount; p++) {
-                            routePoints.add(new Point(buf.readInt(), buf.readInt(), buf.readInt()));
+                            routePoints.add(new Point(buf.readInt(), buf.readInt(), buf.readInt(), buf.readUtf(32)));
                         }
                         Optional<Component> rank = ComponentSerialization.OPTIONAL_STREAM_CODEC.decode(buf);
                         Optional<Component> settlement = ComponentSerialization.OPTIONAL_STREAM_CODEC.decode(buf);

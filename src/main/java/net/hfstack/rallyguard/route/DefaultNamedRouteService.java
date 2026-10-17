@@ -30,10 +30,15 @@ public final class DefaultNamedRouteService {
     }
 
     public NamedRouteMutationResult create(ServerPlayer owner, String name, int waitSeconds, List<BlockPos> points) {
+        return create(owner, name, waitSeconds, points, points.stream().map(point -> "").toList());
+    }
+
+    public NamedRouteMutationResult create(ServerPlayer owner, String name, int waitSeconds, List<BlockPos> points,
+                                           List<String> pointLabels) {
         Optional<NamedRouteRegistry> current = registry(owner);
         if (current.isEmpty()) return unsupported();
         NamedRouteRegistryEditor.EditResult edit = NamedRouteRegistryEditor.create(
-                current.get(), UUID.randomUUID(), name, dimensionId(owner), waitSeconds, points,
+                current.get(), UUID.randomUUID(), name, dimensionId(owner), waitSeconds, points, pointLabels,
                 RallyConfig.maxNamedRoutesPerPlayer(), RallyConfig.maxNamedRouteNameLength(), RallyConfig.routeMaxPoints()
         );
         return persist(owner, edit, "gui.rallyguard.named_route.created");
@@ -60,10 +65,15 @@ public final class DefaultNamedRouteService {
 
     public NamedRouteMutationResult update(ServerPlayer owner, UUID routeId, String name,
                                            int waitSeconds, List<BlockPos> points) {
+        return update(owner, routeId, name, waitSeconds, points, points.stream().map(point -> "").toList());
+    }
+
+    public NamedRouteMutationResult update(ServerPlayer owner, UUID routeId, String name,
+                                           int waitSeconds, List<BlockPos> points, List<String> pointLabels) {
         Optional<NamedRouteRegistry> current = registry(owner);
         if (current.isEmpty()) return unsupported();
         NamedRouteRegistryEditor.EditResult edit = NamedRouteRegistryEditor.update(
-                current.get(), routeId, name, dimensionId(owner), waitSeconds, points,
+                current.get(), routeId, name, dimensionId(owner), waitSeconds, points, pointLabels,
                 RallyConfig.maxNamedRouteNameLength(), RallyConfig.routeMaxPoints()
         );
         NamedRouteMutationResult result = persist(owner, edit, "gui.rallyguard.named_route.updated");
