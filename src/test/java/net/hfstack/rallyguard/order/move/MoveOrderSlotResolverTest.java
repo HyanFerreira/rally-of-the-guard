@@ -45,4 +45,15 @@ class MoveOrderSlotResolverTest {
         assertFalse(MoveOrderSlotResolver.isSafeCandidate(true, true, true, false, true));
         assertFalse(MoveOrderSlotResolver.isSafeCandidate(true, true, true, true, false));
     }
+
+    @Test
+    void collisionAndFluidPolicyAcceptsWalkableFloorAndNonCollidingPlants() {
+        assertTrue(MoveOrderSlotResolver.usableFloor(true, false));
+        assertFalse(MoveOrderSlotResolver.usableFloor(true, true));
+        assertFalse(MoveOrderSlotResolver.usableFloor(false, false));
+
+        assertTrue(MoveOrderSlotResolver.clearSpace(true, true));
+        assertFalse(MoveOrderSlotResolver.clearSpace(true, false));
+        assertFalse(MoveOrderSlotResolver.clearSpace(false, true));
+    }
 }

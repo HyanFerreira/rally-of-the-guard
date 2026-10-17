@@ -59,7 +59,7 @@ public final class MoveHereNetworking {
                 GuardCommandTargets.loadedScopedGuards(player, payload.scope()),
                 GuardEntity::getUUID,
                 guard -> GuardCombatRole.matches(valid.category(), guard),
-                (guard, slotIndex) -> MoveOrderSlotResolver.resolve(world, anchor, slotIndex),
+                (guard, slotIndex) -> MoveOrderSlotResolver.resolve(world, anchor, slotIndex, guard),
                 (guard, destination) -> RallyGuardApi.guardCommands().moveTo(player, guard, destination)
         );
         player.sendOverlayMessage(Component.translatable(

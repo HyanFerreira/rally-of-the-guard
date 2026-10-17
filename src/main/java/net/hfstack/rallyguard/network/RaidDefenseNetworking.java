@@ -94,7 +94,9 @@ public final class RaidDefenseNetworking {
         GuardBatchCommandResult result = RaidDefenseActions.execute(action, player, raid);
         RaidReports.start(player.getUUID(), key, result.succeeded(), player.level().getServer().getTickCount());
         player.sendOverlayMessage(Component.translatable(
-                "gui.rallyguard.raid.batch_result",
+                action == RaidResponseAction.DEFEND_VILLAGE
+                        ? "gui.rallyguard.raid.defend_result"
+                        : "gui.rallyguard.raid.rally_result",
                 result.succeeded(),
                 result.rejected(),
                 result.unavailable()

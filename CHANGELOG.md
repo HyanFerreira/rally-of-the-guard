@@ -8,6 +8,7 @@
 - Revalidated raid identity, dimension, center, distance, session, ownership, and loaded availability before every manual response.
 - Added isolated multiplayer raid reports for deployed guards, observed guard-assisted defeats, confirmed-kill MVP, loaded guard losses, and partial-data disclosure after unloads or expiry.
 - Added automated policy/session/report coverage and a Minecraft 26.1 smoke-test checklist.
+- Improved safe-post selection to accept non-colliding village vegetation and dirt paths, reject fluids and known hazards, and search deterministic alternatives before reporting that no safe post exists.
 
 ## Global Guard Registry — 2026-10-16
 

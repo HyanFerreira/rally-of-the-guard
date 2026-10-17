@@ -64,7 +64,7 @@ public final class DefendAreaNetworking {
                 GuardCommandTargets.loadedScopedGuards(player, payload.scope()),
                 GuardEntity::getUUID,
                 guard -> GuardCombatRole.matches(valid.category(), guard),
-                (guard, slotIndex) -> MoveOrderSlotResolver.resolve(world, center, slotIndex)
+                (guard, slotIndex) -> MoveOrderSlotResolver.resolve(world, center, slotIndex, guard)
                         .filter(post -> DefendAreaBoundaryPolicy.withinRadius(
                                 center,
                                 post.getX() + 0.5,

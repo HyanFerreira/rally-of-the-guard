@@ -15,9 +15,12 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.raid.Raid;
 
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public final class RaidDefenseActions {
     public static final int DEFENSE_RADIUS = Raid.VILLAGE_RADIUS_BUFFER;
+    static final int POST_CANDIDATE_LIMIT = 256;
 
     private RaidDefenseActions() {
     }
@@ -48,18 +51,19 @@ public final class RaidDefenseActions {
             BlockPos center,
             List<GuardEntity> guards
     ) {
+        Set<BlockPos> reserved = new HashSet<>();
         return MoveHereBatchPolicy.execute(
                 guards,
                 GuardEntity::getUUID,
                 guard -> true,
-                (guard, slotIndex) -> MoveOrderSlotResolver.resolve(level, center, slotIndex)
-                        .filter(post -> DefendAreaBoundaryPolicy.withinRadius(
-                                center,
-                                post.getX() + 0.5,
-                                post.getY() + 0.5,
-                                post.getZ() + 0.5,
-                                DEFENSE_RADIUS
-                        )),
+                (guard, slotIndex) -> RaidDefensePostSearch.firstAvailable(
+                        POST_CANDIDATE_LIMIT,
+                        candidateIndex -> MoveOrderSlotResolver.resolve(level, center, candidateIndex, guard),
+                        post -> DefendAreaBoundaryPolicy.withinRadius(
+                                center, post.getX() + 0.5, post.getY() + 0.5, post.getZ() + 0.5, DEFENSE_RADIUS
+                        ),
+                        reserved
+                ),
                 (guard, post) -> RallyGuardApi.guardCommands().defendArea(
                         player, guard, center, post, DEFENSE_RADIUS
                 )

@@ -74,12 +74,13 @@ public final class RaidOpportunityDetector {
         RaidBehavior behavior = RaidBehaviors.get(player);
         if (behavior.automaticAction().isPresent()) {
             SESSIONS.markSeen(player.getUUID(), key);
-            GuardBatchCommandResult result = RaidDefenseActions.execute(
-                    behavior.automaticAction().orElseThrow(), player, raid
-            );
+            RaidResponseAction automaticAction = behavior.automaticAction().orElseThrow();
+            GuardBatchCommandResult result = RaidDefenseActions.execute(automaticAction, player, raid);
             RaidReports.start(player.getUUID(), key, result.succeeded(), tick);
             player.sendOverlayMessage(Component.translatable(
-                    "gui.rallyguard.raid.automatic_result",
+                    automaticAction == RaidResponseAction.DEFEND_VILLAGE
+                            ? "gui.rallyguard.raid.automatic_defend_result"
+                            : "gui.rallyguard.raid.automatic_rally_result",
                     result.succeeded(), result.rejected(), result.unavailable()
             ));
             return;
