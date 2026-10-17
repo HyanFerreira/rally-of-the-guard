@@ -47,6 +47,7 @@ final class EditSaveIconButton extends AbstractButton {
 
     @Override
     protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        extractDefaultSprite(graphics);
         int iconX = getX() + (getWidth() - TEXTURE_SIZE) / 2;
         int iconY = getY() + (getHeight() - TEXTURE_SIZE) / 2;
         graphics.blit(
