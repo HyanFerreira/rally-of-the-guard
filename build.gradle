@@ -89,6 +89,20 @@ tasks.named("runClientGameTest") {
 	mustRunAfter tasks.named("build")
 }
 
+tasks.register("syncClient2Settings", Copy) {
+	group = "fabric"
+	description = "Copies the primary development client's options and mod configuration to client 2."
+	from("run/options.txt")
+	from("run/config") {
+		into "config"
+	}
+	into("run/client2")
+}
+
+tasks.named("runClient2") {
+	dependsOn tasks.named("syncClient2Settings")
+}
+
 tasks.register("automatedSmokeTest") {
 	group = "verification"
 	description = "Builds the mod and runs unit, server GameTest, and client GameTest suites."
