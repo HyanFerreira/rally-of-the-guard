@@ -19,6 +19,8 @@ import net.hfstack.rallyguard.network.payload.NamedRouteAssignmentC2SPayload;
 import net.hfstack.rallyguard.network.payload.NamedRouteMutationC2SPayload;
 import net.hfstack.rallyguard.network.payload.CommandPostSnapshotS2CPayload;
 import net.hfstack.rallyguard.network.payload.CommandPostUpdateC2SPayload;
+import net.hfstack.rallyguard.network.payload.OpenGlobalGuardRegistryC2SPayload;
+import net.hfstack.rallyguard.network.payload.GlobalGuardRegistryS2CPayload;
 
 public final class NetworkBootstrap {
     private NetworkBootstrap() {
@@ -51,11 +53,13 @@ public final class NetworkBootstrap {
         PayloadTypeRegistry.serverboundPlay().register(NamedRouteMutationC2SPayload.ID, NamedRouteMutationC2SPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(NamedRouteAssignmentC2SPayload.ID, NamedRouteAssignmentC2SPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(CommandPostUpdateC2SPayload.ID, CommandPostUpdateC2SPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(OpenGlobalGuardRegistryC2SPayload.ID, OpenGlobalGuardRegistryC2SPayload.CODEC);
 
         // S2C
         PayloadTypeRegistry.clientboundPlay().register(GuardListS2CPayload.ID, GuardListS2CPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(MusterRollSnapshotS2CPayload.ID, MusterRollSnapshotS2CPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(CloseMusterRollS2CPayload.ID, CloseMusterRollS2CPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(CommandPostSnapshotS2CPayload.ID, CommandPostSnapshotS2CPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(GlobalGuardRegistryS2CPayload.ID, GlobalGuardRegistryS2CPayload.CODEC);
     }
 }

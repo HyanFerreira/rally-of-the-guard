@@ -27,6 +27,7 @@ import net.hfstack.rallyguard.network.MoveHereNetworking;
 import net.hfstack.rallyguard.network.DefendAreaNetworking;
 import net.hfstack.rallyguard.network.CombatStanceNetworking;
 import net.hfstack.rallyguard.network.CommandPostNetworking;
+import net.hfstack.rallyguard.network.GlobalGuardRegistryNetworking;
 import net.hfstack.rallyguard.network.FormationSelectionNetworking;
 import net.hfstack.rallyguard.muster.MusterRollSessions;
 import net.hfstack.rallyguard.order.move.MoveOrderAttachments;
@@ -91,6 +92,7 @@ public class RallyOfTheGuard implements ModInitializer {
         DefendAreaNetworking.registerServer();
         CombatStanceNetworking.registerServer();
         CommandPostNetworking.registerServer();
+        GlobalGuardRegistryNetworking.registerServer();
         MusterRollSessions.register();
 
         // ✅ Depois registra só os receivers do servidor
