@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -64,7 +65,25 @@ class DefendAreaCodecTest {
         legacy.putInt("schema_version", 1);
         DefendAreaState migrated = available(DefendAreaCodec.decode(legacy)).state().orElseThrow();
         assertTrue(migrated.commandPostId().isEmpty());
+        assertTrue(migrated.raidId().isEmpty());
         assertEquals(DefendAreaState.SCHEMA_VERSION, migrated.schemaVersion());
+    }
+
+    @Test
+    void raidOriginRoundTripsWithoutBeingMistakenForAPermanentPost() {
+        DefendAreaState raidDefense = DefendAreaState.fromRaid(
+                new BlockPos(40, 70, -12),
+                new BlockPos(42, 70, -10),
+                32,
+                17
+        );
+
+        DefendAreaState decoded = available(
+                DefendAreaCodec.decode(DefendAreaCodec.encode(raidDefense))
+        ).state().orElseThrow();
+
+        assertEquals(OptionalInt.of(17), decoded.raidId());
+        assertTrue(decoded.commandPostId().isEmpty());
     }
 
     private static DefendAreaRead.Available available(DefendAreaRead result) {

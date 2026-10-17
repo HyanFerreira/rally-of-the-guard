@@ -6,7 +6,7 @@ public final class GuardFollowAssistPolicy {
     private static final double NATIVE_FOLLOW_DISTANCE_SQUARED = 3.0 * 3.0;
     private static final double CATCH_UP_DISTANCE_SQUARED = 5.0 * 5.0;
     private static final double SPRINT_ASSIST_SPEED = 0.95;
-    private static final double CATCH_UP_SPEED = 1.15;
+    public static final double CATCH_UP_SPEED = 1.15;
 
     private GuardFollowAssistPolicy() {
     }

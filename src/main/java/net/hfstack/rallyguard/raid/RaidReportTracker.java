@@ -17,6 +17,9 @@ public final class RaidReportTracker {
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
             if (entity instanceof GuardEntity guard) RaidReports.recordGuardLost(guard);
         });
+        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
+            if (entity instanceof GuardEntity guard) RaidDefenseOrders.releaseIfFinished(guard, level);
+        });
         ServerEntityEvents.ENTITY_UNLOAD.register((entity, level) -> {
             if (entity instanceof GuardEntity guard && guard.isAlive()) RaidReports.recordGuardUnload(guard);
         });

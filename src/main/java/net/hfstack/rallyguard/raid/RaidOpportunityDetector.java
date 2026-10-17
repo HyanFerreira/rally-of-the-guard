@@ -75,7 +75,7 @@ public final class RaidOpportunityDetector {
         if (behavior.automaticAction().isPresent()) {
             SESSIONS.markSeen(player.getUUID(), key);
             RaidResponseAction automaticAction = behavior.automaticAction().orElseThrow();
-            GuardBatchCommandResult result = RaidDefenseActions.execute(automaticAction, player, raid);
+            GuardBatchCommandResult result = RaidDefenseActions.execute(automaticAction, player, raid, key);
             RaidReports.start(player.getUUID(), key, result.succeeded(), tick);
             player.sendOverlayMessage(Component.translatable(
                     automaticAction == RaidResponseAction.DEFEND_VILLAGE
@@ -100,6 +100,7 @@ public final class RaidOpportunityDetector {
             Raid raid = level == null ? null : level.getRaids().get(tracked.raidId());
             if (raid != null && raid.isActive() && !raid.isOver() && !raid.isStopped()
                     && raid.getCenter().equals(entry.getKey().center())) continue;
+            RaidDefenseOrders.release(server, entry.getKey());
             RaidReports.finish(entry.getKey(), server, raid == null);
             SESSIONS.clearFinished(entry.getKey());
             iterator.remove();

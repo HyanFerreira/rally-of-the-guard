@@ -4,6 +4,7 @@ import dev.sterner.guardvillagers.common.entity.GuardEntity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.hfstack.rallyguard.combat.GuardCombatState;
 import net.hfstack.rallyguard.config.RallyConfig;
+import net.hfstack.rallyguard.order.GuardFollowAssistPolicy;
 import net.hfstack.rallyguard.order.defend.DefendAreaBoundaryPolicy;
 import net.hfstack.rallyguard.order.defend.DefendAreaState;
 import net.hfstack.rallyguard.order.defend.DefendAreas;
@@ -58,24 +59,39 @@ public final class DefendAreaTicker {
         );
 
         switch (DefendAreaBoundaryPolicy.decide(target != null, targetAllowed, beyondReturn)) {
-            case PATROL, KEEP_COMBAT -> {
-                // Native Guard Villagers AI retains control inside the defended territory.
+            case PATROL -> {
+                if (order.raidId().isPresent() && distanceToPostSquared(guard, post) > 2.25) {
+                    returnToPost(guard, post, GuardFollowAssistPolicy.CATCH_UP_SPEED);
+                }
+            }
+            case KEEP_COMBAT -> {
+                // Native Guard Villagers AI retains control while fighting inside the territory.
             }
             case DISENGAGE -> GuardCombatState.disengage(guard);
-            case RETURN_TO_POST -> returnToPost(guard, post);
+            case RETURN_TO_POST -> returnToPost(guard, post, returnSpeed(order));
             case DISENGAGE_AND_RETURN -> {
                 GuardCombatState.disengage(guard);
-                returnToPost(guard, post);
+                returnToPost(guard, post, returnSpeed(order));
             }
         }
     }
 
-    private static void returnToPost(GuardEntity guard, BlockPos post) {
+    private static double returnSpeed(DefendAreaState order) {
+        return order.raidId().isPresent()
+                ? GuardFollowAssistPolicy.CATCH_UP_SPEED
+                : RallyConfig.routeMoveSpeed();
+    }
+
+    private static double distanceToPostSquared(GuardEntity guard, BlockPos post) {
+        return guard.distanceToSqr(post.getX() + 0.5, post.getY(), post.getZ() + 0.5);
+    }
+
+    private static void returnToPost(GuardEntity guard, BlockPos post, double speed) {
         guard.getNavigation().moveTo(
                 post.getX() + 0.5,
                 post.getY(),
                 post.getZ() + 0.5,
-                RallyConfig.routeMoveSpeed()
+                speed
         );
     }
 }

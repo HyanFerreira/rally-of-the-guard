@@ -91,7 +91,7 @@ public final class RaidDefenseNetworking {
             return;
         }
 
-        GuardBatchCommandResult result = RaidDefenseActions.execute(action, player, raid);
+        GuardBatchCommandResult result = RaidDefenseActions.execute(action, player, raid, key);
         RaidReports.start(player.getUUID(), key, result.succeeded(), player.level().getServer().getTickCount());
         player.sendOverlayMessage(Component.translatable(
                 action == RaidResponseAction.DEFEND_VILLAGE

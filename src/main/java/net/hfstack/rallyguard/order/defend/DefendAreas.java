@@ -36,11 +36,31 @@ public final class DefendAreas {
         return true;
     }
 
+    public static boolean setFromRaid(Entity entity, BlockPos center, BlockPos post, int radius, int raidId) {
+        Objects.requireNonNull(entity, "entity");
+        if (!DefendAreaPersistencePolicy.canReplace(read(entity))) return false;
+        entity.setAttached(DefendAreaAttachments.ORDER, DefendAreaCodec.encode(
+                DefendAreaState.fromRaid(center, post, radius, raidId)
+        ));
+        return true;
+    }
+
     public static boolean clearIfFromCommandPost(Entity entity, UUID commandPostId) {
         Objects.requireNonNull(entity, "entity");
         Objects.requireNonNull(commandPostId, "commandPostId");
         Optional<DefendAreaState> current = active(entity);
         if (current.flatMap(DefendAreaState::commandPostId).filter(commandPostId::equals).isEmpty()) return false;
+        clear(entity);
+        return true;
+    }
+
+    public static boolean clearIfFromRaid(Entity entity, int raidId, BlockPos center) {
+        Objects.requireNonNull(entity, "entity");
+        Objects.requireNonNull(center, "center");
+        Optional<DefendAreaState> current = active(entity);
+        if (current.filter(state -> state.raidId().isPresent()
+                && state.raidId().getAsInt() == raidId
+                && state.center().equals(center)).isEmpty()) return false;
         clear(entity);
         return true;
     }

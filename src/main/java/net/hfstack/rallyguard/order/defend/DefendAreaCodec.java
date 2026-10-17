@@ -6,6 +6,7 @@ import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.Tag;
 
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 
 public final class DefendAreaCodec {
@@ -19,6 +20,7 @@ public final class DefendAreaCodec {
     private static final String POST_Z = "post_z";
     private static final String RADIUS = "radius";
     private static final String COMMAND_POST_ID = "command_post_id";
+    private static final String RAID_ID = "raid_id";
 
     private DefendAreaCodec() {
     }
@@ -35,6 +37,7 @@ public final class DefendAreaCodec {
         tag.putInt(POST_Z, state.post().getZ());
         tag.putInt(RADIUS, state.radius());
         state.commandPostId().ifPresent(id -> tag.putString(COMMAND_POST_ID, id.toString()));
+        state.raidId().ifPresent(id -> tag.putInt(RAID_ID, id));
         return tag;
     }
 
@@ -67,13 +70,21 @@ public final class DefendAreaCodec {
             if (commandPostId.isEmpty()) return inactive();
         }
 
+        OptionalInt raidId = OptionalInt.empty();
+        if (schemaVersion >= 3 && tag.get(RAID_ID) != null) {
+            Integer decodedRaidId = strictInt(tag.get(RAID_ID));
+            if (decodedRaidId == null || decodedRaidId < 0 || commandPostId.isPresent()) return inactive();
+            raidId = OptionalInt.of(decodedRaidId);
+        }
+
         return new DefendAreaRead.Available(Optional.of(new DefendAreaState(
                 DefendAreaState.SCHEMA_VERSION,
                 active,
                 new BlockPos(centerX, centerY, centerZ),
                 new BlockPos(postX, postY, postZ),
                 radius,
-                commandPostId
+                commandPostId,
+                raidId
         )));
     }
 
