@@ -47,7 +47,7 @@ public class GuardCombatScreen extends Screen {
         Button all = Button.builder(
                 Component.translatable("gui.rallyguard.combat.all"),
                 b -> sendAttack(NetworkConstants.ATTACK_ALL)
-        ).bounds(x + 18, y + 78, 92, BTN_H).build();
+        ).bounds(x + 28, y + 78, 92, BTN_H).build();
 
         Button infantry = Button.builder(
                 Component.translatable("gui.rallyguard.combat.infantry"),
@@ -57,7 +57,7 @@ public class GuardCombatScreen extends Screen {
         Button ranged = Button.builder(
                 Component.translatable("gui.rallyguard.combat.ranged"),
                 b -> sendAttack(NetworkConstants.ATTACK_RANGED)
-        ).bounds(x + 230, y + 78, 92, BTN_H).build();
+        ).bounds(x + 220, y + 78, 92, BTN_H).build();
 
         this.addRenderableWidget(all);
         this.addRenderableWidget(infantry);

@@ -39,7 +39,7 @@ public final class GuardRouteHubScreen extends Screen {
         addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.named_route.library"),
                         button -> Minecraft.getInstance().setScreen(
                                 new NamedRouteManagementScreen(parent, snapshot, guard.guardId())))
-                .bounds(x + 24, y + 82, PANEL_WIDTH - 48, 20).build());
+                .bounds(x + 24, y + 80, PANEL_WIDTH - 48, 20).build());
         addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.route.back"),
                         button -> closeToParent())
                 .bounds(x + PANEL_WIDTH - 94, y + PANEL_HEIGHT - 28, 70, 20).build());

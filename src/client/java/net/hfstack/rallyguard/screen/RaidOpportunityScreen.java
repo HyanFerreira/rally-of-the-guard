@@ -43,7 +43,7 @@ public final class RaidOpportunityScreen extends Screen {
         int panelWidth = Math.min(PANEL_WIDTH, width - 16);
         int x = (width - panelWidth) / 2;
         int y = (height - PANEL_HEIGHT) / 2;
-        int gap = 4;
+        int gap = GuiLayout.CONTROL_GAP;
         int buttonWidth = (panelWidth - 24 - gap * 2) / 3;
         int buttonX = x + 12;
         addChoice(buttonX, y + 74, buttonWidth, "gui.rallyguard.raid.rally", RaidResponseAction.RALLY_GUARDS);

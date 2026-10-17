@@ -31,7 +31,7 @@ public class GuardCommandScreen extends Screen {
     private static final int ROW_TOP = 64;
     private static final int ROW_HEIGHT = 32;
     private static final int BUTTON_HEIGHT = 20;
-    private static final int GAP = 4;
+    private static final int GAP = GuiLayout.CONTROL_GAP;
 
     public record Entry(int entityId, UUID guardId, String name, boolean patrolling, int status, boolean routeActive,
                         int routeWaitSeconds, List<GuardListS2CPayload.Point> routePoints,

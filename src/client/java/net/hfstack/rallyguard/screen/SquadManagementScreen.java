@@ -162,7 +162,7 @@ public final class SquadManagementScreen extends Screen {
         if (count == 0) return;
         int selectedExisting = Math.min(selectedSquad, snapshot.squads().size() - 1);
         int start = Math.max(0, Math.min(selectedExisting - count + 1, snapshot.squads().size() - count));
-        int gap = 4;
+        int gap = GuiLayout.CONTROL_GAP;
         int tabWidth = Math.max(48, (availableWidth - gap * (count - 1)) / count);
         for (int offset = 0; offset < count; offset++) {
             int index = start + offset;

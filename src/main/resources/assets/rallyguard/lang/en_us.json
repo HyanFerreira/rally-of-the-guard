@@ -290,7 +290,7 @@
   "gui.rallyguard.route.use_current": "Use current",
   "gui.rallyguard.route.remove": "Remove",
   "gui.rallyguard.route.add_current": "+ Current pos",
-  "gui.rallyguard.route.save_names": "Save names",
+  "gui.rallyguard.route.default_point_name": "Point %s",
   "gui.rallyguard.route.start": "Start",
   "gui.rallyguard.route.pause": "Pause",
   "gui.rallyguard.route.clear": "Clear",

@@ -62,7 +62,7 @@ public final class CommandPostScreen extends Screen {
         int columnW = (panelW - 72) / 2;
         int rightX = x + panelW - 14 - columnW;
 
-        nameBox = new EditBox(font, x + 14, y + 30, panelW - 108, 20,
+        nameBox = new EditBox(font, x + 14, y + 30, panelW - 106, 20,
                 Component.translatable("gui.rallyguard.command_post.name"));
         nameBox.setMaxLength(CommandPostState.MAX_NAME_CODE_POINTS);
         nameBox.setValue(snapshot.name());
@@ -75,12 +75,12 @@ public final class CommandPostScreen extends Screen {
                         button -> sendSettings(!snapshot.active(), snapshot.radius(), formation()))
                 .bounds(x + 14, y + 58, 92, 20).build());
         addRenderableWidget(Button.builder(Component.literal("-4"), button -> changeRadius(-4))
-                .bounds(x + 112, y + 58, 34, 20).build());
+                .bounds(x + 110, y + 58, 34, 20).build());
         addRenderableWidget(Button.builder(Component.literal("+4"), button -> changeRadius(4))
-                .bounds(x + 150, y + 58, 34, 20).build());
+                .bounds(x + 148, y + 58, 34, 20).build());
         addRenderableWidget(Button.builder(Component.translatable(formation().translationKey()), button ->
                         sendSettings(snapshot.active(), snapshot.radius(), formation().next()))
-                .bounds(x + 190, y + 58, Math.min(150, panelW - 204), 20).build());
+                .bounds(x + 186, y + 58, Math.min(150, panelW - 200), 20).build());
 
         addGuardRows(available(), availablePage, x + 14, columnW, selectedAvailable, guard -> {
             selectedAvailable = guard.guardId();

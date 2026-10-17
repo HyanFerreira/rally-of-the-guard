@@ -25,6 +25,9 @@ public final class NamedRouteEditorScreen extends Screen {
     private static final int MAX_PANEL_WIDTH = 680;
     private static final int ROW_TOP = 76;
     private static final int ROW_HEIGHT = 30;
+    private static final int EDIT_BUTTON_WIDTH = 20;
+    private static final Component EDIT_ICON = Component.literal("\u270e");
+    private static final Component SAVE_ICON = Component.literal("\u2713");
 
     private final NamedRouteManagementScreen parent;
     private final UUID routeId;
@@ -76,7 +79,7 @@ public final class NamedRouteEditorScreen extends Screen {
         addRenderableWidget(Button.builder(Component.literal("-5s"), button -> changeWait(-5))
                 .bounds(x + panelW - 166, y + 32, 48, 20).build());
         addRenderableWidget(Button.builder(Component.literal("+5s"), button -> changeWait(5))
-                .bounds(x + panelW - 112, y + 32, 48, 20).build());
+                .bounds(x + panelW - 114, y + 32, 48, 20).build());
 
         int start = page * rowsPerPage();
         int end = Math.min(start + rowsPerPage(), points.size());
@@ -95,7 +98,7 @@ public final class NamedRouteEditorScreen extends Screen {
 
         Button add = Button.builder(Component.translatable("gui.rallyguard.route.add_current"),
                         button -> addCurrentPoint())
-                .bounds(x + 76, controlsY, 108, 20).build();
+                .bounds(x + 70, controlsY, 108, 20).build();
         add.active = points.size() < RallyConfig.routeMaxPoints();
         addRenderableWidget(add);
 
@@ -115,14 +118,33 @@ public final class NamedRouteEditorScreen extends Screen {
         int panelW = panelWidth();
         int actionsWidth = 188;
         int coordinateWidth = 132;
-        int labelWidth = Math.max(80, panelW - 28 - coordinateWidth - actionsWidth);
+        int labelWidth = Math.max(64, panelW - 28 - coordinateWidth - actionsWidth
+                - EDIT_BUTTON_WIDTH - GuiLayout.CONTROL_GAP);
 
         EditBox label = new EditBox(font, x + 14, y + 4, labelWidth, 20,
                 Component.translatable("gui.rallyguard.named_route.point_name", pointIndex + 1));
         label.setMaxLength(32);
-        label.setValue(point.label());
+        label.setValue(RoutePointNames.displayName(point.label(), pointIndex));
+        label.setEditable(false);
         labelBoxes.add(label);
         addRenderableWidget(label);
+
+        boolean[] editing = {false};
+        addRenderableWidget(Button.builder(EDIT_ICON, button -> {
+            if (!editing[0]) {
+                editing[0] = true;
+                label.setEditable(true);
+                setInitialFocus(label);
+                button.setMessage(SAVE_ICON);
+                return;
+            }
+            label.setValue(RoutePointNames.displayName(label.getValue(), pointIndex));
+            captureDraft();
+            editing[0] = false;
+            label.setEditable(false);
+            button.setMessage(EDIT_ICON);
+        }).bounds(x + 14 + labelWidth + GuiLayout.CONTROL_GAP, y + 4,
+                EDIT_BUTTON_WIDTH, GuiLayout.BUTTON_HEIGHT).build());
 
         int actionsX = x + panelW - 14 - actionsWidth;
         Button up = Button.builder(Component.literal("↑"), button -> movePoint(pointIndex, -1))
@@ -157,7 +179,9 @@ public final class NamedRouteEditorScreen extends Screen {
     private void addCurrentPoint() {
         captureDraft();
         BlockPos pos = currentPosition();
-        points.add(new GuardListS2CPayload.Point(pos.getX(), pos.getY(), pos.getZ(), ""));
+        points.add(new GuardListS2CPayload.Point(
+                pos.getX(), pos.getY(), pos.getZ(), RoutePointNames.initialName(points.size())
+        ));
         page = (points.size() - 1) / rowsPerPage();
         rebuildControls();
     }
@@ -216,7 +240,12 @@ public final class NamedRouteEditorScreen extends Screen {
         routeName = route.name();
         waitSeconds = route.waitSeconds();
         points.clear();
-        points.addAll(route.points());
+        for (int i = 0; i < route.points().size(); i++) {
+            GuardListS2CPayload.Point point = route.points().get(i);
+            points.add(new GuardListS2CPayload.Point(
+                    point.x(), point.y(), point.z(), RoutePointNames.displayName(point.label(), i)
+            ));
+        }
     }
 
     private BlockPos currentPosition() {
@@ -256,7 +285,10 @@ public final class NamedRouteEditorScreen extends Screen {
         for (int i = start; i < end; i++) {
             GuardListS2CPayload.Point point = points.get(i);
             int rowY = y + ROW_TOP + (i - start) * ROW_HEIGHT;
-            int coordinateX = x + 14 + Math.max(80, panelW - 28 - 132 - 188) + 6;
+            int labelWidth = Math.max(64, panelW - 28 - 132 - 188
+                    - EDIT_BUTTON_WIDTH - GuiLayout.CONTROL_GAP);
+            int coordinateX = x + 14 + labelWidth + GuiLayout.CONTROL_GAP
+                    + EDIT_BUTTON_WIDTH + GuiLayout.CONTROL_GAP;
             graphics.text(font, Component.literal(
                     "#" + (i + 1) + "  " + point.x() + ", " + point.y() + ", " + point.z()
             ), coordinateX, rowY + 10, MUTED);
