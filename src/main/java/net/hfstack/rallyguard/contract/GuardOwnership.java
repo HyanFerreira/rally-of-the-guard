@@ -7,6 +7,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.hfstack.rallyguard.registry.GlobalGuardRegistryLifecycle;
 
 import java.util.UUID;
 
@@ -42,12 +44,19 @@ public final class GuardOwnership {
 
         applyGoldName(guard);
 
+        if (guard instanceof GuardEntity gv && guard.level() instanceof ServerLevel level) {
+            GlobalGuardRegistryLifecycle.update(gv, level.getServer());
+        }
+
         String display = guard.getName().getString();
         player.sendSystemMessage(Component.translatable("message.rallyguard.guard_presenting", display));
     }
 
     public static void clearOwner(Entity guard) {
         if (guard instanceof GuardEntity gv) {
+            if (guard.level() instanceof ServerLevel level) {
+                GlobalGuardRegistryLifecycle.remove(gv, level.getServer());
+            }
             gv.setOwnerId(null);
         }
     }
