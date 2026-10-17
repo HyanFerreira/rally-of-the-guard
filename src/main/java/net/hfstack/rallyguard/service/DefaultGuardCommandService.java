@@ -23,6 +23,8 @@ import net.hfstack.rallyguard.order.move.MoveOrders;
 import net.hfstack.rallyguard.order.defend.DefendAreaRead;
 import net.hfstack.rallyguard.order.defend.DefendAreaState;
 import net.hfstack.rallyguard.order.defend.DefendAreas;
+import net.hfstack.rallyguard.order.temporary.GuardTaskSuspensions;
+import net.hfstack.rallyguard.route.DefaultNamedRouteService;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.BlockPos;
 
@@ -32,6 +34,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
     @Override
     public GuardCommandResult summon(ServerPlayer commander, GuardEntity guard) {
         return execute(commander, guard, GuardCommandType.SUMMON, null, () -> {
+            GuardTaskSuspensions.suspendIfAbsent(guard);
             MoveOrders.clear(guard);
             DefendAreas.clear(guard);
             guard.setPatrolling(false);
@@ -56,6 +59,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
     @Override
     public GuardCommandResult follow(ServerPlayer commander, GuardEntity guard) {
         return execute(commander, guard, GuardCommandType.FOLLOW, null, () -> {
+            GuardTaskSuspensions.suspendIfAbsent(guard);
             MoveOrders.clear(guard);
             DefendAreas.clear(guard);
             guard.setPatrolling(false);
@@ -71,6 +75,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
     @Override
     public GuardCommandResult wait(ServerPlayer commander, GuardEntity guard) {
         return execute(commander, guard, GuardCommandType.WAIT, null, () -> {
+            GuardTaskSuspensions.discard(guard);
             MoveOrders.clear(guard);
             DefendAreas.clear(guard);
             guard.setFollowing(false);
@@ -84,9 +89,24 @@ public final class DefaultGuardCommandService implements GuardCommandService {
     }
 
     @Override
+    public GuardCommandResult dismiss(ServerPlayer commander, GuardEntity guard) {
+        ServerPlayer requiredCommander = requireCommander(commander);
+        GuardCommandResult rejection = validate(requiredCommander, guard);
+        if (rejection != null) return rejection;
+        if (!GuardTaskSuspensions.hasSuspendedTask(guard)) return GuardCommandResult.nothingToDismiss();
+        return executeValidated(requiredCommander, guard, GuardCommandType.DISMISS, null, () -> {
+            if (!GuardTaskSuspensions.restore(guard)) {
+                throw new IllegalStateException("Suspended guard task disappeared during dismissal");
+            }
+            DefaultNamedRouteService.instance().repairMissingAssignment(requiredCommander, guard);
+        }, "gui.rallyguard.command.dismissed");
+    }
+
+    @Override
     public GuardCommandResult patrol(ServerPlayer commander, GuardEntity guard, BlockPos position) {
         BlockPos patrolPosition = Objects.requireNonNull(position, "position");
         return execute(commander, guard, GuardCommandType.PATROL, patrolPosition, () -> {
+            GuardTaskSuspensions.discard(guard);
             MoveOrders.clear(guard);
             DefendAreas.clear(guard);
             guard.setFollowing(false);
@@ -102,6 +122,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
     @Override
     public GuardCommandResult stopPatrol(ServerPlayer commander, GuardEntity guard) {
         return execute(commander, guard, GuardCommandType.STOP_PATROL, null, () -> {
+            GuardTaskSuspensions.discard(guard);
             MoveOrders.clear(guard);
             DefendAreas.clear(guard);
             guard.setPatrolling(false);
@@ -125,6 +146,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
 
         BlockPos target = Objects.requireNonNull(position, "position").immutable();
         return executeValidated(requiredCommander, guard, GuardCommandType.MOVE_TO, target, () -> {
+            GuardTaskSuspensions.suspendIfAbsent(guard);
             DefendAreas.clear(guard);
             guard.setFollowing(false);
             guard.setPatrolling(false);
@@ -154,6 +176,7 @@ public final class DefaultGuardCommandService implements GuardCommandService {
 
         DefendAreaState order = DefendAreaState.active(center, post, radius);
         return executeValidated(requiredCommander, guard, GuardCommandType.DEFEND_AREA, order.center(), () -> {
+            GuardTaskSuspensions.suspendIfAbsent(guard);
             MoveOrders.clear(guard);
             guard.setFollowing(false);
             GuardOrders.setRallied(guard, false);

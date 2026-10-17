@@ -9,6 +9,7 @@ import net.hfstack.rallyguard.order.GuardRouteState;
 import net.hfstack.rallyguard.order.GuardRoutes;
 import net.hfstack.rallyguard.order.defend.DefendAreas;
 import net.hfstack.rallyguard.order.move.MoveOrders;
+import net.hfstack.rallyguard.order.temporary.GuardTaskSuspensions;
 import net.hfstack.rallyguard.service.GuardCommandTargets;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -77,6 +78,7 @@ public final class DefaultNamedRouteService {
         if (requestedRoute == null || requestedRoute.isEmpty()) {
             GuardRouteState current = GuardRoutes.get(guard);
             unlinkAndPause(guard, current);
+            GuardTaskSuspensions.discard(guard);
             return NamedRouteMutationResult.success("gui.rallyguard.named_route.unassigned", null);
         }
         Optional<NamedRouteRegistry> registry = registry(owner);
@@ -97,6 +99,7 @@ public final class DefaultNamedRouteService {
         DefendAreas.clear(guard);
         GuardRoutes.applyToGuard(guard, state);
         GuardCombatState.disengage(guard);
+        GuardTaskSuspensions.discard(guard);
         return NamedRouteMutationResult.success("gui.rallyguard.named_route.assigned", route.id());
     }
 
@@ -106,6 +109,10 @@ public final class DefaultNamedRouteService {
         boolean exists = registry.routes().stream()
                 .anyMatch(route -> route.id().equals(current.namedRouteId().orElseThrow()));
         if (!exists) unlinkAndPause(guard, current);
+    }
+
+    public void repairMissingAssignment(ServerPlayer owner, GuardEntity guard) {
+        registry(owner).ifPresent(registry -> repairMissingAssignment(guard, registry));
     }
 
     private NamedRouteMutationResult persist(ServerPlayer owner, NamedRouteRegistryEditor.EditResult edit,

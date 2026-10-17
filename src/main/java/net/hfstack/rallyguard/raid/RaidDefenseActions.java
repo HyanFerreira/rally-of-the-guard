@@ -10,6 +10,7 @@ import net.hfstack.rallyguard.order.GuardFollowAssistPolicy;
 import net.hfstack.rallyguard.order.defend.DefendAreaBoundaryPolicy;
 import net.hfstack.rallyguard.order.defend.DefendAreas;
 import net.hfstack.rallyguard.order.move.MoveOrderSlotResolver;
+import net.hfstack.rallyguard.order.temporary.GuardTaskSuspensions;
 import net.hfstack.rallyguard.service.GuardBatchCommandExecutor;
 import net.hfstack.rallyguard.service.GuardCommandTargets;
 import net.minecraft.core.BlockPos;
@@ -84,6 +85,7 @@ public final class RaidDefenseActions {
         if (!suspendedNow && !RaidGuardTasks.belongsTo(guard, raid)) {
             return GuardCommandResult.policyError();
         }
+        boolean alreadyTemporarilySuspended = GuardTaskSuspensions.hasSuspendedTask(guard);
         GuardCommandResult result = RallyGuardApi.guardCommands().defendArea(
                 player, guard, center, post, DEFENSE_RADIUS
         );
@@ -93,6 +95,7 @@ public final class RaidDefenseActions {
         }
 
         DefendAreas.setFromRaid(guard, center, post, DEFENSE_RADIUS, raid.raidId());
+        if (!alreadyTemporarilySuspended) GuardTaskSuspensions.discard(guard);
         guard.setPatrolling(false);
         guard.getNavigation().moveTo(
                 post.getX() + 0.5,

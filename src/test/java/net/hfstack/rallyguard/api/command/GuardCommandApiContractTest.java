@@ -11,14 +11,20 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class GuardCommandApiContractTest {
     @Test
-    void apiVersionEightExposesPositionalAndStanceCommands() throws NoSuchMethodException {
-        assertEquals(8, RallyGuardApi.apiVersion());
+    void apiVersionNineExposesPositionalStanceAndDismissCommands() throws NoSuchMethodException {
+        assertEquals(9, RallyGuardApi.apiVersion());
         assertEquals(GuardCommandType.MOVE_TO, GuardCommandType.valueOf("MOVE_TO"));
         assertNotNull(GuardCommandService.class.getMethod(
                 "moveTo",
                 ServerPlayer.class,
                 GuardEntity.class,
                 BlockPos.class
+        ));
+        assertEquals(GuardCommandType.DISMISS, GuardCommandType.valueOf("DISMISS"));
+        assertNotNull(GuardCommandService.class.getMethod(
+                "dismiss",
+                ServerPlayer.class,
+                GuardEntity.class
         ));
         assertEquals(GuardCommandType.DEFEND_AREA, GuardCommandType.valueOf("DEFEND_AREA"));
         assertNotNull(GuardCommandService.class.getMethod(

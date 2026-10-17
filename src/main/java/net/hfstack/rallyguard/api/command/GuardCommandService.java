@@ -14,6 +14,10 @@ public interface GuardCommandService {
 
     GuardCommandResult wait(ServerPlayer commander, GuardEntity guard);
 
+    default GuardCommandResult dismiss(ServerPlayer commander, GuardEntity guard) {
+        return GuardCommandResult.nothingToDismiss();
+    }
+
     GuardCommandResult patrol(ServerPlayer commander, GuardEntity guard, BlockPos position);
 
     GuardCommandResult stopPatrol(ServerPlayer commander, GuardEntity guard);

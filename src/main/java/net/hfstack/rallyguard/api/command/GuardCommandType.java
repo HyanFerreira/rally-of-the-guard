@@ -7,6 +7,7 @@ public enum GuardCommandType {
     SUMMON,
     FOLLOW,
     WAIT,
+    DISMISS,
     PATROL,
     STOP_PATROL,
     MOVE_TO,

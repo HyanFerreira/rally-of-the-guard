@@ -56,6 +56,13 @@ public record GuardCommandResult(Outcome outcome, Component feedback) {
         );
     }
 
+    public static GuardCommandResult nothingToDismiss() {
+        return new GuardCommandResult(
+                Outcome.DENIED,
+                Component.translatable("gui.rallyguard.command.nothing_to_dismiss")
+        );
+    }
+
     public enum Outcome {
         SUCCESS,
         INVALID_GUARD,

@@ -19,7 +19,7 @@ class GuardProfileAccessTest {
 
     @Test
     void currentApiStillExposesCaptainService() {
-        assertEquals(8, RallyGuardApi.apiVersion());
+        assertEquals(9, RallyGuardApi.apiVersion());
         assertSame(RallyGuardApi.captains(), RallyGuardApi.captains());
     }
 
