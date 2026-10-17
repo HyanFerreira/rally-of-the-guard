@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.BlockPos;
 
@@ -32,8 +33,10 @@ public class GuardRouteScreen extends Screen {
     private final GuardCommandScreen.Entry guard;
     private final java.util.Optional<String> assignedRouteName;
     private final List<GuardListS2CPayload.Point> points = new ArrayList<>();
+    private final List<EditBox> pointNameBoxes = new ArrayList<>();
     private boolean active;
     private int waitSeconds;
+    private int pointPage;
 
     public GuardRouteScreen(GuardCommandScreen parent, int entryIndex, GuardCommandScreen.Entry guard,
                             java.util.Optional<String> assignedRouteName) {
@@ -55,20 +58,32 @@ public class GuardRouteScreen extends Screen {
 
     private void rebuildButtons() {
         this.clearWidgets();
+        pointNameBoxes.clear();
 
         int x = panelX();
         int y = panelY();
         int panelW = panelWidth();
+        pointPage = Math.max(0, Math.min(pointPage, Math.max(0, (points.size() - 1) / rowsPerPage())));
 
-        for (int i = 0; i < points.size(); i++) {
+        int start = pointPage * rowsPerPage();
+        int end = Math.min(start + rowsPerPage(), points.size());
+        for (int i = start; i < end; i++) {
             final int idx = i;
-            int rowY = y + ROW_TOP + i * ROW_H;
+            int rowY = y + ROW_TOP + (i - start) * ROW_H;
             int useX = x + panelW - 156;
             int removeX = x + panelW - 72;
+            int nameW = Math.max(80, panelW - 350);
+            EditBox pointName = new EditBox(font, x + 16, rowY + 3, nameW, BTN_H,
+                    Component.translatable("gui.rallyguard.named_route.point_name", i + 1));
+            pointName.setMaxLength(32);
+            pointName.setValue(points.get(i).label());
+            pointNameBoxes.add(pointName);
+            addRenderableWidget(pointName);
 
             this.addRenderableWidget(Button.builder(
                     Component.translatable("gui.rallyguard.route.use_current"),
                     b -> {
+                        capturePointNames();
                         setPoint(idx, currentPoint());
                         saveOnly();
                     }
@@ -77,6 +92,7 @@ public class GuardRouteScreen extends Screen {
             this.addRenderableWidget(Button.builder(
                     Component.translatable("gui.rallyguard.route.remove"),
                     b -> {
+                        capturePointNames();
                         points.remove(idx);
                         if (active && points.size() < 2) active = false;
                         sendRoute(active ? NetworkConstants.ROUTE_START : NetworkConstants.ROUTE_SAVE);
@@ -89,6 +105,7 @@ public class GuardRouteScreen extends Screen {
         this.addRenderableWidget(Button.builder(
                 Component.literal("-5s"),
                 b -> {
+                    capturePointNames();
                     waitSeconds = Math.max(0, waitSeconds - 5);
                     saveOnly();
                     rebuildButtons();
@@ -98,6 +115,7 @@ public class GuardRouteScreen extends Screen {
         this.addRenderableWidget(Button.builder(
                 Component.literal("+5s"),
                 b -> {
+                    capturePointNames();
                     waitSeconds = Math.min(600, waitSeconds + 5);
                     saveOnly();
                     rebuildButtons();
@@ -107,18 +125,45 @@ public class GuardRouteScreen extends Screen {
         this.addRenderableWidget(Button.builder(
                 Component.translatable("gui.rallyguard.route.add_current"),
                 b -> {
+            capturePointNames();
             if (points.size() < RallyConfig.routeMaxPoints()) {
                 points.add(currentPoint());
+                pointPage = (points.size() - 1) / rowsPerPage();
                 saveOnly();
                 rebuildButtons();
             }
                 }
         ).bounds(x + 118, controlsY, 104, BTN_H).build());
 
+        this.addRenderableWidget(Button.builder(
+                Component.translatable("gui.rallyguard.route.save_names"),
+                b -> {
+                    capturePointNames();
+                    saveOnly();
+                    rebuildButtons();
+                }
+        ).bounds(x + 228, controlsY, 104, BTN_H).build());
+
+        Button previous = Button.builder(Component.literal("<"), b -> {
+            capturePointNames();
+            pointPage--;
+            rebuildButtons();
+        }).bounds(x + 338, controlsY, 24, BTN_H).build();
+        previous.active = pointPage > 0;
+        addRenderableWidget(previous);
+        Button next = Button.builder(Component.literal(">"), b -> {
+            capturePointNames();
+            pointPage++;
+            rebuildButtons();
+        }).bounds(x + 368, controlsY, 24, BTN_H).build();
+        next.active = (pointPage + 1) * rowsPerPage() < points.size();
+        addRenderableWidget(next);
+
         int bottomY = y + panelHeight() - 28;
         this.addRenderableWidget(Button.builder(
                 active ? Component.translatable("gui.rallyguard.route.pause") : Component.translatable("gui.rallyguard.route.start"),
                 b -> {
+                    capturePointNames();
                     if (!active && points.size() < 2) {
                         sendRoute(NetworkConstants.ROUTE_SAVE);
                         return;
@@ -132,6 +177,7 @@ public class GuardRouteScreen extends Screen {
         this.addRenderableWidget(Button.builder(
                 Component.translatable("gui.rallyguard.route.clear"),
                 b -> {
+                    capturePointNames();
                     points.clear();
                     active = false;
                     sendRoute(NetworkConstants.ROUTE_CLEAR);
@@ -146,8 +192,21 @@ public class GuardRouteScreen extends Screen {
     }
 
     private void setPoint(int idx, GuardListS2CPayload.Point point) {
-        points.set(idx, point);
+        GuardListS2CPayload.Point previous = points.get(idx);
+        points.set(idx, new GuardListS2CPayload.Point(point.x(), point.y(), point.z(), previous.label()));
         rebuildButtons();
+    }
+
+    private void capturePointNames() {
+        int start = pointPage * rowsPerPage();
+        for (int visible = 0; visible < pointNameBoxes.size(); visible++) {
+            int index = start + visible;
+            if (index >= points.size()) break;
+            GuardListS2CPayload.Point point = points.get(index);
+            points.set(index, new GuardListS2CPayload.Point(
+                    point.x(), point.y(), point.z(), pointNameBoxes.get(visible).getValue()
+            ));
+        }
     }
 
     private GuardListS2CPayload.Point currentPoint() {
@@ -170,7 +229,7 @@ public class GuardRouteScreen extends Screen {
 
     private void sendRoute(int action) {
         List<GuardRouteUpdateC2SPayload.Point> payloadPoints = points.stream()
-                .map(p -> new GuardRouteUpdateC2SPayload.Point(p.x(), p.y(), p.z()))
+                .map(p -> new GuardRouteUpdateC2SPayload.Point(p.x(), p.y(), p.z(), p.label()))
                 .toList();
         ClientPlayNetworking.send(new GuardRouteUpdateC2SPayload(guard.entityId(), action, waitSeconds, payloadPoints));
 
@@ -249,16 +308,19 @@ public class GuardRouteScreen extends Screen {
                     this.width / 2, y + 96, MUTED);
         }
 
-        for (int i = 0; i < points.size(); i++) {
+        int start = pointPage * rowsPerPage();
+        int end = Math.min(start + rowsPerPage(), points.size());
+        for (int i = start; i < end; i++) {
             GuardListS2CPayload.Point point = points.get(i);
-            int rowY = y + ROW_TOP + i * ROW_H;
+            int rowY = y + ROW_TOP + (i - start) * ROW_H;
             ctx.fill(x + 6, rowY + ROW_H - 1, x + panelW - 6, rowY + ROW_H, 0x22FFFFFF);
-            String label = (i + 1) + ".  X " + point.x() + "   Y " + point.y() + "   Z " + point.z();
-            int maxLabelW = panelW - 190;
+            String label = "#" + (i + 1) + "  X " + point.x() + "  Y " + point.y() + "  Z " + point.z();
+            int nameW = Math.max(80, panelW - 350);
+            int maxLabelW = Math.max(50, panelW - nameW - 206);
             if (this.font.width(label) > maxLabelW) {
                 label = this.font.plainSubstrByWidth(label, maxLabelW - this.font.width("...")) + "...";
             }
-            ctx.text(this.font, Component.literal(label), x + 16, rowY + 8, WHITE);
+            ctx.text(this.font, Component.literal(label), x + 22 + nameW, rowY + 8, WHITE);
         }
 
         if (points.size() < 2) {
@@ -283,6 +345,11 @@ public class GuardRouteScreen extends Screen {
     private int panelHeight() {
         int rowsHeight = ROW_TOP + RallyConfig.routeMaxPoints() * ROW_H + 84;
         return Math.min(this.height - SCREEN_PAD * 2, Math.max(MIN_PANEL_H, rowsHeight));
+    }
+
+    private int rowsPerPage() {
+        return Math.max(1, Math.min(RallyConfig.routeMaxPoints(),
+                (panelHeight() - ROW_TOP - 76) / ROW_H));
     }
 
     @Override

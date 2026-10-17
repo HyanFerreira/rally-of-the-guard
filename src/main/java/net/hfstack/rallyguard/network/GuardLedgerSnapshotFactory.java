@@ -85,9 +85,13 @@ public final class GuardLedgerSnapshotFactory {
                     GuardOrders.statusOf(guard),
                     route.active(),
                     Math.max(0, route.waitTicks() / 20),
-                    route.points().stream()
-                            .map(point -> new GuardListS2CPayload.Point(point.getX(), point.getY(), point.getZ()))
-                            .toList(),
+                    java.util.stream.IntStream.range(0, route.points().size())
+                            .mapToObj(index -> {
+                                var point = route.points().get(index);
+                                return new GuardListS2CPayload.Point(
+                                        point.getX(), point.getY(), point.getZ(), route.pointLabels().get(index)
+                                );
+                            }).toList(),
                     presentation.rank(),
                     presentation.settlement(),
                     squad.squad().map(value -> value.id()),

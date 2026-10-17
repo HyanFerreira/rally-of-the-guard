@@ -65,14 +65,15 @@ atômica: se a atribuição falhar, o modelo recém-criado é removido.
 
 Uma tela dedicada permite ver, nomear e reordenar os pontos, substituir uma
 coordenada pela posição atual, adicionar/remover pontos e alterar a espera. Os
-nomes são opcionais; pontos sem nome recebem apenas um rótulo localizado na GUI.
-Copiar novamente os pontos da rota individual exige confirmação e só altera o
-modelo depois que o jogador salva.
+nomes são opcionais. O editor da rota individual também permite nomear os pontos
+no momento em que suas posições são definidas; esses nomes são levados para o
+modelo ao usar `Salvar rota do guarda como nova`.
 
 ## Compatibilidade
 
 - rotas individuais existentes continuam válidas e sem associação nomeada;
-- o formato individual será migrado de `v1` para `v2` sem perder pontos;
+- o formato individual `v3` acrescenta nomes opcionais aos pontos e lê os
+  formatos `v1` e `v2` como nomes vazios;
 - o registro de rotas salvas migra de `v1` para `v2`, preservando coordenadas e
   inicializando os nomes opcionais como vazios;
 - Named Routes não força chunks nem modifica guardas de outro jogador;

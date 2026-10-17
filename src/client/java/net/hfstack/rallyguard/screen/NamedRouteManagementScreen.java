@@ -26,12 +26,9 @@ public final class NamedRouteManagementScreen extends Screen {
     private static final int GOLD = 0xFFFFC94A;
     private static final int MAX_PANEL_WIDTH = 700;
     private static final int PANEL_HEIGHT = 340;
-    private static final int ROUTE_ROWS = 6;
-    private static final int GUARD_ROWS = 4;
     private static final int ROUTE_ROW_HEIGHT = 34;
     private static final int GUARD_ROW_HEIGHT = 32;
     private static final int ROUTE_TOP = 72;
-    private static final int ROUTE_LIST_WIDTH = 180;
 
     private final GuardCommandScreen parent;
     private final UUID sourceGuardId;
@@ -81,29 +78,30 @@ public final class NamedRouteManagementScreen extends Screen {
         int x = panelX();
         int y = panelY();
         int panelW = panelWidth();
-        int detailX = x + 208;
+        int routeListW = routeListWidth();
+        int detailX = x + routeListW + 28;
         int detailW = x + panelW - 14 - detailX;
         int guardColumnW = guardColumnWidth();
 
         addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.named_route.new_from_guard"),
                         button -> newFromGuard())
-                .bounds(x + 14, y + 30, ROUTE_LIST_WIDTH, 20).build());
+                .bounds(x + 14, y + 30, routeListW, 20).build());
 
         List<GuardListS2CPayload.NamedRouteEntry> routes = snapshot.namedRoutes();
-        int routeStart = routePage * ROUTE_ROWS;
-        int routeEnd = Math.min(routeStart + ROUTE_ROWS, routes.size());
+        int routeStart = routePage * routeRows();
+        int routeEnd = Math.min(routeStart + routeRows(), routes.size());
         for (int i = routeStart; i < routeEnd; i++) {
             GuardListS2CPayload.NamedRouteEntry route = routes.get(i);
             int rowY = y + ROUTE_TOP + (i - routeStart) * ROUTE_ROW_HEIGHT;
             addRenderableWidget(Button.builder(Component.empty(), button -> {
                 selectRoute(route);
                 rebuildControls();
-            }).bounds(x + 14, rowY, ROUTE_LIST_WIDTH, ROUTE_ROW_HEIGHT - 2).build());
+            }).bounds(x + 14, rowY, routeListW, ROUTE_ROW_HEIGHT - 2).build());
         }
 
         int deleteW = 70;
         int saveW = 86;
-        int nameW = Math.max(140, detailW - saveW - deleteW - 12);
+        int nameW = Math.max(80, detailW - saveW - deleteW - 12);
         nameBox = new EditBox(font, detailX, y + 30, nameW, 20,
                 Component.translatable("gui.rallyguard.named_route.name"));
         nameBox.setMaxLength(48);
@@ -153,7 +151,7 @@ public final class NamedRouteManagementScreen extends Screen {
         unassign.active = selectedAssigned().isPresent();
         addRenderableWidget(unassign);
 
-        int bottom = y + PANEL_HEIGHT - 28;
+        int bottom = y + panelHeight() - 28;
         addRenderableWidget(Button.builder(Component.literal("<"), button -> changeRoutePage(-1))
                 .bounds(x + 14, bottom, 24, 20).build());
         addRenderableWidget(Button.builder(Component.literal(">"), button -> changeRoutePage(1))
@@ -172,8 +170,8 @@ public final class NamedRouteManagementScreen extends Screen {
 
     private void addGuardRows(List<GuardListS2CPayload.Entry> guards, int page, int rowX, UUID selectedGuard,
                               Consumer<GuardListS2CPayload.Entry> onSelect) {
-        int start = page * GUARD_ROWS;
-        int end = Math.min(start + GUARD_ROWS, guards.size());
+        int start = page * guardRows();
+        int end = Math.min(start + guardRows(), guards.size());
         for (int i = start; i < end; i++) {
             GuardListS2CPayload.Entry guard = guards.get(i);
             int rowY = panelY() + 154 + (i - start) * GUARD_ROW_HEIGHT;
@@ -254,7 +252,7 @@ public final class NamedRouteManagementScreen extends Screen {
 
     private void openEditor() {
         selectedRoute().ifPresent(route -> Minecraft.getInstance().setScreen(
-                new NamedRouteEditorScreen(this, snapshot, route, sourceGuardId)
+                new NamedRouteEditorScreen(this, snapshot, route)
         ));
     }
 
@@ -351,9 +349,9 @@ public final class NamedRouteManagementScreen extends Screen {
     }
 
     private void clampPages() {
-        routePage = clampPage(routePage, snapshot.namedRoutes().size(), ROUTE_ROWS);
-        availablePage = clampPage(availablePage, availableGuards().size(), GUARD_ROWS);
-        assignedPage = clampPage(assignedPage, assignedGuards().size(), GUARD_ROWS);
+        routePage = clampPage(routePage, snapshot.namedRoutes().size(), routeRows());
+        availablePage = clampPage(availablePage, availableGuards().size(), guardRows());
+        assignedPage = clampPage(assignedPage, assignedGuards().size(), guardRows());
     }
 
     private int clampPage(int page, int size, int rows) {
@@ -366,18 +364,18 @@ public final class NamedRouteManagementScreen extends Screen {
     }
 
     private void changeRoutePage(int delta) {
-        routePage = cyclePage(routePage, delta, snapshot.namedRoutes().size(), ROUTE_ROWS);
+        routePage = cyclePage(routePage, delta, snapshot.namedRoutes().size(), routeRows());
         rebuildControls();
     }
 
     private void changeAvailablePage(int delta) {
-        availablePage = cyclePage(availablePage, delta, availableGuards().size(), GUARD_ROWS);
+        availablePage = cyclePage(availablePage, delta, availableGuards().size(), guardRows());
         selectedAvailableGuard = null;
         rebuildControls();
     }
 
     private void changeAssignedPage(int delta) {
-        assignedPage = cyclePage(assignedPage, delta, assignedGuards().size(), GUARD_ROWS);
+        assignedPage = cyclePage(assignedPage, delta, assignedGuards().size(), guardRows());
         selectedAssignedGuard = null;
         rebuildControls();
     }
@@ -401,18 +399,23 @@ public final class NamedRouteManagementScreen extends Screen {
         int x = panelX();
         int y = panelY();
         int panelW = panelWidth();
-        int detailX = x + 208;
+        int detailX = x + routeListWidth() + 28;
         int assignedX = x + panelW - 14 - guardColumnWidth();
-        graphics.fill(x, y, x + panelW, y + PANEL_HEIGHT, 0xF0101010);
-        graphics.outline(x, y, panelW, PANEL_HEIGHT, WHITE);
+        graphics.fill(x, y, x + panelW, y + panelHeight(), 0xF0101010);
+        graphics.outline(x, y, panelW, panelHeight(), WHITE);
         graphics.centeredText(font, title, width / 2, y + 10, WHITE);
-        graphics.fill(x + 200, y + 26, x + 201, y + PANEL_HEIGHT - 10, 0x44FFFFFF);
+        graphics.fill(x + routeListWidth() + 20, y + 26,
+                x + routeListWidth() + 21, y + panelHeight() - 10, 0x44FFFFFF);
         graphics.text(font, Component.translatable("gui.rallyguard.named_route.saved_routes"), x + 14, y + 58, MUTED);
-        graphics.text(font, Component.translatable("gui.rallyguard.named_route.available"), detailX, y + 136, WHITE);
+        graphics.text(font, Component.literal(trim(
+                Component.translatable("gui.rallyguard.named_route.available").getString(), guardColumnWidth()
+        )), detailX, y + 136, WHITE);
         String selectedName = selectedRoute().map(GuardListS2CPayload.NamedRouteEntry::name)
                 .orElse(Component.translatable("gui.rallyguard.named_route.select").getString());
-        graphics.text(font, Component.translatable("gui.rallyguard.named_route.assigned_guards", selectedName),
-                assignedX, y + 136, WHITE);
+        graphics.text(font, Component.literal(trim(
+                Component.translatable("gui.rallyguard.named_route.assigned_guards", selectedName).getString(),
+                guardColumnWidth()
+        )), assignedX, y + 136, WHITE);
         selectedRoute().ifPresent(route -> {
             String details = Component.translatable(
                     "gui.rallyguard.named_route.details", draftPoints.size(), draftWaitSeconds, route.dimensionId()
@@ -427,27 +430,27 @@ public final class NamedRouteManagementScreen extends Screen {
     }
 
     private void drawRoutes(GuiGraphicsExtractor graphics) {
-        int start = routePage * ROUTE_ROWS;
-        int end = Math.min(start + ROUTE_ROWS, snapshot.namedRoutes().size());
+        int start = routePage * routeRows();
+        int end = Math.min(start + routeRows(), snapshot.namedRoutes().size());
         for (int i = start; i < end; i++) {
             GuardListS2CPayload.NamedRouteEntry route = snapshot.namedRoutes().get(i);
             int rowY = panelY() + ROUTE_TOP + (i - start) * ROUTE_ROW_HEIGHT;
             int color = route.id().equals(selectedRouteId) ? GOLD : WHITE;
-            graphics.text(font, Component.literal(trim(route.name(), ROUTE_LIST_WIDTH - 12)),
+            graphics.text(font, Component.literal(trim(route.name(), routeListWidth() - 12)),
                     panelX() + 20, rowY + 6, color);
             String detail = route.points().size() + " pts · " + route.waitSeconds() + "s";
             graphics.text(font, Component.literal(detail), panelX() + 20, rowY + 18, MUTED);
         }
         if (snapshot.namedRoutes().isEmpty()) {
             graphics.centeredText(font, Component.translatable("gui.rallyguard.named_route.no_routes"),
-                    panelX() + 14 + ROUTE_LIST_WIDTH / 2, panelY() + 92, MUTED);
+                    panelX() + 14 + routeListWidth() / 2, panelY() + 92, MUTED);
         }
     }
 
     private void drawGuards(GuiGraphicsExtractor graphics, List<GuardListS2CPayload.Entry> guards, int page,
                             int rowX, UUID selectedGuard) {
-        int start = page * GUARD_ROWS;
-        int end = Math.min(start + GUARD_ROWS, guards.size());
+        int start = page * guardRows();
+        int end = Math.min(start + guardRows(), guards.size());
         for (int i = start; i < end; i++) {
             GuardListS2CPayload.Entry guard = guards.get(i);
             int rowY = panelY() + 154 + (i - start) * GUARD_ROW_HEIGHT;
@@ -471,16 +474,32 @@ public final class NamedRouteManagementScreen extends Screen {
     }
 
     private int panelWidth() {
-        return Math.min(MAX_PANEL_WIDTH, Math.max(600, width - 24));
+        return Math.min(MAX_PANEL_WIDTH, Math.max(1, width - 24));
     }
 
     private int guardColumnWidth() {
-        int detailWidth = panelWidth() - 222;
-        return Math.max(150, (detailWidth - 52) / 2);
+        int detailWidth = panelWidth() - routeListWidth() - 42;
+        return Math.max(80, (detailWidth - 52) / 2);
     }
 
     private int panelY() {
-        return (height - PANEL_HEIGHT) / 2;
+        return (height - panelHeight()) / 2;
+    }
+
+    private int panelHeight() {
+        return Math.min(PANEL_HEIGHT, Math.max(1, height - 24));
+    }
+
+    private int routeListWidth() {
+        return Math.max(120, Math.min(180, panelWidth() / 4));
+    }
+
+    private int routeRows() {
+        return Math.max(1, Math.min(6, (panelHeight() - ROUTE_TOP - 34) / ROUTE_ROW_HEIGHT));
+    }
+
+    private int guardRows() {
+        return Math.max(1, Math.min(4, (panelHeight() - 182) / GUARD_ROW_HEIGHT));
     }
 
     @Override

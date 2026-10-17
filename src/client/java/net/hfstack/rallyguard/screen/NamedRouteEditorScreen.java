@@ -9,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -26,11 +25,9 @@ public final class NamedRouteEditorScreen extends Screen {
     private static final int MAX_PANEL_WIDTH = 680;
     private static final int ROW_TOP = 76;
     private static final int ROW_HEIGHT = 30;
-    private static final int ROWS_PER_PAGE = 6;
 
     private final NamedRouteManagementScreen parent;
     private final UUID routeId;
-    private final UUID sourceGuardId;
     private GuardListS2CPayload snapshot;
     private String routeName;
     private int waitSeconds;
@@ -40,12 +37,11 @@ public final class NamedRouteEditorScreen extends Screen {
     private int page;
 
     NamedRouteEditorScreen(NamedRouteManagementScreen parent, GuardListS2CPayload snapshot,
-                           GuardListS2CPayload.NamedRouteEntry route, UUID sourceGuardId) {
+                           GuardListS2CPayload.NamedRouteEntry route) {
         super(Component.translatable("gui.rallyguard.named_route.editor_title", route.name()));
         this.parent = parent;
         this.snapshot = snapshot;
         this.routeId = route.id();
-        this.sourceGuardId = sourceGuardId;
         load(route);
     }
 
@@ -66,7 +62,7 @@ public final class NamedRouteEditorScreen extends Screen {
     private void rebuildControls() {
         clearWidgets();
         labelBoxes.clear();
-        page = Math.max(0, Math.min(page, Math.max(0, (points.size() - 1) / ROWS_PER_PAGE)));
+        page = Math.max(0, Math.min(page, Math.max(0, (points.size() - 1) / rowsPerPage())));
         int x = panelX();
         int y = panelY();
         int panelW = panelWidth();
@@ -82,18 +78,19 @@ public final class NamedRouteEditorScreen extends Screen {
         addRenderableWidget(Button.builder(Component.literal("+5s"), button -> changeWait(5))
                 .bounds(x + panelW - 112, y + 32, 48, 20).build());
 
-        int start = page * ROWS_PER_PAGE;
-        int end = Math.min(start + ROWS_PER_PAGE, points.size());
+        int start = page * rowsPerPage();
+        int end = Math.min(start + rowsPerPage(), points.size());
         for (int i = start; i < end; i++) addPointRow(i, i - start);
 
-        int controlsY = y + 264;
+        int bottom = y + panelHeight() - 30;
+        int controlsY = bottom - 30;
         Button previous = Button.builder(Component.literal("<"), button -> changePage(-1))
                 .bounds(x + 14, controlsY, 24, 20).build();
         previous.active = page > 0;
         addRenderableWidget(previous);
         Button next = Button.builder(Component.literal(">"), button -> changePage(1))
                 .bounds(x + 42, controlsY, 24, 20).build();
-        next.active = (page + 1) * ROWS_PER_PAGE < points.size();
+        next.active = (page + 1) * rowsPerPage() < points.size();
         addRenderableWidget(next);
 
         Button add = Button.builder(Component.translatable("gui.rallyguard.route.add_current"),
@@ -102,13 +99,6 @@ public final class NamedRouteEditorScreen extends Screen {
         add.active = points.size() < RallyConfig.routeMaxPoints();
         addRenderableWidget(add);
 
-        Button importGuard = Button.builder(Component.translatable("gui.rallyguard.named_route.import_guard_points"),
-                        button -> confirmImportGuard())
-                .bounds(x + 190, controlsY, Math.min(170, panelW - 380), 20).build();
-        importGuard.active = sourceGuard().map(guard -> guard.routePoints().size() >= 2).orElse(false);
-        addRenderableWidget(importGuard);
-
-        int bottom = y + PANEL_HEIGHT - 30;
         Button save = Button.builder(Component.translatable("gui.rallyguard.named_route.save_changes"),
                         button -> save())
                 .bounds(x + 14, bottom, 112, 20).build();
@@ -131,9 +121,6 @@ public final class NamedRouteEditorScreen extends Screen {
                 Component.translatable("gui.rallyguard.named_route.point_name", pointIndex + 1));
         label.setMaxLength(32);
         label.setValue(point.label());
-        label.setSuggestion(Component.translatable(
-                "gui.rallyguard.named_route.point_default", pointIndex + 1
-        ).getString());
         labelBoxes.add(label);
         addRenderableWidget(label);
 
@@ -156,7 +143,7 @@ public final class NamedRouteEditorScreen extends Screen {
 
     private void captureDraft() {
         if (nameBox != null) routeName = nameBox.getValue();
-        int start = page * ROWS_PER_PAGE;
+        int start = page * rowsPerPage();
         for (int visible = 0; visible < labelBoxes.size(); visible++) {
             int index = start + visible;
             if (index >= points.size()) break;
@@ -171,7 +158,7 @@ public final class NamedRouteEditorScreen extends Screen {
         captureDraft();
         BlockPos pos = currentPosition();
         points.add(new GuardListS2CPayload.Point(pos.getX(), pos.getY(), pos.getZ(), ""));
-        page = (points.size() - 1) / ROWS_PER_PAGE;
+        page = (points.size() - 1) / rowsPerPage();
         rebuildControls();
     }
 
@@ -196,7 +183,7 @@ public final class NamedRouteEditorScreen extends Screen {
         int destination = index + delta;
         if (destination < 0 || destination >= points.size()) return;
         java.util.Collections.swap(points, index, destination);
-        page = destination / ROWS_PER_PAGE;
+        page = destination / rowsPerPage();
         rebuildControls();
     }
 
@@ -210,26 +197,6 @@ public final class NamedRouteEditorScreen extends Screen {
         captureDraft();
         page += delta;
         rebuildControls();
-    }
-
-    private void confirmImportGuard() {
-        captureDraft();
-        Minecraft.getInstance().setScreen(new ConfirmScreen(
-                confirmed -> {
-                    if (confirmed) {
-                        sourceGuard().ifPresent(guard -> {
-                            points.clear();
-                            points.addAll(guard.routePoints());
-                            waitSeconds = guard.routeWaitSeconds() > 0
-                                    ? guard.routeWaitSeconds() : RallyConfig.routeDefaultWaitSeconds();
-                            page = 0;
-                        });
-                    }
-                    Minecraft.getInstance().setScreen(this);
-                },
-                Component.translatable("gui.rallyguard.named_route.replace_points_title"),
-                Component.translatable("gui.rallyguard.named_route.replace_points", routeName)
-        ));
     }
 
     private void save() {
@@ -250,10 +217,6 @@ public final class NamedRouteEditorScreen extends Screen {
         waitSeconds = route.waitSeconds();
         points.clear();
         points.addAll(route.points());
-    }
-
-    private Optional<GuardListS2CPayload.Entry> sourceGuard() {
-        return snapshot.entries().stream().filter(guard -> guard.guardId().equals(sourceGuardId)).findFirst();
     }
 
     private BlockPos currentPosition() {
@@ -280,16 +243,16 @@ public final class NamedRouteEditorScreen extends Screen {
         int x = panelX();
         int y = panelY();
         int panelW = panelWidth();
-        graphics.fill(x, y, x + panelW, y + PANEL_HEIGHT, 0xF0101010);
-        graphics.outline(x, y, panelW, PANEL_HEIGHT, WHITE);
+        graphics.fill(x, y, x + panelW, y + panelHeight(), 0xF0101010);
+        graphics.outline(x, y, panelW, panelHeight(), WHITE);
         graphics.centeredText(font, title, width / 2, y + 10, WHITE);
         graphics.text(font, Component.translatable("gui.rallyguard.named_route.point_names_hint"),
                 x + 14, y + 58, MUTED);
         graphics.text(font, Component.translatable("gui.rallyguard.route.wait", waitSeconds),
                 x + panelW - 62, y + 58, MUTED);
 
-        int start = page * ROWS_PER_PAGE;
-        int end = Math.min(start + ROWS_PER_PAGE, points.size());
+        int start = page * rowsPerPage();
+        int end = Math.min(start + rowsPerPage(), points.size());
         for (int i = start; i < end; i++) {
             GuardListS2CPayload.Point point = points.get(i);
             int rowY = y + ROW_TOP + (i - start) * ROW_HEIGHT;
@@ -305,13 +268,13 @@ public final class NamedRouteEditorScreen extends Screen {
         }
         if (points.size() < 2) {
             graphics.text(font, Component.translatable("gui.rallyguard.route.need_points"),
-                    x + 14, y + 288, 0xFFFFCC66);
+                    x + 132, y + panelHeight() - 26, 0xFFFFCC66);
         }
         super.extractRenderState(graphics, mouseX, mouseY, delta);
     }
 
     private int panelWidth() {
-        return Math.min(MAX_PANEL_WIDTH, Math.max(480, width - 24));
+        return Math.min(MAX_PANEL_WIDTH, Math.max(1, width - 24));
     }
 
     private int panelX() {
@@ -319,7 +282,15 @@ public final class NamedRouteEditorScreen extends Screen {
     }
 
     private int panelY() {
-        return (height - PANEL_HEIGHT) / 2;
+        return (height - panelHeight()) / 2;
+    }
+
+    private int panelHeight() {
+        return Math.min(PANEL_HEIGHT, Math.max(1, height - 24));
+    }
+
+    private int rowsPerPage() {
+        return Math.max(1, Math.min(6, (panelHeight() - ROW_TOP - 68) / ROW_HEIGHT));
     }
 
     @Override

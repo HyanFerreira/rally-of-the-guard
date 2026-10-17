@@ -12,6 +12,7 @@ import java.util.UUID;
 class GuardRoutesTest {
     private static final String PREFIX = "rallyguard:route:v1:";
     private static final String PREFIX_V2 = "rallyguard:route:v2:";
+    private static final String PREFIX_V3 = "rallyguard:route:v3:";
 
     @Test
     void malformedNumericFieldsReturnEmptyInactiveRoute() {
@@ -79,5 +80,18 @@ class GuardRoutesTest {
         assertFalse(route.active());
         assertTrue(route.points().isEmpty());
         assertTrue(route.namedRouteId().isEmpty());
+    }
+
+    @Test
+    void versionThreePreservesUnicodePointLabels() {
+        UUID routeId = UUID.fromString("30000000-0000-0000-0000-000000000001");
+        String labels = RoutePointLabels.encode(java.util.List.of("Frente da Casa", "Armazém"), 2);
+
+        GuardRouteState route = GuardRoutes.parse(
+                PREFIX_V3 + "1:0:40:0:" + routeId + ":1,2,3;4,5,6:" + labels
+        );
+
+        assertEquals(java.util.List.of("Frente da Casa", "Armazém"), route.pointLabels());
+        assertEquals(routeId, route.namedRouteId().orElseThrow());
     }
 }

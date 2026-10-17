@@ -46,10 +46,16 @@ public final class DefaultNamedRouteService {
 
     public NamedRouteMutationResult createFromGuard(ServerPlayer owner, GuardEntity guard, String name,
                                                     int waitSeconds, List<BlockPos> points) {
+        return createFromGuard(owner, guard, name, waitSeconds, points, points.stream().map(point -> "").toList());
+    }
+
+    public NamedRouteMutationResult createFromGuard(ServerPlayer owner, GuardEntity guard, String name,
+                                                    int waitSeconds, List<BlockPos> points,
+                                                    List<String> pointLabels) {
         NamedRouteMutationResult guardCheck = validateAssignableGuard(owner, guard);
         if (guardCheck != null) return guardCheck;
 
-        NamedRouteMutationResult created = create(owner, name, waitSeconds, points);
+        NamedRouteMutationResult created = create(owner, name, waitSeconds, points, pointLabels);
         if (!created.succeeded() || created.routeId().isEmpty()) return created;
 
         UUID routeId = created.routeId().orElseThrow();
@@ -117,7 +123,7 @@ public final class DefaultNamedRouteService {
                     "gui.rallyguard.named_route.wrong_dimension");
         }
         GuardRouteState state = new GuardRouteState(
-                true, 0, route.waitSeconds() * 20, 0, route.points(), Optional.of(route.id())
+                true, 0, route.waitSeconds() * 20, 0, route.points(), Optional.of(route.id()), route.pointLabels()
         );
         MoveOrders.clear(guard);
         DefendAreas.clear(guard);
@@ -163,7 +169,7 @@ public final class DefaultNamedRouteService {
             if (current.namedRouteId().filter(definition.id()::equals).isEmpty()) continue;
             GuardRouteState updated = new GuardRouteState(
                     current.active(), 0, definition.waitSeconds() * 20, 0, definition.points(),
-                    Optional.of(definition.id())
+                    Optional.of(definition.id()), definition.pointLabels()
             );
             if (updated.active()) GuardRoutes.applyToGuard(guard, updated);
             else GuardRoutes.set(guard, updated);
@@ -175,7 +181,8 @@ public final class DefaultNamedRouteService {
             GuardRoutes.clear(guard);
         } else {
             GuardRoutes.set(guard, new GuardRouteState(
-                    false, current.currentIndex(), current.waitTicks(), 0, current.points(), Optional.empty()
+                    false, current.currentIndex(), current.waitTicks(), 0, current.points(), Optional.empty(),
+                    current.pointLabels()
             ));
         }
         guard.setPatrolling(false);

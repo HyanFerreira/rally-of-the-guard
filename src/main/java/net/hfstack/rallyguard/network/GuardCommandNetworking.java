@@ -245,12 +245,18 @@ public final class GuardCommandNetworking {
                 .limit(RallyConfig.routeMaxPoints())
                 .map(p -> new BlockPos(p.x(), p.y(), p.z()))
                 .toList();
+        List<String> pointLabels = payload.points().stream()
+                .limit(RallyConfig.routeMaxPoints())
+                .map(GuardRouteUpdateC2SPayload.Point::label)
+                .toList();
         int waitTicks = Math.max(0, Math.min(600, payload.waitSeconds())) * 20;
 
         switch (payload.action()) {
             case NetworkConstants.ROUTE_SAVE -> {
                 GuardTaskSuspensions.discard(guard);
-                GuardRoutes.set(guard, new GuardRouteState(false, 0, waitTicks, 0, points));
+                GuardRoutes.set(guard, new GuardRouteState(
+                        false, 0, waitTicks, 0, points, Optional.empty(), pointLabels
+                ));
                 player.sendOverlayMessage(Component.translatable("gui.rallyguard.route.saved"));
             }
             case NetworkConstants.ROUTE_START -> {
@@ -260,8 +266,10 @@ public final class GuardCommandNetworking {
                 }
                 GuardTaskSuspensions.discard(guard);
                 GuardRouteState current = GuardRoutes.get(guard);
-                Optional<UUID> namedRouteId = matchingNamedRouteId(current, points, waitTicks);
-                GuardRouteState route = new GuardRouteState(true, 0, waitTicks, 0, points, namedRouteId);
+                Optional<UUID> namedRouteId = matchingNamedRouteId(current, points, pointLabels, waitTicks);
+                GuardRouteState route = new GuardRouteState(
+                        true, 0, waitTicks, 0, points, namedRouteId, pointLabels
+                );
                 MoveOrders.clear(guard);
                 DefendAreas.clear(guard);
                 GuardRoutes.applyToGuard(guard, route);
@@ -273,9 +281,9 @@ public final class GuardCommandNetworking {
             case NetworkConstants.ROUTE_PAUSE -> {
                 GuardTaskSuspensions.discard(guard);
                 GuardRouteState current = GuardRoutes.get(guard);
-                Optional<UUID> namedRouteId = matchingNamedRouteId(current, points, waitTicks);
+                Optional<UUID> namedRouteId = matchingNamedRouteId(current, points, pointLabels, waitTicks);
                 GuardRoutes.set(guard, new GuardRouteState(
-                        false, current.currentIndex(), waitTicks, 0, points, namedRouteId
+                        false, current.currentIndex(), waitTicks, 0, points, namedRouteId, pointLabels
                 ));
                 guard.setPatrolling(false);
                 guard.setFollowing(false);
@@ -300,8 +308,9 @@ public final class GuardCommandNetworking {
     }
 
     private static Optional<UUID> matchingNamedRouteId(GuardRouteState current, List<BlockPos> points,
-                                                        int waitTicks) {
-        if (!current.points().equals(points) || current.waitTicks() != waitTicks) return Optional.empty();
+                                                        List<String> pointLabels, int waitTicks) {
+        if (!current.points().equals(points) || !current.pointLabels().equals(pointLabels)
+                || current.waitTicks() != waitTicks) return Optional.empty();
         return current.namedRouteId();
     }
 
@@ -318,7 +327,7 @@ public final class GuardCommandNetworking {
                         ? null : player.level().getEntity(payload.sourceGuardEntityId());
                 if (source instanceof GuardEntity guard) {
                     yield NAMED_ROUTES.createFromGuard(
-                            player, guard, payload.name(), payload.waitSeconds(), points
+                            player, guard, payload.name(), payload.waitSeconds(), points, pointLabels
                     );
                 }
                 if (payload.sourceGuardEntityId() != NamedRouteMutationC2SPayload.NO_SOURCE_GUARD) {

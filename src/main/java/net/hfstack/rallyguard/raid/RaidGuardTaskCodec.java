@@ -1,6 +1,7 @@
 package net.hfstack.rallyguard.raid;
 
 import net.hfstack.rallyguard.order.GuardRouteState;
+import net.hfstack.rallyguard.order.RoutePointLabels;
 import net.hfstack.rallyguard.order.defend.DefendAreaCodec;
 import net.hfstack.rallyguard.order.defend.DefendAreaRead;
 import net.hfstack.rallyguard.order.defend.DefendAreaState;
@@ -100,6 +101,7 @@ final class RaidGuardTaskCodec {
                 .reduce((left, right) -> left + ";" + right)
                 .orElse("");
         tag.putString("points", points);
+        tag.putString("point_labels", RoutePointLabels.encode(route.pointLabels(), route.points().size()));
         return tag;
     }
 
@@ -123,9 +125,11 @@ final class RaidGuardTaskCodec {
         }
         try {
             List<BlockPos> points = decodePoints(encodedPoints.get());
+            String labels = tag.getString("point_labels").orElse(null);
             return Optional.of(new GuardRouteState(
                     tag.getBooleanOr("active", false),
-                    currentIndex.get(), waitTicks.get(), dwellTicks.get(), points, namedRouteId
+                    currentIndex.get(), waitTicks.get(), dwellTicks.get(), points, namedRouteId,
+                    RoutePointLabels.decode(labels, points.size())
             ));
         } catch (IllegalArgumentException exception) {
             return Optional.empty();

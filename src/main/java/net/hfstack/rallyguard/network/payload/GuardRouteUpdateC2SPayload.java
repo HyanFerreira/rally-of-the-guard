@@ -11,7 +11,14 @@ import java.util.List;
 
 public record GuardRouteUpdateC2SPayload(int entityId, int action, int waitSeconds, List<Point> points)
         implements CustomPacketPayload {
-    public record Point(int x, int y, int z) {
+    public record Point(int x, int y, int z, String label) {
+        public Point {
+            label = label == null ? "" : label;
+        }
+
+        public Point(int x, int y, int z) {
+            this(x, y, z, "");
+        }
     }
 
     public static final Type<GuardRouteUpdateC2SPayload> ID =
@@ -29,6 +36,7 @@ public record GuardRouteUpdateC2SPayload(int entityId, int action, int waitSecon
                         buf.writeInt(point.x());
                         buf.writeInt(point.y());
                         buf.writeInt(point.z());
+                        buf.writeUtf(point.label(), 32);
                     }
                 }
 
@@ -40,7 +48,7 @@ public record GuardRouteUpdateC2SPayload(int entityId, int action, int waitSecon
                     int size = buf.readVarInt();
                     List<Point> points = new ArrayList<>(size);
                     for (int i = 0; i < size; i++) {
-                        points.add(new Point(buf.readInt(), buf.readInt(), buf.readInt()));
+                        points.add(new Point(buf.readInt(), buf.readInt(), buf.readInt(), buf.readUtf(32)));
                     }
                     return new GuardRouteUpdateC2SPayload(entityId, action, waitSeconds, points);
                 }

@@ -1,6 +1,7 @@
 package net.hfstack.rallyguard.order.temporary;
 
 import net.hfstack.rallyguard.order.GuardRouteState;
+import net.hfstack.rallyguard.order.RoutePointLabels;
 import net.hfstack.rallyguard.order.defend.DefendAreaCodec;
 import net.hfstack.rallyguard.order.defend.DefendAreaRead;
 import net.hfstack.rallyguard.order.defend.DefendAreaState;
@@ -86,6 +87,7 @@ public final class GuardTaskCodec {
         tag.putString("points", route.points().stream()
                 .map(point -> point.getX() + "," + point.getY() + "," + point.getZ())
                 .reduce((left, right) -> left + ";" + right).orElse(""));
+        tag.putString("point_labels", RoutePointLabels.encode(route.pointLabels(), route.points().size()));
         return tag;
     }
 
@@ -108,9 +110,11 @@ public final class GuardTaskCodec {
             }
         }
         try {
+            List<BlockPos> points = decodePoints(encodedPoints.get());
+            String labels = tag.getString("point_labels").orElse(null);
             return Optional.of(new GuardRouteState(
                     tag.getBooleanOr("active", false), currentIndex.get(), waitTicks.get(), dwellTicks.get(),
-                    decodePoints(encodedPoints.get()), namedRouteId
+                    points, namedRouteId, RoutePointLabels.decode(labels, points.size())
             ));
         } catch (IllegalArgumentException exception) {
             return Optional.empty();
