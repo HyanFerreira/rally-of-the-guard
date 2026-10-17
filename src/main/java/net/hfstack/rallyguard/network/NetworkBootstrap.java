@@ -25,6 +25,7 @@ import net.hfstack.rallyguard.network.payload.RaidOpportunityS2CPayload;
 import net.hfstack.rallyguard.network.payload.RaidResponseC2SPayload;
 import net.hfstack.rallyguard.network.payload.RaidBehaviorC2SPayload;
 import net.hfstack.rallyguard.network.payload.RaidBehaviorS2CPayload;
+import net.hfstack.rallyguard.network.payload.RaidReportS2CPayload;
 
 public final class NetworkBootstrap {
     private NetworkBootstrap() {
@@ -69,5 +70,6 @@ public final class NetworkBootstrap {
         PayloadTypeRegistry.clientboundPlay().register(GlobalGuardRegistryS2CPayload.ID, GlobalGuardRegistryS2CPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(RaidOpportunityS2CPayload.ID, RaidOpportunityS2CPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(RaidBehaviorS2CPayload.ID, RaidBehaviorS2CPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(RaidReportS2CPayload.ID, RaidReportS2CPayload.CODEC);
     }
 }

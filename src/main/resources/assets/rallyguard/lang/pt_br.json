@@ -466,5 +466,12 @@
   "gui.rallyguard.raid.behavior.normal": "Normal — mostrar alerta",
   "gui.rallyguard.raid.behavior.village": "Reunir na vila",
   "gui.rallyguard.raid.behavior.commander": "Reunir no comandante",
-  "gui.rallyguard.raid.behavior.saved": "Comportamento em raids: %s"
+  "gui.rallyguard.raid.behavior.saved": "Comportamento em raids: %s",
+  "gui.rallyguard.raid.report.title": "Relatório da raid",
+  "gui.rallyguard.raid.report.deployed": "Guardas mobilizados: %s",
+  "gui.rallyguard.raid.report.defeated": "Inimigos derrotados: %s",
+  "gui.rallyguard.raid.report.lost": "Guardas perdidos: %s",
+  "gui.rallyguard.raid.report.mvp": "MVP: %s — %s abates",
+  "gui.rallyguard.raid.report.no_mvp": "MVP: nenhum abate de guarda confirmado",
+  "gui.rallyguard.raid.report.incomplete": "Relatório parcial — algumas entidades descarregaram."
 }

@@ -14,6 +14,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.raid.Raider;
+import net.hfstack.rallyguard.raid.RaidReports;
+import net.hfstack.rallyguard.raid.RaidOpportunityKey;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -23,13 +26,17 @@ import java.util.UUID;
 public final class CombatProgressionHandler {
     private static final int CLEANUP_INTERVAL_TICKS = 20;
     private static final CombatContributionTracker TRACKER = new CombatContributionTracker();
+    private static final Map<UUID, RaidVictim> RAID_VICTIMS = new LinkedHashMap<>();
 
     private CombatProgressionHandler() {
     }
 
     public static void register() {
         ServerLivingEntityEvents.ALLOW_DAMAGE.register((victim, source, amount) -> {
-            if (!RallyConfig.progressionEnabled() || !XpTargetPolicy.isEligible(victim)) {
+            long tick = serverTick(victim);
+            Optional<RaidOpportunityKey> raid = raidKey(victim);
+            raid.ifPresent(key -> RAID_VICTIMS.put(victim.getUUID(), new RaidVictim(key, tick)));
+            if ((!RallyConfig.progressionEnabled() || !XpTargetPolicy.isEligible(victim)) && raid.isEmpty()) {
                 TRACKER.remove(victim.getUUID());
                 return true;
             }
@@ -37,12 +44,13 @@ public final class CombatProgressionHandler {
                 TRACKER.cancelPending(victim.getUUID());
                 return true;
             }
-            TRACKER.beginDamage(victim.getUUID(), victim.getHealth(), serverTick(victim));
+            TRACKER.beginDamage(victim.getUUID(), victim.getHealth(), tick);
             return true;
         });
 
         ServerLivingEntityEvents.AFTER_DAMAGE.register((victim, source, baseDamageTaken, damageTaken, blocked) -> {
-            if (!RallyConfig.progressionEnabled() || !XpTargetPolicy.isEligible(victim)) {
+            if ((!RallyConfig.progressionEnabled() || !XpTargetPolicy.isEligible(victim))
+                    && !RAID_VICTIMS.containsKey(victim.getUUID())) {
                 TRACKER.remove(victim.getUUID());
                 return;
             }
@@ -56,23 +64,29 @@ public final class CombatProgressionHandler {
         });
 
         ServerLivingEntityEvents.AFTER_DEATH.register(CombatProgressionHandler::afterDeath);
-        ServerEntityEvents.ENTITY_UNLOAD.register((entity, world) -> TRACKER.remove(entity.getUUID()));
+        ServerEntityEvents.ENTITY_UNLOAD.register((entity, world) -> {
+            TRACKER.remove(entity.getUUID());
+            RAID_VICTIMS.remove(entity.getUUID());
+        });
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             if (server.getTickCount() % CLEANUP_INTERVAL_TICKS == 0) {
                 TRACKER.cleanup(server.getTickCount(), RallyConfig.combatTimeoutTicks());
+                RAID_VICTIMS.entrySet().removeIf(entry ->
+                        server.getTickCount() - entry.getValue().lastDamageTick() > RallyConfig.combatTimeoutTicks());
             }
         });
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> TRACKER.clear());
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+            TRACKER.clear();
+            RAID_VICTIMS.clear();
+        });
     }
 
     private static void afterDeath(LivingEntity victim, DamageSource source) {
         try {
-            if (!RallyConfig.progressionEnabled()) {
-                TRACKER.remove(victim.getUUID());
-                return;
-            }
-            Optional<XpCategory> category = XpTargetPolicy.category(victim);
-            if (category.isEmpty()) {
+            RaidVictim raidVictim = RAID_VICTIMS.remove(victim.getUUID());
+            Optional<XpCategory> category = RallyConfig.progressionEnabled()
+                    ? XpTargetPolicy.category(victim) : Optional.empty();
+            if (category.isEmpty() && raidVictim == null) {
                 TRACKER.remove(victim.getUUID());
                 return;
             }
@@ -87,7 +101,12 @@ public final class CombatProgressionHandler {
                     RallyConfig.combatTimeoutTicks()
             );
             Optional<CombatLedgerSnapshot> finished = TRACKER.finish(victim.getUUID(), finalGuard);
-            finished.ifPresent(snapshot -> award(victim, category.orElseThrow(), snapshot));
+            finished.ifPresent(snapshot -> {
+                if (raidVictim != null && victim.level() instanceof ServerLevel level) {
+                    RaidReports.recordEnemyDefeat(level, raidVictim.key(), snapshot);
+                }
+                category.ifPresent(value -> award(victim, value, snapshot));
+            });
         } catch (RuntimeException exception) {
             TRACKER.remove(victim.getUUID());
             RallyOfTheGuard.LOGGER.error("Failed to process combat progression for {}", victim.getUUID(), exception);
@@ -148,5 +167,18 @@ public final class CombatProgressionHandler {
 
     private static long serverTick(LivingEntity entity) {
         return entity.level() instanceof ServerLevel level ? level.getServer().getTickCount() : 0L;
+    }
+
+    private static Optional<RaidOpportunityKey> raidKey(LivingEntity victim) {
+        if (!(victim instanceof Raider raider)
+                || !(victim.level() instanceof ServerLevel level)
+                || raider.getCurrentRaid() == null) return Optional.empty();
+        java.util.OptionalInt id = level.getRaids().getId(raider.getCurrentRaid());
+        return id.isPresent() ? Optional.of(new RaidOpportunityKey(
+                id.getAsInt(), level.dimension().identifier().toString(), raider.getCurrentRaid().getCenter()
+        )) : Optional.empty();
+    }
+
+    private record RaidVictim(RaidOpportunityKey key, long lastDamageTick) {
     }
 }

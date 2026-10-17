@@ -12,6 +12,7 @@ import net.hfstack.rallyguard.raid.RaidOpportunityPolicy;
 import net.hfstack.rallyguard.raid.RaidDefenseActions;
 import net.hfstack.rallyguard.raid.RaidBehavior;
 import net.hfstack.rallyguard.raid.RaidBehaviors;
+import net.hfstack.rallyguard.raid.RaidReports;
 import net.hfstack.rallyguard.raid.RaidResponseAction;
 import net.hfstack.rallyguard.service.GuardCommandTargets;
 import net.minecraft.network.chat.Component;
@@ -91,6 +92,7 @@ public final class RaidDefenseNetworking {
         }
 
         GuardBatchCommandResult result = RaidDefenseActions.execute(action, player, raid);
+        RaidReports.start(player.getUUID(), key, result.succeeded(), player.level().getServer().getTickCount());
         player.sendOverlayMessage(Component.translatable(
                 "gui.rallyguard.raid.batch_result",
                 result.succeeded(),

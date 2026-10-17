@@ -466,5 +466,12 @@
   "gui.rallyguard.raid.behavior.normal": "Normal — show alert",
   "gui.rallyguard.raid.behavior.village": "Rally to village",
   "gui.rallyguard.raid.behavior.commander": "Rally to commander",
-  "gui.rallyguard.raid.behavior.saved": "Raid behavior: %s"
+  "gui.rallyguard.raid.behavior.saved": "Raid behavior: %s",
+  "gui.rallyguard.raid.report.title": "Raid Report",
+  "gui.rallyguard.raid.report.deployed": "Guards deployed: %s",
+  "gui.rallyguard.raid.report.defeated": "Enemies defeated: %s",
+  "gui.rallyguard.raid.report.lost": "Guards lost: %s",
+  "gui.rallyguard.raid.report.mvp": "MVP: %s — %s kills",
+  "gui.rallyguard.raid.report.no_mvp": "MVP: no confirmed guard kills",
+  "gui.rallyguard.raid.report.incomplete": "Partial report — some entities unloaded."
 }

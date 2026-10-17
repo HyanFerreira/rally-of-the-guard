@@ -47,6 +47,7 @@ public final class RaidOpportunityDetector {
 
     private static void scan(MinecraftServer server, long tick) {
         SESSIONS.expire(tick);
+        RaidReports.expire(server, tick);
         forgetFinishedRaids(server);
         for (ServerPlayer player : server.getPlayerList().getPlayers()) detectFor(player, tick);
     }
@@ -76,6 +77,7 @@ public final class RaidOpportunityDetector {
             GuardBatchCommandResult result = RaidDefenseActions.execute(
                     behavior.automaticAction().orElseThrow(), player, raid
             );
+            RaidReports.start(player.getUUID(), key, result.succeeded(), tick);
             player.sendOverlayMessage(Component.translatable(
                     "gui.rallyguard.raid.automatic_result",
                     result.succeeded(), result.rejected(), result.unavailable()
@@ -97,6 +99,7 @@ public final class RaidOpportunityDetector {
             Raid raid = level == null ? null : level.getRaids().get(tracked.raidId());
             if (raid != null && raid.isActive() && !raid.isOver() && !raid.isStopped()
                     && raid.getCenter().equals(entry.getKey().center())) continue;
+            RaidReports.finish(entry.getKey(), server, raid == null);
             SESSIONS.clearFinished(entry.getKey());
             iterator.remove();
         }
@@ -116,6 +119,7 @@ public final class RaidOpportunityDetector {
     private static void clear() {
         SESSIONS.clear();
         TRACKED.clear();
+        RaidReports.clear();
     }
 
     private record TrackedRaid(String dimensionId, int raidId) {
