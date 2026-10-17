@@ -36,6 +36,7 @@ import net.hfstack.rallyguard.profile.GuardProfileLifecycle;
 import net.hfstack.rallyguard.profile.GuardProfileRepository;
 import net.hfstack.rallyguard.route.NamedRouteAttachments;
 import net.hfstack.rallyguard.registry.GlobalGuardRegistryAttachments;
+import net.hfstack.rallyguard.registry.GlobalGuardRegistryLifecycle;
 import net.hfstack.rallyguard.progression.CombatProgressionHandler;
 import net.hfstack.rallyguard.screen.ModScreenHandlers;
 import net.hfstack.rallyguard.squad.SquadAttachments;
@@ -80,6 +81,7 @@ public class RallyOfTheGuard implements ModInitializer {
         MoveOrderTicker.register();
         DefendAreaTicker.register();
         RallyFormationTicker.register();
+        GlobalGuardRegistryLifecycle.register();
 
         // ✅ Registra codecs uma vez por lado (client e server)
         NetworkBootstrap.registerTypesOnce();

@@ -36,4 +36,17 @@ public final class GlobalGuardRegistryRepository {
         player.setAttached(GlobalGuardRegistryAttachments.REGISTRY, GlobalGuardRegistryCodec.encode(registry));
         return true;
     }
+
+    public boolean upsert(ServerPlayer player, GlobalGuardRecord record) {
+        GlobalGuardRegistryRead current = readAndRepair(player);
+        if (!(current instanceof GlobalGuardRegistryRead.Available available)) return false;
+        return save(player, GlobalGuardRegistryEditor.upsert(available.registry(), record));
+    }
+
+    public boolean remove(ServerPlayer player, java.util.UUID guardId) {
+        GlobalGuardRegistryRead current = readAndRepair(player);
+        if (!(current instanceof GlobalGuardRegistryRead.Available available)) return false;
+        GlobalGuardRegistry updated = GlobalGuardRegistryEditor.remove(available.registry(), guardId);
+        return updated == available.registry() || save(player, updated);
+    }
 }
