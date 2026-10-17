@@ -193,7 +193,11 @@ public final class NamedRouteManagementScreen extends Screen {
         List<NamedRouteMutationC2SPayload.Point> points = draftPoints.stream()
                 .map(point -> new NamedRouteMutationC2SPayload.Point(point.x(), point.y(), point.z())).toList();
         ClientPlayNetworking.send(new NamedRouteMutationC2SPayload(
-                action, Optional.ofNullable(selectedRouteId), draftName, draftWaitSeconds, points
+                action, Optional.ofNullable(selectedRouteId), draftName, draftWaitSeconds, points,
+                selectedRouteId == null
+                        ? sourceEntry().map(GuardListS2CPayload.Entry::entityId)
+                                .orElse(NamedRouteMutationC2SPayload.NO_SOURCE_GUARD)
+                        : NamedRouteMutationC2SPayload.NO_SOURCE_GUARD
         ));
     }
 
@@ -201,7 +205,8 @@ public final class NamedRouteManagementScreen extends Screen {
         selectedRoute().ifPresent(route -> Minecraft.getInstance().setScreen(new ConfirmScreen(
                 confirmed -> {
                     if (confirmed) ClientPlayNetworking.send(new NamedRouteMutationC2SPayload(
-                            NetworkConstants.NAMED_ROUTE_DELETE, Optional.of(route.id()), "", 0, List.of()
+                            NetworkConstants.NAMED_ROUTE_DELETE, Optional.of(route.id()), "", 0, List.of(),
+                            NamedRouteMutationC2SPayload.NO_SOURCE_GUARD
                     ));
                     Minecraft.getInstance().setScreen(this);
                 },
@@ -250,9 +255,18 @@ public final class NamedRouteManagementScreen extends Screen {
     }
 
     private void copySourceRoute() {
-        captureName();
-        useSourceDraft();
-        rebuildControls();
+        selectedRoute().ifPresent(route -> Minecraft.getInstance().setScreen(new ConfirmScreen(
+                confirmed -> {
+                    if (confirmed) {
+                        captureName();
+                        useSourceDraft();
+                        rebuildControls();
+                    }
+                    Minecraft.getInstance().setScreen(this);
+                },
+                Component.translatable("gui.rallyguard.named_route.replace_points_title"),
+                Component.translatable("gui.rallyguard.named_route.replace_points", route.name())
+        )));
     }
 
     private void useSourceDraft() {
@@ -330,6 +344,16 @@ public final class NamedRouteManagementScreen extends Screen {
         return snapshot.namedRoutes().stream().filter(route -> route.id().equals(routeId.get()))
                 .map(GuardListS2CPayload.NamedRouteEntry::name)
                 .findFirst().orElse(Component.translatable("gui.rallyguard.named_route.missing").getString());
+    }
+
+    private String routeDescription(GuardListS2CPayload.Entry guard) {
+        if (guard.namedRouteId().isPresent()) return routeName(guard.namedRouteId());
+        if (!guard.routePoints().isEmpty()) {
+            return Component.translatable(
+                    "gui.rallyguard.named_route.individual", guard.routePoints().size()
+            ).getString();
+        }
+        return Component.translatable("gui.rallyguard.named_route.none").getString();
     }
 
     private boolean selectedRouteInCurrentDimension() {
@@ -448,7 +472,7 @@ public final class NamedRouteManagementScreen extends Screen {
             int columnW = guardColumnWidth();
             graphics.text(font, Component.literal(trim(guard.name(), columnW - 12)), rowX + 6, rowY + 5, color);
             String rank = guard.rank().map(Component::getString).orElse("");
-            String route = routeName(guard.namedRouteId());
+            String route = routeDescription(guard);
             String detail = rank.isBlank() ? route : rank + " · " + route;
             graphics.text(font, Component.literal(trim(detail, columnW - 12)), rowX + 6, rowY + 17, MUTED);
         }

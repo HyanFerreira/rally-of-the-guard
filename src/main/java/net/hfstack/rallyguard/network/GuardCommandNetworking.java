@@ -41,6 +41,7 @@ import net.hfstack.rallyguard.order.move.MoveOrders;
 import net.hfstack.rallyguard.order.defend.DefendAreas;
 import net.hfstack.rallyguard.order.temporary.GuardTaskSuspensions;
 import net.hfstack.rallyguard.route.DefaultNamedRouteService;
+import net.hfstack.rallyguard.route.NamedRouteMutationResult;
 import net.hfstack.rallyguard.service.GuardBatchCommandExecutor;
 import net.hfstack.rallyguard.service.GuardCommandTargets;
 import net.minecraft.world.entity.Entity;
@@ -297,9 +298,22 @@ public final class GuardCommandNetworking {
                 .map(point -> new BlockPos(point.x(), point.y(), point.z()))
                 .toList();
         var result = switch (payload.action()) {
-            case NetworkConstants.NAMED_ROUTE_CREATE -> NAMED_ROUTES.create(
-                    player, payload.name(), payload.waitSeconds(), points
-            );
+            case NetworkConstants.NAMED_ROUTE_CREATE -> {
+                Entity source = payload.sourceGuardEntityId() == NamedRouteMutationC2SPayload.NO_SOURCE_GUARD
+                        ? null : player.level().getEntity(payload.sourceGuardEntityId());
+                if (source instanceof GuardEntity guard) {
+                    yield NAMED_ROUTES.createFromGuard(
+                            player, guard, payload.name(), payload.waitSeconds(), points
+                    );
+                }
+                if (payload.sourceGuardEntityId() != NamedRouteMutationC2SPayload.NO_SOURCE_GUARD) {
+                    yield NamedRouteMutationResult.rejected(
+                            NamedRouteMutationResult.Outcome.NOT_AVAILABLE,
+                            "gui.rallyguard.named_route.guard_unavailable"
+                    );
+                }
+                yield NAMED_ROUTES.create(player, payload.name(), payload.waitSeconds(), points);
+            }
             case NetworkConstants.NAMED_ROUTE_UPDATE -> payload.routeId()
                     .map(id -> NAMED_ROUTES.update(player, id, payload.name(), payload.waitSeconds(), points))
                     .orElse(null);

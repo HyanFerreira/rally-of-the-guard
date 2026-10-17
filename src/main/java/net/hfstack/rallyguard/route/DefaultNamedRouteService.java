@@ -39,6 +39,25 @@ public final class DefaultNamedRouteService {
         return persist(owner, edit, "gui.rallyguard.named_route.created");
     }
 
+    public NamedRouteMutationResult createFromGuard(ServerPlayer owner, GuardEntity guard, String name,
+                                                    int waitSeconds, List<BlockPos> points) {
+        NamedRouteMutationResult guardCheck = validateAssignableGuard(owner, guard);
+        if (guardCheck != null) return guardCheck;
+
+        NamedRouteMutationResult created = create(owner, name, waitSeconds, points);
+        if (!created.succeeded() || created.routeId().isEmpty()) return created;
+
+        UUID routeId = created.routeId().orElseThrow();
+        NamedRouteMutationResult assigned = assign(owner, guard, Optional.of(routeId));
+        if (assigned.succeeded()) {
+            return NamedRouteMutationResult.success("gui.rallyguard.named_route.created_and_assigned", routeId);
+        }
+
+        // Keep creation + assignment atomic from the player's perspective.
+        delete(owner, routeId);
+        return assigned;
+    }
+
     public NamedRouteMutationResult update(ServerPlayer owner, UUID routeId, String name,
                                            int waitSeconds, List<BlockPos> points) {
         Optional<NamedRouteRegistry> current = registry(owner);
@@ -68,13 +87,8 @@ public final class DefaultNamedRouteService {
     }
 
     public NamedRouteMutationResult assign(ServerPlayer owner, GuardEntity guard, Optional<UUID> requestedRoute) {
-        if (guard == null || !guard.isAlive() || guard.level() != owner.level()) {
-            return rejected(NamedRouteMutationResult.Outcome.NOT_AVAILABLE,
-                    "gui.rallyguard.named_route.guard_unavailable");
-        }
-        if (!GuardOwnership.isOwnedBy(guard, owner.getUUID())) {
-            return rejected(NamedRouteMutationResult.Outcome.NOT_OWNER, "gui.rallyguard.command.not_owner");
-        }
+        NamedRouteMutationResult guardCheck = validateAssignableGuard(owner, guard);
+        if (guardCheck != null) return guardCheck;
         if (requestedRoute == null || requestedRoute.isEmpty()) {
             GuardRouteState current = GuardRoutes.get(guard);
             unlinkAndPause(guard, current);
@@ -101,6 +115,17 @@ public final class DefaultNamedRouteService {
         GuardCombatState.disengage(guard);
         GuardTaskSuspensions.discard(guard);
         return NamedRouteMutationResult.success("gui.rallyguard.named_route.assigned", route.id());
+    }
+
+    private NamedRouteMutationResult validateAssignableGuard(ServerPlayer owner, GuardEntity guard) {
+        if (guard == null || !guard.isAlive() || guard.level() != owner.level()) {
+            return rejected(NamedRouteMutationResult.Outcome.NOT_AVAILABLE,
+                    "gui.rallyguard.named_route.guard_unavailable");
+        }
+        if (!GuardOwnership.isOwnedBy(guard, owner.getUUID())) {
+            return rejected(NamedRouteMutationResult.Outcome.NOT_OWNER, "gui.rallyguard.command.not_owner");
+        }
+        return null;
     }
 
     public void repairMissingAssignment(GuardEntity guard, NamedRouteRegistry registry) {

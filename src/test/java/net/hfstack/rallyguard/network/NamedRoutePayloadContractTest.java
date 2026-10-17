@@ -41,12 +41,13 @@ class NamedRoutePayloadContractTest {
         NamedRouteMutationC2SPayload mutation = new NamedRouteMutationC2SPayload(
                 NetworkConstants.NAMED_ROUTE_UPDATE, Optional.of(ROUTE_ID), "Village Walls", 30,
                 List.of(new NamedRouteMutationC2SPayload.Point(1, 64, 1),
-                        new NamedRouteMutationC2SPayload.Point(8, 64, 8))
+                        new NamedRouteMutationC2SPayload.Point(8, 64, 8)), 7
         );
         NamedRouteAssignmentC2SPayload assignment = new NamedRouteAssignmentC2SPayload(7, Optional.of(ROUTE_ID));
 
         assertEquals(NetworkConstants.NAMED_ROUTE_UPDATE, mutation.action());
         assertEquals(Optional.of(ROUTE_ID), mutation.routeId());
+        assertEquals(7, mutation.sourceGuardEntityId());
         assertEquals(Optional.of(ROUTE_ID), assignment.routeId());
 
         GuardCommandScope scope = GuardCommandScope.unassigned();
