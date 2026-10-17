@@ -14,8 +14,14 @@ final class CalmPatrolMovement {
     private static final int MOVE_DELAY_VARIANCE = 20 * 7;
     private static final int MIN_AWAY_WAIT = 20 * 3;
     private static final int AWAY_WAIT_VARIANCE = 20 * 3;
-    private static final int MIN_LOOK_DELAY = 20 * 2;
-    private static final int LOOK_DELAY_VARIANCE = 20 * 3;
+    private static final int MIN_LOOK_DELAY = 20 * 5;
+    private static final int LOOK_DELAY_VARIANCE = 20 * 5;
+    private static final int[][] CARDINAL_DIRECTIONS = {
+            {1, 0},
+            {-1, 0},
+            {0, 1},
+            {0, -1}
+    };
     private static final Map<UUID, IdleState> STATES = new HashMap<>();
 
     private CalmPatrolMovement() {
@@ -72,16 +78,15 @@ final class CalmPatrolMovement {
     }
 
     private static void startIdleStep(GuardEntity guard, IdleState state, long now) {
-        int direction = guard.getRandom().nextInt(4);
-        int dx = direction == 0 ? 1 : direction == 1 ? -1 : 0;
-        int dz = direction == 2 ? 1 : direction == 3 ? -1 : 0;
-        BlockPos target = state.anchor.offset(dx, 0, dz);
-        if (guard.getNavigation().moveTo(
-                target.getX() + 0.5, target.getY(), target.getZ() + 0.5,
-                PatrolMovementPolicy.IDLE_STEP_SPEED
-        )) {
+        int firstDirection = guard.getRandom().nextInt(CARDINAL_DIRECTIONS.length);
+        for (int attempt = 0; attempt < CARDINAL_DIRECTIONS.length; attempt++) {
+            int[] direction = CARDINAL_DIRECTIONS[(firstDirection + attempt) % CARDINAL_DIRECTIONS.length];
+            BlockPos target = state.anchor.offset(direction[0], 0, direction[1]);
+            if (!safeAdjacentPosition(guard, target)) continue;
+
             state.phase = Phase.MOVING_OUT;
             state.idleTarget = target;
+            walkTo(guard, target, PatrolMovementPolicy.IDLE_STEP_SPEED);
             return;
         }
         state.nextMoveAt = now + moveDelay(guard);
@@ -92,12 +97,26 @@ final class CalmPatrolMovement {
         double lookX = guard.getX() + guard.getRandom().nextDouble() * 8.0 - 4.0;
         double lookY = guard.getEyeY() + guard.getRandom().nextDouble() * 2.0 - 1.0;
         double lookZ = guard.getZ() + guard.getRandom().nextDouble() * 8.0 - 4.0;
-        guard.getLookControl().setLookAt(lookX, lookY, lookZ, 30.0F, 20.0F);
+        guard.getLookControl().setLookAt(lookX, lookY, lookZ, 10.0F, 8.0F);
         state.nextLookAt = now + lookDelay(guard);
     }
 
     private static void walkTo(GuardEntity guard, BlockPos target, double speed) {
-        guard.getNavigation().moveTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5, speed);
+        double x = target.getX() + 0.5;
+        double y = target.getY();
+        double z = target.getZ() + 0.5;
+        if (!guard.getNavigation().moveTo(x, y, z, speed)) {
+            // Adjacent safe blocks can occasionally be considered too close for a full path.
+            guard.getMoveControl().setWantedPosition(x, y, z, speed);
+        }
+    }
+
+    private static boolean safeAdjacentPosition(GuardEntity guard, BlockPos target) {
+        if (!guard.level().getBlockState(target.below()).blocksMotion()) return false;
+        double dx = target.getX() + 0.5 - guard.getX();
+        double dy = target.getY() - guard.getY();
+        double dz = target.getZ() + 0.5 - guard.getZ();
+        return guard.level().noCollision(guard, guard.getBoundingBox().move(dx, dy, dz));
     }
 
     private static boolean at(GuardEntity guard, BlockPos target) {
