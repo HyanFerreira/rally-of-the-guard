@@ -28,6 +28,7 @@ import net.hfstack.rallyguard.network.DefendAreaNetworking;
 import net.hfstack.rallyguard.network.CombatStanceNetworking;
 import net.hfstack.rallyguard.network.CommandPostNetworking;
 import net.hfstack.rallyguard.network.GlobalGuardRegistryNetworking;
+import net.hfstack.rallyguard.network.RaidDefenseNetworking;
 import net.hfstack.rallyguard.network.FormationSelectionNetworking;
 import net.hfstack.rallyguard.muster.MusterRollSessions;
 import net.hfstack.rallyguard.order.move.MoveOrderAttachments;
@@ -39,6 +40,7 @@ import net.hfstack.rallyguard.route.NamedRouteAttachments;
 import net.hfstack.rallyguard.registry.GlobalGuardRegistryAttachments;
 import net.hfstack.rallyguard.registry.GlobalGuardRegistryLifecycle;
 import net.hfstack.rallyguard.progression.CombatProgressionHandler;
+import net.hfstack.rallyguard.raid.RaidOpportunityDetector;
 import net.hfstack.rallyguard.screen.ModScreenHandlers;
 import net.hfstack.rallyguard.squad.SquadAttachments;
 import net.hfstack.rallyguard.util.GuardVillagersConfigPatcher;
@@ -83,6 +85,7 @@ public class RallyOfTheGuard implements ModInitializer {
         DefendAreaTicker.register();
         RallyFormationTicker.register();
         GlobalGuardRegistryLifecycle.register();
+        RaidOpportunityDetector.register();
 
         // ✅ Registra codecs uma vez por lado (client e server)
         NetworkBootstrap.registerTypesOnce();
@@ -93,6 +96,7 @@ public class RallyOfTheGuard implements ModInitializer {
         CombatStanceNetworking.registerServer();
         CommandPostNetworking.registerServer();
         GlobalGuardRegistryNetworking.registerServer();
+        RaidDefenseNetworking.registerServer();
         MusterRollSessions.register();
 
         // ✅ Depois registra só os receivers do servidor

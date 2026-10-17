@@ -32,6 +32,7 @@ class RaidOpportunitySessionsTest {
 
         RaidOpportunityKey other = new RaidOpportunityKey(5, "minecraft:overworld", BlockPos.ZERO);
         assertFalse(sessions.consume(player, other, 110).isPresent());
+        assertTrue(sessions.consume(player, RAID, 110).isPresent());
 
         sessions.open(player, RAID, 100, 20);
         assertFalse(sessions.consume(player, RAID, 121).isPresent());
@@ -45,5 +46,16 @@ class RaidOpportunitySessionsTest {
         sessions.clearFinished(RAID);
 
         assertFalse(sessions.alreadySeen(player, RAID));
+    }
+
+    @Test
+    void disconnectClearsSessionAndDeduplication() {
+        UUID player = UUID.randomUUID();
+        RaidOpportunitySessions sessions = new RaidOpportunitySessions();
+        sessions.open(player, RAID, 0, 20);
+        sessions.clearPlayer(player);
+
+        assertFalse(sessions.alreadySeen(player, RAID));
+        assertFalse(sessions.consume(player, RAID, 1).isPresent());
     }
 }

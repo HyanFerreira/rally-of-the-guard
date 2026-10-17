@@ -449,5 +449,7 @@
   "gui.rallyguard.registry.empty": "Nenhum guarda contratado foi registrado ainda.",
   "commands.rallyguard.registry.count": "Registro global: %s guardas.",
   "commands.rallyguard.registry.refreshed": "Registro global reconciliado: %s guardas.",
-  "commands.rallyguard.registry.unavailable": "O Registro Global usa dados incompatíveis e permaneceu somente leitura."
+  "commands.rallyguard.registry.unavailable": "O Registro Global usa dados incompatíveis e permaneceu somente leitura.",
+  "gui.rallyguard.raid.response_recorded": "Resposta à raid registrada.",
+  "gui.rallyguard.raid.response_invalid": "Essa oportunidade de raid não está mais disponível."
 }

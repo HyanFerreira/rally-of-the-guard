@@ -449,5 +449,7 @@
   "gui.rallyguard.registry.empty": "No hired guards have been registered yet.",
   "commands.rallyguard.registry.count": "Global registry: %s guards.",
   "commands.rallyguard.registry.refreshed": "Global registry reconciled: %s guards.",
-  "commands.rallyguard.registry.unavailable": "The Global Registry uses incompatible data and remained read-only."
+  "commands.rallyguard.registry.unavailable": "The Global Registry uses incompatible data and remained read-only.",
+  "gui.rallyguard.raid.response_recorded": "Raid response recorded.",
+  "gui.rallyguard.raid.response_invalid": "That raid opportunity is no longer available."
 }
