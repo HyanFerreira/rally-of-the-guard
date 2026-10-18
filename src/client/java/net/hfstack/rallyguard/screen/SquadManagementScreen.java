@@ -24,6 +24,8 @@ public final class SquadManagementScreen extends Screen {
     private static final int WHITE = 0xFFFFFFFF;
     private static final int MUTED = 0xFFAAAAAA;
     private static final int GOLD = 0xFFFFC94A;
+    private static final int SECTION = 0xFF777777;
+    private static final int DIVIDER = 0x88777777;
     private static final int PANEL_HEIGHT = 320;
     private static final int MAX_PANEL_WIDTH = 700;
     private static final int ROW_HEIGHT = 32;
@@ -146,15 +148,23 @@ public final class SquadManagementScreen extends Screen {
         addRenderableWidget(Button.builder(Component.literal(">"), button -> changeMemberPage(1))
                 .bounds(rightX + 28, bottom, 24, 20).build());
 
+        int officerX = rightX + 100;
+        int backX = x + panelW - 84;
+        boolean compactControls = panelWidth() < 600;
+        int actionY = compactControls ? bottom - 24 : bottom;
+        if (compactControls) {
+            officerX = rightX;
+            backX = x + panelW - 14 - 70;
+        }
         Button officer = Button.builder(Component.translatable(
                         selectedMember().filter(this::isOfficer).isPresent()
                                 ? "gui.rallyguard.squad.clear_officer"
                                 : "gui.rallyguard.squad.make_officer"),
-                button -> toggleOfficer()).bounds(rightX + 58, bottom, Math.max(72, columnW - 142), 20).build();
+                button -> toggleOfficer()).bounds(officerX, actionY, Math.max(72, backX - officerX - 8), 20).build();
         officer.active = selectedMember().filter(GuardListS2CPayload.Entry::captain).isPresent();
         addRenderableWidget(officer);
         addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.route.back"), button -> back())
-                .bounds(x + panelW - 84, bottom, 70, 20).build());
+                .bounds(backX, actionY, 70, 20).build());
     }
 
     private void addSquadTabs(int tabsX, int tabsY, int availableWidth) {
@@ -380,12 +390,24 @@ public final class SquadManagementScreen extends Screen {
         String selectedName = selected().map(GuardListS2CPayload.SquadEntry::name)
                 .orElseGet(() -> Component.translatable("gui.rallyguard.squad.new").getString());
         int headingY = y + (compactLayout() ? 80 : 91);
+        int contentTop = headingY - 10;
+        int contentBottom = y + panelHeight() - 6;
+        graphics.outline(x + 14, contentTop, columnW, contentBottom - contentTop, SECTION);
+        graphics.outline(rightX, contentTop, columnW, contentBottom - contentTop, SECTION);
         graphics.text(font, Component.translatable("gui.rallyguard.squad.available"), x + 14, headingY, WHITE);
         graphics.text(font, Component.translatable("gui.rallyguard.squad.members", selectedName), rightX, headingY, WHITE);
+        graphics.fill(x + 24, headingY + 16, x + 14 + columnW - 10, headingY + 17, DIVIDER);
+        graphics.fill(rightX + 10, headingY + 16, rightX + columnW - 10, headingY + 17, DIVIDER);
 
         super.extractRenderState(graphics, mouseX, mouseY, delta);
         drawGuardRows(graphics, availableGuards(), availablePage, x + 14, columnW, selectedAvailableGuard, true);
         drawGuardRows(graphics, memberGuards(), memberPage, rightX, columnW, selectedMemberGuard, false);
+        int pagesAvailable = pageCount(availableGuards().size());
+        int pagesMembers = pageCount(memberGuards().size());
+        graphics.text(font, Component.literal((availablePage + 1) + " / " + pagesAvailable),
+                x + 74, y + panelHeight() - 22, MUTED);
+        graphics.text(font, Component.literal((memberPage + 1) + " / " + pagesMembers),
+                rightX + 60, y + panelHeight() - 22, MUTED);
     }
 
     private void drawGuardRows(GuiGraphicsExtractor graphics, List<GuardListS2CPayload.Entry> guards, int page,
@@ -433,15 +455,20 @@ public final class SquadManagementScreen extends Screen {
     }
 
     private boolean compactLayout() {
-        return panelHeight() < PANEL_HEIGHT;
+        return panelHeight() < PANEL_HEIGHT || panelWidth() < 600;
     }
 
     private int rowsPerPage() {
+        if (panelHeight() < 260) return 2;
         return compactLayout() ? 3 : 5;
     }
 
+    private int pageCount(int entries) {
+        return Math.max(1, (entries + rowsPerPage() - 1) / rowsPerPage());
+    }
+
     private int listTop() {
-        return compactLayout() ? 92 : 108;
+        return compactLayout() ? 108 : 120;
     }
 
     @Override

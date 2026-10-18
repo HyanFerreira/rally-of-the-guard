@@ -25,10 +25,12 @@ public class GuardCommandScreen extends Screen {
     private static final int WHITE = 0xFFFFFFFF;
     private static final int MUTED = 0xFFAAAAAA;
     private static final int GOLD = 0xFFFFC94A;
+    private static final int SECTION = 0xFF777777;
+    private static final int DIVIDER = 0x88777777;
     private static final int MAX_PANEL_WIDTH = 700;
     private static final int PANEL_HEIGHT = 300;
     private static final int SCREEN_PAD = 12;
-    private static final int ROW_TOP = 64;
+    private static final int ROW_TOP = 88;
     private static final int ROW_HEIGHT = 32;
     private static final int BUTTON_HEIGHT = 20;
     private static final int GAP = GuiLayout.CONTROL_GAP;
@@ -148,7 +150,8 @@ public class GuardCommandScreen extends Screen {
         Optional<Entry> selected = selected();
         int threeW = (rightW - GAP * 2) / 3;
         int twoW = (rightW - GAP) / 2;
-        int individualY = y + 112;
+        boolean compact = panelHeight() < PANEL_HEIGHT;
+        int individualY = y + (compact ? 108 : 112);
         addIndividualButton(rightX, individualY, threeW, "gui.rallyguard.command.summon", NetworkConstants.ACTION_SUMMON);
         addIndividualButton(rightX + threeW + GAP, individualY, threeW,
                 selected.filter(Entry::dismissible).isPresent()
@@ -173,15 +176,14 @@ public class GuardCommandScreen extends Screen {
         route.active = selected.isPresent();
         addRenderableWidget(route);
 
-        boolean compact = panelHeight() < PANEL_HEIGHT;
-        int scopeY = y + (compact ? 176 : 202);
+        int scopeY = y + (compact ? 178 : 202);
         int fourW = (rightW - GAP * 3) / 4;
         addScopeButton(rightX, scopeY, fourW, "gui.rallyguard.command.summon", NetworkConstants.ACTION_SUMMON);
         addScopeButton(rightX + fourW + GAP, scopeY, fourW, "gui.rallyguard.command.follow", NetworkConstants.ACTION_FOLLOW);
         addScopeButton(rightX + (fourW + GAP) * 2, scopeY, fourW, "gui.rallyguard.command.wait", NetworkConstants.ACTION_WAIT);
         addScopeButton(rightX + (fourW + GAP) * 3, scopeY, fourW, "gui.rallyguard.command.dismiss", NetworkConstants.ACTION_DISMISS);
 
-        int tacticalY = scopeY + 24;
+        int tacticalY = scopeY + (compact ? 20 : 24);
         if (compact) {
             int tacticalW = (rightW - GAP * 3) / 4;
             addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.combat.button_compact"),
@@ -381,16 +383,32 @@ public class GuardCommandScreen extends Screen {
     private void drawPanel(GuiGraphicsExtractor graphics) {
         int x = panelX();
         int y = panelY();
-        graphics.fill(x, y, x + panelWidth(), y + panelHeight(), 0xF0101010);
+        int panelH = panelHeight();
+        int leftW = leftWidth();
+        int rightX = x + leftW + 28;
+        int rightW = x + panelWidth() - 14 - rightX;
+        boolean compact = panelH < PANEL_HEIGHT;
+        graphics.fill(x, y, x + panelWidth(), y + panelH, 0xF0101010);
         graphics.outline(x, y, panelWidth(), panelHeight(), WHITE);
         graphics.centeredText(font, title, width / 2, y + 9, WHITE);
-        graphics.fill(x + leftWidth() + 14, y + 58, x + leftWidth() + 15, y + panelHeight() - 10, 0x44FFFFFF);
+        int contentTop = y + 58;
+        int contentBottom = y + panelH - (compact ? 2 : 10);
+        int individualBottom = y + (compact ? 156 : 164);
+        int scopeTop = y + (compact ? 156 : 174);
+        graphics.outline(x + 14, contentTop, leftW - 14, contentBottom - contentTop, SECTION);
+        graphics.outline(rightX, contentTop, rightW, individualBottom - contentTop, SECTION);
+        graphics.outline(rightX, scopeTop, rightW, contentBottom - scopeTop, SECTION);
+        graphics.fill(x + leftW + 13, contentTop, x + leftW + 14, contentBottom, DIVIDER);
+        graphics.fill(x + 24, y + 82, x + leftW - 10, y + 83, DIVIDER);
+        graphics.fill(rightX + 10, y + 80, rightX + rightW - 10, y + 81, DIVIDER);
+        graphics.fill(rightX + 10, y + (compact ? 174 : 198), rightX + rightW - 10,
+                y + (compact ? 175 : 199), DIVIDER);
     }
 
     private void drawRoster(GuiGraphicsExtractor graphics) {
         int x = panelX();
         int y = panelY();
-        graphics.text(font, Component.translatable("gui.rallyguard.command.roster"), x + 14, y + 52, MUTED);
+        graphics.text(font, Component.translatable("gui.rallyguard.command.roster"), x + 24, y + 68, WHITE);
         if (all.isEmpty()) {
             graphics.centeredText(font, Component.translatable("gui.rallyguard.command.empty"),
                     x + 14 + (leftWidth() - 14) / 2, y + 148, MUTED);
@@ -423,22 +441,23 @@ public class GuardCommandScreen extends Screen {
         int rightX = x + leftWidth() + 28;
         int rightW = x + panelWidth() - 14 - rightX;
         Optional<Entry> selected = selected();
-        graphics.text(font, Component.translatable("gui.rallyguard.command.individual_orders"), rightX, y + 52, MUTED);
+        boolean compact = panelHeight() < PANEL_HEIGHT;
+        graphics.text(font, Component.translatable("gui.rallyguard.command.individual_orders"), rightX + 10, y + 66, WHITE);
         if (selected.isEmpty()) {
             graphics.centeredText(font, Component.translatable("gui.rallyguard.command.select_guard"),
-                    rightX + rightW / 2, y + 84, MUTED);
+                    rightX + rightW / 2, y + (compact ? 94 : 96), MUTED);
         } else {
             Entry entry = selected.get();
-            graphics.text(font, Component.literal(trimToWidth(entry.name(), rightW)), rightX, y + 68, WHITE);
+            graphics.text(font, Component.literal(trimToWidth(entry.name(), rightW - 20)), rightX + 10, y + 84, WHITE);
             String status = statusComponent(entry.status()).getString();
             String squad = new SquadScreenModel(snapshot, scope).squadName(entry.squadId())
                     .orElseGet(() -> Component.translatable("gui.rallyguard.squad.scope_unassigned").getString());
             String category = categoryComponent(entry.categoryId()).getString();
-            graphics.text(font, Component.literal(trimToWidth(status + " · " + category + " · " + squad, rightW)),
-                    rightX, y + 82, MUTED);
+            graphics.text(font, Component.literal(trimToWidth(status + " · " + category + " · " + squad, rightW - 20)),
+                    rightX + 10, y + 98, MUTED);
         }
         graphics.text(font, Component.translatable("gui.rallyguard.command.scope_orders", scopeLabel()),
-                rightX, y + (panelHeight() < PANEL_HEIGHT ? 162 : 186), MUTED);
+                rightX + 10, y + (compact ? 160 : 182), WHITE);
     }
 
     private static Component statusComponent(int status) {
@@ -494,7 +513,7 @@ public class GuardCommandScreen extends Screen {
     }
 
     private int perPage() {
-        return panelHeight() < PANEL_HEIGHT ? 3 : 6;
+        return panelHeight() < PANEL_HEIGHT ? 3 : 5;
     }
 
     @Override
