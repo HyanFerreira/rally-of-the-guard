@@ -36,6 +36,7 @@
 - Centralized Rally lifecycle reconciliation for toggle-off, effect loss, death, dimension changes, disconnect, and login; cleanup now releases only tagged participants and leaves independent followers unchanged.
 - Aligned published metadata with the repository's CC0-1.0 license and removed the obsolete route-placeholder action and translations.
 - Added focused payload, route-policy, Rally-participation, Rally-cleanup, resource-contract, and participant-isolation GameTest coverage.
+- Added compact translated Ledger action labels and an automated fit assertion so tactical buttons no longer clip at 854×480.
 
 - Added persistent player-owned Named Routes with Unicode names, dimensions, wait times, ordered points, configurable limits, and future-schema protection.
 - Added a route hub and responsive Saved Routes manager with two-column guard assignment, cross-route confirmation, and reuse of individual guard routes as templates.

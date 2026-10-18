@@ -184,17 +184,17 @@ public class GuardCommandScreen extends Screen {
         int tacticalY = scopeY + 24;
         if (compact) {
             int tacticalW = (rightW - GAP * 3) / 4;
-            addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.combat.button"),
+            addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.combat.button_compact"),
                             button -> Minecraft.getInstance().setScreen(new GuardCombatScreen(this, scope)))
                     .bounds(rightX, tacticalY, tacticalW, BUTTON_HEIGHT).build());
-            addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.move.button"),
+            addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.move.button_compact"),
                             button -> Minecraft.getInstance().setScreen(new MoveCategoryScreen(this, scope)))
                     .bounds(rightX + tacticalW + GAP, tacticalY, tacticalW, BUTTON_HEIGHT).build());
-            addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.defend.button"),
+            addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.defend.button_compact"),
                             button -> Minecraft.getInstance().setScreen(
                                     new MoveCategoryScreen(this, scope, MoveCategoryScreen.Mode.DEFEND)))
                     .bounds(rightX + (tacticalW + GAP) * 2, tacticalY, tacticalW, BUTTON_HEIGHT).build());
-            addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.command.routes"),
+            addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.command.routes_compact"),
                             button -> Minecraft.getInstance().setScreen(
                                     new ScopedNamedRouteScreen(this, snapshot, scope)))
                     .bounds(rightX + (tacticalW + GAP) * 3, tacticalY, tacticalW, BUTTON_HEIGHT).build());

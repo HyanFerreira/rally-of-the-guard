@@ -81,6 +81,7 @@ public final class RallyGuardClientGameTests implements FabricClientGameTest {
         context.waitForScreen(GuardCommandScreen.class);
         assertScreen(context, GuardCommandScreen.class, 20, false);
         assertWidgetsInsideScreen(context);
+        assertWidgetLabelsFit(context);
         context.takeScreenshot("command-ledger-categories-dismiss-routes");
 
         context.setScreen(() -> new SquadManagementScreen(snapshot, GuardCommandScope.all()));
@@ -166,6 +167,19 @@ public final class RallyGuardClientGameTests implements FabricClientGameTest {
                         || widget.getX() + widget.getWidth() > screen.width
                         || widget.getY() + widget.getHeight() > screen.height) {
                     throw new AssertionError("Widget outside screen bounds: " + widget.getMessage().getString());
+                }
+            }
+        });
+    }
+
+    private static void assertWidgetLabelsFit(ClientGameTestContext context) {
+        context.runOnClient(client -> {
+            Screen screen = client.screen;
+            for (var child : screen.children()) {
+                if (!(child instanceof AbstractWidget widget)) continue;
+                int availableWidth = Math.max(0, widget.getWidth() - 8);
+                if (client.font.width(widget.getMessage()) > availableWidth) {
+                    throw new AssertionError("Widget label is clipped: " + widget.getMessage().getString());
                 }
             }
         });

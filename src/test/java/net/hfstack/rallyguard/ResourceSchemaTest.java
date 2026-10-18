@@ -70,6 +70,22 @@ class ResourceSchemaTest {
     }
 
     @Test
+    void compactLedgerActionsExistInBothSupportedLanguages() throws IOException {
+        JsonObject english = readJson(RESOURCES.resolve("assets/rallyguard/lang/en_us.json"));
+        JsonObject portuguese = readJson(RESOURCES.resolve("assets/rallyguard/lang/pt_br.json"));
+
+        for (String key : Set.of(
+                "gui.rallyguard.combat.button_compact",
+                "gui.rallyguard.move.button_compact",
+                "gui.rallyguard.defend.button_compact",
+                "gui.rallyguard.command.routes_compact"
+        )) {
+            assertTrue(english.has(key), () -> "Missing English compact Ledger key: " + key);
+            assertTrue(portuguese.has(key), () -> "Missing Portuguese compact Ledger key: " + key);
+        }
+    }
+
+    @Test
     void recipesProduceRegisteredRallyItems() throws IOException {
         assertRecipeResult("scroll_of_rallying", "rallyguard:scroll_of_rallying");
         assertRecipeResult("commanders_ledger", "rallyguard:commanders_ledger");
