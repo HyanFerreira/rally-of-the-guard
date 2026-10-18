@@ -301,6 +301,8 @@
   "gui.rallyguard.route.started": "Rota iniciada.",
   "gui.rallyguard.route.paused": "Rota pausada.",
   "gui.rallyguard.route.cleared": "Rota limpa.",
+  "gui.rallyguard.route.invalid_request": "Solicita\u00e7\u00e3o de rota inv\u00e1lida.",
+  "gui.rallyguard.route.invalid_point": "Os pontos devem ficar dentro da borda do mundo e ser capturados a at\u00e9 8 blocos.",
 
   "gui.rallyguard.named_route.title": "Rotas de Patrulha Salvas",
   "gui.rallyguard.named_route.scope_title": "Atribuir Rota ao Escopo",

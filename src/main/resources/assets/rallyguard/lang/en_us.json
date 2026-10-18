@@ -301,6 +301,8 @@
   "gui.rallyguard.route.started": "Route started.",
   "gui.rallyguard.route.paused": "Route paused.",
   "gui.rallyguard.route.cleared": "Route cleared.",
+  "gui.rallyguard.route.invalid_request": "Invalid route request.",
+  "gui.rallyguard.route.invalid_point": "Route points must be inside the world border and captured within 8 blocks.",
 
   "gui.rallyguard.named_route.title": "Saved Patrol Routes",
   "gui.rallyguard.named_route.scope_title": "Assign Route to Scope",

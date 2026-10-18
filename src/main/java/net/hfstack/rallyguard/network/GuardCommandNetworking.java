@@ -242,13 +242,27 @@ public final class GuardCommandNetworking {
         }
 
         List<BlockPos> points = payload.points().stream()
-                .limit(RallyConfig.routeMaxPoints())
                 .map(p -> new BlockPos(p.x(), p.y(), p.z()))
                 .toList();
         List<String> pointLabels = payload.points().stream()
-                .limit(RallyConfig.routeMaxPoints())
                 .map(GuardRouteUpdateC2SPayload.Point::label)
                 .toList();
+        GuardRouteState currentRoute = GuardRoutes.get(guard);
+        GuardRouteUpdatePolicy.Validation validation = GuardRouteUpdatePolicy.validate(
+                payload.action(),
+                points,
+                currentRoute.points(),
+                player.blockPosition(),
+                world.getMinY(),
+                world.getMaxY(),
+                world.getWorldBorder()::isWithinBounds,
+                GuardRouteUpdatePolicy.CAPTURE_RADIUS_SQUARED,
+                RallyConfig.routeMaxPoints()
+        );
+        if (!validation.accepted()) {
+            player.sendOverlayMessage(Component.translatable(validation.translationKey()));
+            return;
+        }
         int waitTicks = Math.max(0, Math.min(600, payload.waitSeconds())) * 20;
 
         switch (payload.action()) {
@@ -260,13 +274,8 @@ public final class GuardCommandNetworking {
                 player.sendOverlayMessage(Component.translatable("gui.rallyguard.route.saved"));
             }
             case NetworkConstants.ROUTE_START -> {
-                if (points.size() < 2) {
-                    player.sendOverlayMessage(Component.translatable("gui.rallyguard.route.need_points"));
-                    return;
-                }
                 GuardTaskSuspensions.discard(guard);
-                GuardRouteState current = GuardRoutes.get(guard);
-                Optional<UUID> namedRouteId = matchingNamedRouteId(current, points, pointLabels, waitTicks);
+                Optional<UUID> namedRouteId = matchingNamedRouteId(currentRoute, points, pointLabels, waitTicks);
                 GuardRouteState route = new GuardRouteState(
                         true, 0, waitTicks, 0, points, namedRouteId, pointLabels
                 );
@@ -280,10 +289,9 @@ public final class GuardCommandNetworking {
             }
             case NetworkConstants.ROUTE_PAUSE -> {
                 GuardTaskSuspensions.discard(guard);
-                GuardRouteState current = GuardRoutes.get(guard);
-                Optional<UUID> namedRouteId = matchingNamedRouteId(current, points, pointLabels, waitTicks);
+                Optional<UUID> namedRouteId = matchingNamedRouteId(currentRoute, points, pointLabels, waitTicks);
                 GuardRoutes.set(guard, new GuardRouteState(
-                        false, current.currentIndex(), waitTicks, 0, points, namedRouteId, pointLabels
+                        false, currentRoute.currentIndex(), waitTicks, 0, points, namedRouteId, pointLabels
                 ));
                 guard.setPatrolling(false);
                 guard.setFollowing(false);
