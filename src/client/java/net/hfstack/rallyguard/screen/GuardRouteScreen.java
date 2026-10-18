@@ -88,13 +88,13 @@ public class GuardRouteScreen extends Screen {
             pointNameBoxes.add(pointName);
             addRenderableWidget(pointName);
 
-            this.addRenderableWidget(new EditSaveIconButton(
+            this.addRenderableWidget(new EditConfirmIconButton(
                     x + 16 + nameW + GuiLayout.CONTROL_GAP, rowY + 2, EDIT_BUTTON_W, button -> {
-                if (!button.isSaving()) {
+                if (!button.isConfirming()) {
                     pointName.setEditable(true);
                     pointName.active = true;
                     setInitialFocus(pointName);
-                    button.setSaving(true);
+                    button.setConfirming(true);
                     return;
                 }
                 pointName.setValue(RoutePointNames.displayName(pointName.getValue(), idx));
@@ -102,7 +102,7 @@ public class GuardRouteScreen extends Screen {
                 pointName.setEditable(false);
                 pointName.active = false;
                 pointName.setFocused(false);
-                button.setSaving(false);
+                button.setConfirming(false);
                 saveOnly();
             }));
 

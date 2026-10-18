@@ -128,13 +128,13 @@ public final class NamedRouteEditorScreen extends Screen {
         labelBoxes.add(label);
         addRenderableWidget(label);
 
-        addRenderableWidget(new EditSaveIconButton(
+        addRenderableWidget(new EditConfirmIconButton(
                 x + 14 + labelWidth + GuiLayout.CONTROL_GAP, y + 4, EDIT_BUTTON_WIDTH, button -> {
-            if (!button.isSaving()) {
+            if (!button.isConfirming()) {
                 label.setEditable(true);
                 label.active = true;
                 setInitialFocus(label);
-                button.setSaving(true);
+                button.setConfirming(true);
                 return;
             }
             label.setValue(RoutePointNames.displayName(label.getValue(), pointIndex));
@@ -142,7 +142,7 @@ public final class NamedRouteEditorScreen extends Screen {
             label.setEditable(false);
             label.active = false;
             label.setFocused(false);
-            button.setSaving(false);
+            button.setConfirming(false);
         }));
 
         int actionsX = x + panelW - 14 - actionsWidth;

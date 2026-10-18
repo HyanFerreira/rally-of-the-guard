@@ -1,41 +1,30 @@
 package net.hfstack.rallyguard.screen;
 
-import net.hfstack.rallyguard.RallyOfTheGuard;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 
 import java.util.function.Consumer;
 
-final class EditSaveIconButton extends AbstractButton {
-    private static final int TEXTURE_SIZE = 20;
-    private static final Identifier EDIT_TEXTURE = Identifier.fromNamespaceAndPath(
-            RallyOfTheGuard.MOD_ID,
-            "textures/gui/icons/route_point_edit.png"
-    );
-    private static final Identifier SAVE_TEXTURE = Identifier.fromNamespaceAndPath(
-            RallyOfTheGuard.MOD_ID,
-            "textures/gui/icons/route_point_save.png"
-    );
-    private final Consumer<EditSaveIconButton> action;
-    private boolean saving;
+final class EditConfirmIconButton extends AbstractButton {
+    private final Consumer<EditConfirmIconButton> action;
+    private boolean confirming;
 
-    EditSaveIconButton(int x, int y, int size, Consumer<EditSaveIconButton> action) {
+    EditConfirmIconButton(int x, int y, int size, Consumer<EditConfirmIconButton> action) {
         super(x, y, size, size, Component.translatable("gui.rallyguard.route.edit_point_name"));
         this.action = action;
     }
 
-    boolean isSaving() {
-        return saving;
+    boolean isConfirming() {
+        return confirming;
     }
 
-    void setSaving(boolean saving) {
-        this.saving = saving;
-        setMessage(Component.translatable(saving
+    void setConfirming(boolean confirming) {
+        this.confirming = confirming;
+        setMessage(Component.translatable(confirming
                 ? "gui.rallyguard.route.save_point_name"
                 : "gui.rallyguard.route.edit_point_name"));
     }
@@ -48,19 +37,19 @@ final class EditSaveIconButton extends AbstractButton {
     @Override
     protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         extractDefaultSprite(graphics);
-        int iconX = getX() + (getWidth() - TEXTURE_SIZE) / 2;
-        int iconY = getY() + (getHeight() - TEXTURE_SIZE) / 2;
+        int iconX = getX() + (getWidth() - GuiIcons.TEXTURE_SIZE) / 2;
+        int iconY = getY() + (getHeight() - GuiIcons.TEXTURE_SIZE) / 2;
         graphics.blit(
                 RenderPipelines.GUI_TEXTURED,
-                saving ? SAVE_TEXTURE : EDIT_TEXTURE,
+                confirming ? GuiIcons.CONFIRM_SMALL : GuiIcons.EDIT_SMALL,
                 iconX,
                 iconY,
                 0.0F,
                 0.0F,
-                TEXTURE_SIZE,
-                TEXTURE_SIZE,
-                TEXTURE_SIZE,
-                TEXTURE_SIZE
+                GuiIcons.TEXTURE_SIZE,
+                GuiIcons.TEXTURE_SIZE,
+                GuiIcons.TEXTURE_SIZE,
+                GuiIcons.TEXTURE_SIZE
         );
     }
 

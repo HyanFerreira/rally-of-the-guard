@@ -20,6 +20,21 @@ class ResourceSchemaTest {
     private static final Path RESOURCES = Path.of("src", "main", "resources");
 
     @Test
+    void reusableGuiIconsArePackagedForCompactAndLargeControls() throws IOException {
+        Path icons = RESOURCES.resolve("assets/rallyguard/textures/gui/icons");
+        for (String iconName : Set.of(
+                "edit.png", "edit_small.png", "confirm_small.png", "save.png", "save_small.png"
+        )) {
+            Path icon = icons.resolve(iconName);
+            assertTrue(Files.isRegularFile(icon), () -> "Missing reusable GUI icon: " + iconName);
+            BufferedImage image = ImageIO.read(icon.toFile());
+            assertEquals(20, image.getWidth(), () -> "Unexpected icon width: " + iconName);
+            assertEquals(20, image.getHeight(), () -> "Unexpected icon height: " + iconName);
+            assertTrue(image.getColorModel().hasAlpha(), () -> "Icon must preserve alpha: " + iconName);
+        }
+    }
+
+    @Test
     void formationSelectorIconsAreCompleteAndNativeSized() throws IOException {
         Path icons = RESOURCES.resolve("assets/rallyguard/textures/gui/formations");
         for (String formation : Set.of(
