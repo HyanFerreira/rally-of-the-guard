@@ -144,6 +144,48 @@ class ResourceSchemaTest {
     }
 
     @Test
+    void activeReleaseDocumentationMatchesTheMinecraft261Build() throws IOException {
+        String properties = Files.readString(Path.of("gradle.properties"));
+        String workflow = Files.readString(Path.of(".github", "workflows", "build.yml"));
+        String roadmap = Files.readString(Path.of("ROADMAP.md"));
+        String changelog = Files.readString(Path.of("CHANGELOG.md"));
+        String curseForge = Files.readString(Path.of("CURSEFORGE.md"));
+        String readme = Files.readString(Path.of("README.md"));
+        String technical = Files.readString(Path.of("docs", "MELHORIAS_TECNICAS.md"));
+        String smoke = Files.readString(Path.of(
+                "docs", "testing", "26.1-1.4.0-remaining-smoke-test.md"
+        ));
+        String observations = Files.readString(Path.of(
+                "docs", "testing", "26.1-1.4.0-smoke-test-observations.md"
+        ));
+
+        assertTrue(properties.contains("minecraft_version=26.1"));
+        assertTrue(properties.contains("loader_version=0.18.4"));
+        assertTrue(properties.contains("fabric_version=0.144.3+26.1"));
+        assertTrue(properties.contains("midnightlib_version=1.9.2+26.1-fabric"));
+        assertTrue(workflow.contains("java-version: '25'"));
+
+        assertTrue(roadmap.contains("# Implementação concluída para 1.4.0 — Command Post"));
+        assertTrue(roadmap.contains("# Implementação concluída para 1.4.0 — Global Guard Registry"));
+        assertTrue(roadmap.contains("# Implementação concluída para 1.4.0 — Village Defense & Raids"));
+        assertTrue(changelog.contains("## Unreleased — planned 1.4.0"));
+        assertTrue(changelog.contains("Hardened individual route updates"));
+        assertTrue(readme.contains("Validação e ciclo de vida do Rally"));
+        assertTrue(technical.contains("## Itens resolvidos"));
+
+        assertTrue(readme.contains("CC0-1.0"));
+        assertFalse(curseForge.contains("refs/heads/1.21.11"));
+        assertTrue(curseForge.contains("Minecraft **26.1**"));
+        assertTrue(curseForge.contains("Command Post"));
+        assertTrue(curseForge.contains("Global Guard Registry"));
+        assertTrue(curseForge.contains("Village Defense & Raids"));
+
+        assertTrue(smoke.contains("Resultado geral da versão: `PENDENTE`"));
+        assertTrue(observations.contains("## Reteste final"));
+        assertFalse(observations.contains("Resultado final: `APROVADO`"));
+    }
+
+    @Test
     void combatProgressionEntityTagsArePackaged() throws IOException {
         Path tags = RESOURCES.resolve("data/rallyguard/tags/entity_type");
         JsonObject targets = readJson(tags.resolve("xp_targets.json"));

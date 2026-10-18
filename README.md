@@ -34,6 +34,19 @@ Principais mudanças:
 - O Rali permite escolher entre sete formações persistentes no próprio pergaminho.
 - Adicionada tela de Ordens de Combate para atacar o alvo mirado com todos, infantaria ou arqueiros.
 
+#### Validação e ciclo de vida do Rally
+
+- Atualizações de rota são limitadas antes da alocação e revalidadas pelo
+  servidor de forma atômica, incluindo ação, limite configurado, altura, borda
+  do mundo e distância de captura de novos pontos.
+- Pontos já salvos podem continuar sendo editados mesmo longe do jogador; um
+  cliente modificado não pode criar novos pontos remotos.
+- Guardas em `Aguardar`, rota ativa ou patrulha fixa comum não entram no Rally.
+- Encerrar ou perder uma sessão de Rally libera somente participantes marcados,
+  preservando seguidores independentes.
+- Efeito, âncora, tags dos guardas e brilho do pergaminho são reconciliados pelo
+  servidor após morte, troca de dimensão, desconexão e novo login.
+
 ---
 
 ## Funcionalidades

@@ -30,6 +30,13 @@
 
 ## Unreleased — planned 1.4.0
 
+- Hardened individual route updates with a pre-allocation wire limit, explicit action checks, configured-size enforcement, atomic validation, world-height/border checks, and an 8-block capture radius for new points.
+- Preserved stored distant route points for rename, removal, pause, and restart workflows while rejecting forged new distant coordinates.
+- Prevented waiting, active-route, and ordinary fixed-patrol guards from being pulled into Rally.
+- Centralized Rally lifecycle reconciliation for toggle-off, effect loss, death, dimension changes, disconnect, and login; cleanup now releases only tagged participants and leaves independent followers unchanged.
+- Aligned published metadata with the repository's CC0-1.0 license and removed the obsolete route-placeholder action and translations.
+- Added focused payload, route-policy, Rally-participation, Rally-cleanup, resource-contract, and participant-isolation GameTest coverage.
+
 - Added persistent player-owned Named Routes with Unicode names, dimensions, wait times, ordered points, configurable limits, and future-schema protection.
 - Added a route hub and responsive Saved Routes manager with two-column guard assignment, cross-route confirmation, and reuse of individual guard routes as templates.
 - Added server-authoritative create, update, delete, assign, unassign, dimension validation, loaded-guard synchronization, and lazy repair of removed route references.

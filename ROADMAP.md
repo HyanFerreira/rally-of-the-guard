@@ -1035,9 +1035,10 @@ permitirem.
 
 ---
 
-# Atualizações futuras
+# Atualizações 1.4.0 e direções futuras
 
-As versões abaixo são direções planejadas.
+As seções abaixo registram tanto sistemas já implementados para 1.4.0 quanto
+direções que permanecem futuras. O estado explícito de cada seção prevalece.
 
 Nomes, números de versão, conteúdo e ordem ainda podem mudar.
 
@@ -1204,144 +1205,52 @@ sem associação inventada.
 
 ---
 
-# Rally Point / Command Post
+# Implementação concluída para 1.4.0 — Command Post
 
-Uma futura atualização poderá adicionar um bloco territorial de comando.
+O Command Post implementa o complemento territorial do Commander's Ledger. O
+dono pode nomear o posto, ativá-lo, escolher raio e formação e distribuir
+guardas carregados em posições seguras de defesa. A interface de duas colunas
+mostra Pelotões e exige confirmação antes de transferir uma unidade de outro
+posto.
 
-Possíveis nomes:
+As atribuições são persistentes e validadas pelo servidor. O posto não força
+chunks nem teleporta guardas descarregados. Ao ser desativado, remove somente as
+ordens que ele próprio originou, preservando uma ordem manual posterior.
 
-- Rally Point;
-- Command Post;
-- Commander's Table.
-
-Função conceitual:
-
-```text
-Rally Point
-
-Assigned Guards: 8
-
-Squad:
-Village Guard
-
-Formation:
-Square
-
-Behavior:
-Defend
-
-Radius:
-32
-```
-
-A ideia é criar dois tipos complementares de comando:
-
-```text
-Commander's Ledger
-→ comando móvel
-
-Rally Point
-→ comando territorial
-```
-
-Isso seria especialmente útil para:
-
-- vilas;
-- castelos;
-- muralhas;
-- portões;
-- bases de jogadores.
+Implementação e testes automatizados concluídos; smoke test em jogo pendente.
 
 ---
 
-# Guard Registry global
+# Implementação concluída para 1.4.0 — Global Guard Registry
 
-No futuro, o sistema de perfis poderá crescer para um registro persistente dos guardas contratados.
+O Commander's Ledger oferece um registro global persistente dos guardas
+contratados, inclusive quando seus chunks estão descarregados. Cada registro
+mantém a última identidade, dimensão, posição, perfil, Pelotão e ordem conhecida.
 
-Isso permitiria ao jogador consultar unidades mesmo quando não estiverem carregadas.
+A consulta é paginada pelo servidor, distingue dados carregados de dados
+preservados e só calcula distância na mesma dimensão. O ciclo de vida reconcilia
+load, unload, login, alterações de propriedade e mortes confirmadas sem forçar
+chunks. Comandos de operador permitem contar e atualizar os registros.
 
-Exemplo:
-
-```text
-Robert
-Level 6
-Soldier
-
-Dimension: Overworld
-Order: Patrol
-Distance: 842 m
-Status: Chunk unloaded
-```
-
-Outro exemplo:
-
-```text
-Arthur
-Level 4
-Guard
-
-Dimension: Nether
-Last known position:
-350, 67, -122
-```
-
-O objetivo é fazer o sistema deixar de ser apenas uma interface para entidades próximas e se tornar um verdadeiro registro do exército do jogador.
+Implementação e testes automatizados concluídos; smoke test em jogo pendente.
 
 ---
 
-# Village Defense & Raids
+# Implementação concluída para 1.4.0 — Village Defense & Raids
 
-Raids combinam naturalmente com a proposta do Rally of the Guard.
+O servidor detecta raids vanilla próximas de comandantes com guardas carregados.
+No modo normal, o alerta permite reunir guardas, defender a vila em postos
+seguros ou ignorar; cada resposta é revalidada contra raid, dimensão, distância,
+propriedade e disponibilidade. Também existem modos persistentes de reação
+automática para reunir na vila ou no comandante.
 
-Uma futura atualização poderá adicionar integração especial.
+Ordens de defesa emitidas pela raid são temporárias e restauram a tarefa
+suspensa quando o evento termina. O relatório por comandante registra apenas
+guardas mobilizados, contribuições observadas, perdas carregadas e MVP confirmado,
+indicando dados parciais quando houve unload ou expiração.
 
-Exemplo:
-
-```text
-RAID DETECTED
-
-Village under attack!
-
-[ Rally All Guards ]
-[ Defend Village ]
-[ Ignore ]
-```
-
-Possíveis comportamentos configuráveis:
-
-```text
-Raid Behavior:
-
-Normal
-Rally to Village
-Rally to Commander
-```
-
-## Raid Report
-
-Depois da raid, poderá existir um relatório.
-
-Exemplo:
-
-```text
-RAID REPORT
-
-Enemies defeated: 38
-Guards deployed: 12
-Guards lost: 2
-
-MVP:
-Robert — 9 kills
-```
-
-Esse sistema conversa diretamente com:
-
-- níveis;
-- kills;
-- assists;
-- histórico;
-- squads;
-- capitães.
+Implementação e testes automatizados concluídos; smoke test em jogo ainda em
+andamento, sem aprovação geral da versão.
 
 ---
 
