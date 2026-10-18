@@ -442,7 +442,7 @@ public final class SquadManagementScreen extends Screen {
     }
 
     private int columnWidth() {
-        return (panelWidth() - 42) / 2;
+        return Math.max(150, (panelWidth() - 82) / 2);
     }
 
     private int panelX() {
