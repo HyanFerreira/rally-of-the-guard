@@ -152,7 +152,9 @@
   "alert.rallyguard.scroll_of_rallying.strength_gained": "Voc\u00ea iniciou um Rali! Seus Guardas em um raio de %s blocos atenderam ao chamado.",
   "alert.rallyguard.scroll_of_rallying.strength_lost": "Voc\u00ea encerrou o Rali! Seus Guardas voltar\u00e3o a vagar por a\u00ed",
 
-  "tooltip.rallyguard.scroll_of_rallying.tooltip_desc": "Bot\u00e3o direito: menu de forma\u00e7\u00f5es · SHIFT + bot\u00e3o direito: ativar/desativar Rali",
+  "tooltip.rallyguard.scroll_of_rallying.category": "Ferramentas e utilidades",
+  "tooltip.rallyguard.scroll_of_rallying.menu": "Bot\u00e3o direito: menu de forma\u00e7\u00f5es",
+  "tooltip.rallyguard.scroll_of_rallying.toggle": "SHIFT + bot\u00e3o direito: ativar/desativar Rali",
   "tooltip.rallyguard.scroll_of_rallying.formation": "Forma\u00e7\u00e3o: %s",
   "alert.rallyguard.scroll_of_rallying.formation_changed": "Forma\u00e7\u00e3o do Rali: %s",
   "tooltip.rallyguard.scroll_of_rallying.tooltip_shift": "Segure SHIFT para mais informa\u00e7\u00f5es",

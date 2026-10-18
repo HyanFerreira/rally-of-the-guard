@@ -27,6 +27,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.resources.Identifier;
@@ -182,10 +183,14 @@ public class ScrollOfRallyingItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, Item.TooltipContext ctx, TooltipDisplay displayComponent,
                               Consumer<Component> textConsumer, TooltipFlag type) {
-        textConsumer.accept(Component.translatable("tooltip.rallyguard.scroll_of_rallying.tooltip_desc"));
+        textConsumer.accept(Component.translatable("tooltip.rallyguard.scroll_of_rallying.category")
+                .withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC));
+        textConsumer.accept(Component.translatable("tooltip.rallyguard.scroll_of_rallying.menu"));
+        textConsumer.accept(Component.translatable("tooltip.rallyguard.scroll_of_rallying.toggle"));
         textConsumer.accept(Component.translatable(
                 "tooltip.rallyguard.scroll_of_rallying.formation",
                 Component.translatable(selectedFormation(stack).translationKey())
+                        .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
         ));
         super.appendHoverText(stack, ctx, displayComponent, textConsumer, type);
     }

@@ -131,6 +131,7 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	runtimeOnly "maven.modrinth:u6dRKJwZ:IfSmQWNL"
 
 	def guardVillagersJar = file(project.guardvillagers_jar)
 	if (guardVillagersJar.exists()) {
