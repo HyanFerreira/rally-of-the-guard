@@ -20,6 +20,11 @@ Evidência local: `./gradlew.bat build` concluiu com sucesso antes deste ciclo d
 hardening. A execução remota do GitHub Actions continua sendo evidência externa,
 não substituída pelo teste local.
 
+Evidência final de 18/10/2026: `./gradlew.bat clean automatedSmokeTest` terminou
+com `BUILD SUCCESSFUL`, 423 testes JUnit sem falhas, 5/5 GameTests obrigatórios
+de servidor e o GameTest de cliente com 6 capturas. O JAR final possui SHA-256
+`AC5FD6713612650A4EFBAB36FBB103A51E95E423070B4603C0FE16A61659B686`.
+
 ### Segurança das rotas individuais
 
 - O codec rejeita contagens negativas ou acima do limite absoluto de 10 antes
@@ -109,6 +114,6 @@ Esses testes complementam, mas não substituem, o smoke test manual.
 - [x] Metadata e licença estão consistentes.
 - [x] Placeholder de rota obsoleto foi removido.
 - [x] Fluxos críticos possuem cobertura automatizada.
-- [ ] `automatedSmokeTest` final executado após todas as mudanças deste ciclo.
+- [x] `automatedSmokeTest` final executado após todas as mudanças deste ciclo.
 - [ ] Smoke test manual consolidado concluído e resultado geral aprovado.
 - [ ] Aviso Java 25/Mixin eliminado ou aceito com versão compatível documentada.
