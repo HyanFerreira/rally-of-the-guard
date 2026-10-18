@@ -12,10 +12,11 @@ import net.hfstack.rallyguard.effect.ModEffects;
 import net.hfstack.rallyguard.event.RallyFormationTicker;
 import net.hfstack.rallyguard.formation.RallyFormation;
 import net.hfstack.rallyguard.order.GuardOrders;
+import net.hfstack.rallyguard.order.GuardRoutes;
 import net.hfstack.rallyguard.order.RallyFormationSlots;
+import net.hfstack.rallyguard.order.RallyParticipationPolicy;
 import net.hfstack.rallyguard.order.move.MoveOrders;
 import net.hfstack.rallyguard.order.defend.DefendAreas;
-import net.hfstack.rallyguard.order.defend.DefendAreaTransitionPolicy;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -151,8 +152,11 @@ public class ScrollOfRallyingItem extends Item {
             List<Entity> joiners = new ArrayList<>();
             for (Entity g : candidates) {
                 if (!(g instanceof GuardEntity guard)
-                        || !DefendAreaTransitionPolicy.mayJoinRally(
-                        guard.isPatrolling(), DefendAreas.active(guard).isPresent()
+                        || !RallyParticipationPolicy.mayJoin(
+                        guard.isPatrolling(),
+                        DefendAreas.active(guard).isPresent(),
+                        GuardOrders.isWaiting(guard),
+                        GuardRoutes.get(guard).active()
                 )) continue;
                 GuardEligibilityDecision eligibility = GuardEligibility.evaluate(
                         GuardEligibilityContext.of(sp, guard, GuardEligibilityOperation.JOIN_RALLY)
