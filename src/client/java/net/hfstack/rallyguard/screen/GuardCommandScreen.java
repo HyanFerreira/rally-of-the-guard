@@ -396,16 +396,15 @@ public class GuardCommandScreen extends Screen {
         int contentTop = y + 58;
         int contentBottom = y + panelH - 6;
         int rightBottom = y + panelH - (compact ? 2 : 6);
+        int rosterTop = y + 88;
         int rosterBottom = y + panelH - 44;
-        int footerTop = y + panelH - 36;
         int individualBottom = y + (compact ? 156 : 164);
         int scopeTop = y + (compact ? 156 : 174);
-        graphics.outline(x + 14, contentTop, leftW - 14, rosterBottom - contentTop, SECTION);
-        graphics.outline(x + 14, footerTop, leftW - 14, contentBottom - footerTop, SECTION);
+        graphics.outline(x + 14, contentTop, leftW - 14, contentBottom - contentTop, SECTION);
+        graphics.outline(x + 24, rosterTop, leftW - 34, rosterBottom - rosterTop, SECTION);
         graphics.outline(rightX, contentTop, rightW, individualBottom - contentTop, SECTION);
         graphics.outline(rightX, scopeTop, rightW, rightBottom - scopeTop, SECTION);
-        graphics.fill(x + leftW + 13, contentTop, x + leftW + 14, contentBottom, DIVIDER);
-        graphics.fill(x + 24, y + 82, x + leftW - 10, y + 83, DIVIDER);
+        graphics.fill(x + 34, y + 82, x + leftW - 20, y + 83, DIVIDER);
         graphics.fill(rightX + 10, y + 80, rightX + rightW - 10, y + 81, DIVIDER);
         graphics.fill(rightX + 10, y + (compact ? 174 : 198), rightX + rightW - 10,
                 y + (compact ? 175 : 199), DIVIDER);
@@ -417,7 +416,7 @@ public class GuardCommandScreen extends Screen {
         graphics.text(font, Component.translatable("gui.rallyguard.command.roster"), x + 24, y + 68, WHITE);
         if (all.isEmpty()) {
             graphics.centeredText(font, Component.translatable("gui.rallyguard.command.empty"),
-                    x + 14 + (leftWidth() - 14) / 2, y + 148, MUTED);
+                    x + 24 + (leftWidth() - 34) / 2, y + 148, MUTED);
         }
         int start = page * perPage();
         int end = Math.min(start + perPage(), all.size());
@@ -428,14 +427,14 @@ public class GuardCommandScreen extends Screen {
             int color = entry.guardId().equals(selectedGuard) ? GOLD : WHITE;
             String captain = entry.captain()
                     ? " · " + Component.translatable("gui.rallyguard.muster.captain").getString() : "";
-            graphics.text(font, Component.literal(trimToWidth(entry.name() + captain, leftWidth() - 26)),
-                    x + 20, rowY + 5, color);
+            graphics.text(font, Component.literal(trimToWidth(entry.name() + captain, leftWidth() - 46)),
+                    x + 34, rowY + 5, color);
             String squad = model.squadName(entry.squadId())
                     .orElseGet(() -> Component.translatable("gui.rallyguard.squad.scope_unassigned").getString());
             String detail = presentationComponent(entry).map(Component::getString).orElse("");
             detail = detail.isBlank() ? squad : detail + " · " + squad;
-            graphics.text(font, Component.literal(trimToWidth(detail, leftWidth() - 26)),
-                    x + 20, rowY + 17, MUTED);
+            graphics.text(font, Component.literal(trimToWidth(detail, leftWidth() - 46)),
+                    x + 34, rowY + 17, MUTED);
         }
         int pages = Math.max(1, (all.size() + perPage() - 1) / perPage());
         graphics.text(font, Component.literal((page + 1) + " / " + pages), x + 84, y + panelHeight() - 22, MUTED);

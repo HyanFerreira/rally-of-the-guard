@@ -392,16 +392,15 @@ public final class SquadManagementScreen extends Screen {
         int contentTop = headingY - 10;
         int contentBottom = y + panelHeight() - 6;
         boolean compactControls = panelWidth() < 600;
-        int listBottom = y + panelHeight() - (compactControls ? 68 : 44);
         int footerTop = y + panelHeight() - (compactControls ? 60 : 36);
-        graphics.outline(x + 14, contentTop, columnW, listBottom - contentTop, SECTION);
-        graphics.outline(rightX, contentTop, columnW, listBottom - contentTop, SECTION);
-        graphics.outline(x + 14, footerTop, columnW, contentBottom - footerTop, SECTION);
-        graphics.outline(rightX, footerTop, columnW, contentBottom - footerTop, SECTION);
-        graphics.text(font, Component.translatable("gui.rallyguard.squad.available"), x + 14, headingY, WHITE);
-        graphics.text(font, Component.translatable("gui.rallyguard.squad.members", selectedName), rightX, headingY, WHITE);
+        graphics.outline(x + 14, contentTop, columnW, contentBottom - contentTop, SECTION);
+        graphics.outline(rightX, contentTop, columnW, contentBottom - contentTop, SECTION);
+        graphics.text(font, Component.translatable("gui.rallyguard.squad.available"), x + 24, headingY, WHITE);
+        graphics.text(font, Component.translatable("gui.rallyguard.squad.members", selectedName), rightX + 10, headingY, WHITE);
         graphics.fill(x + 24, headingY + 16, x + 14 + columnW - 10, headingY + 17, DIVIDER);
         graphics.fill(rightX + 10, headingY + 16, rightX + columnW - 10, headingY + 17, DIVIDER);
+        graphics.fill(x + 24, footerTop, x + 14 + columnW - 10, footerTop + 1, DIVIDER);
+        graphics.fill(rightX + 10, footerTop, rightX + columnW - 10, footerTop + 1, DIVIDER);
 
         super.extractRenderState(graphics, mouseX, mouseY, delta);
         drawGuardRows(graphics, availableGuards(), availablePage, x + 14, columnW, selectedAvailableGuard, true);
