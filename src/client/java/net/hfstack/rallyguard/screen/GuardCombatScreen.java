@@ -1,9 +1,9 @@
 package net.hfstack.rallyguard.screen;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.hfstack.rallyguard.network.NetworkConstants;
 import net.hfstack.rallyguard.network.payload.GuardAttackTargetC2SPayload;
 import net.hfstack.rallyguard.api.command.GuardCommandScope;
+import net.hfstack.rallyguard.api.command.GuardUnitCategory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
@@ -46,17 +46,17 @@ public class GuardCombatScreen extends Screen {
 
         Button all = Button.builder(
                 Component.translatable("gui.rallyguard.combat.all"),
-                b -> sendAttack(NetworkConstants.ATTACK_ALL)
+                b -> sendAttack(GuardUnitCategory.ALL)
         ).bounds(x + 28, y + 78, 92, BTN_H).build();
 
         Button infantry = Button.builder(
                 Component.translatable("gui.rallyguard.combat.infantry"),
-                b -> sendAttack(NetworkConstants.ATTACK_INFANTRY)
+                b -> sendAttack(GuardUnitCategory.INFANTRY)
         ).bounds(x + 124, y + 78, 92, BTN_H).build();
 
         Button ranged = Button.builder(
                 Component.translatable("gui.rallyguard.combat.ranged"),
-                b -> sendAttack(NetworkConstants.ATTACK_RANGED)
+                b -> sendAttack(GuardUnitCategory.RANGED)
         ).bounds(x + 220, y + 78, 92, BTN_H).build();
 
         this.addRenderableWidget(all);
@@ -83,9 +83,9 @@ public class GuardCombatScreen extends Screen {
         return null;
     }
 
-    private void sendAttack(int mode) {
+    private void sendAttack(GuardUnitCategory category) {
         int targetId = target != null ? target.getId() : -1;
-        ClientPlayNetworking.send(new GuardAttackTargetC2SPayload(targetId, mode, scope));
+        ClientPlayNetworking.send(new GuardAttackTargetC2SPayload(targetId, category.wireId(), scope));
         closeToParent();
     }
 
