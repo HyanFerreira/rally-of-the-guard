@@ -10,6 +10,8 @@ base {
 	archivesName = project.archives_base_name
 }
 
+def client2Username = "RallyGuardTest2"
+
 repositories {
 	// Add repositories to retrieve artifacts from in here.
 	// You should only use this when depending on other mods because
@@ -60,7 +62,7 @@ loom {
 			name "Minecraft Client 2"
 			runDir "run/client2"
 			programArg "--username"
-			programArg "RallyGuardTester2"
+			programArg client2Username
 		}
 	}
 
@@ -99,8 +101,19 @@ tasks.register("syncClient2Settings", Copy) {
 	into("run/client2")
 }
 
+tasks.register("validateDevelopmentProfiles") {
+	group = "verification"
+	description = "Validates offline development profiles against Minecraft login constraints."
+	doLast {
+		if (!(client2Username ==~ /[A-Za-z0-9_]{3,16}/)) {
+			throw new GradleException("Client 2 username must contain 3-16 ASCII letters, digits, or underscores: ${client2Username}")
+		}
+	}
+}
+
 tasks.named("runClient2") {
 	dependsOn tasks.named("syncClient2Settings")
+	dependsOn tasks.named("validateDevelopmentProfiles")
 }
 
 tasks.register("automatedSmokeTest") {
@@ -108,6 +121,7 @@ tasks.register("automatedSmokeTest") {
 	description = "Builds the mod and runs unit, server GameTest, and client GameTest suites."
 	dependsOn tasks.named("build")
 	dependsOn tasks.named("runClientGameTest")
+	dependsOn tasks.named("validateDevelopmentProfiles")
 }
 
 dependencies {

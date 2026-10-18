@@ -30,6 +30,7 @@
 
 ## Unreleased — planned 1.4.0
 
+- Fixed the secondary development client login by keeping its offline username within Minecraft's 16-character limit, and added a verification task that prevents invalid development profiles from reaching the login handshake.
 - Hardened individual route updates with a pre-allocation wire limit, explicit action checks, configured-size enforcement, atomic validation, world-height/border checks, and an 8-block capture radius for new points.
 - Preserved stored distant route points for rename, removal, pause, and restart workflows while rejecting forged new distant coordinates.
 - Prevented waiting, active-route, and ordinary fixed-patrol guards from being pulled into Rally.
