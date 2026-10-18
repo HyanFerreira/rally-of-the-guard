@@ -141,7 +141,7 @@ public class GuardCommandScreen extends Screen {
             addRenderableWidget(Button.builder(Component.empty(), button -> {
                 selectedGuard = entry.guardId();
                 rebuildButtons();
-            }).bounds(x + 24, rowY, leftW - 20, ROW_HEIGHT - 2).build());
+            }).bounds(x + 34, rowY, leftW - 40, ROW_HEIGHT - 2).build());
         }
 
         addRenderableWidget(Button.builder(Component.literal("<"), button -> changePage(-1))
@@ -426,14 +426,14 @@ public class GuardCommandScreen extends Screen {
             int color = entry.guardId().equals(selectedGuard) ? GOLD : WHITE;
             String captain = entry.captain()
                     ? " · " + Component.translatable("gui.rallyguard.muster.captain").getString() : "";
-            graphics.text(font, Component.literal(trimToWidth(entry.name() + captain, leftWidth() - 46)),
-                    x + 34, rowY + 5, color);
+            graphics.text(font, Component.literal(trimToWidth(entry.name() + captain, leftWidth() - 50)),
+                    x + 44, rowY + 5, color);
             String squad = model.squadName(entry.squadId())
                     .orElseGet(() -> Component.translatable("gui.rallyguard.squad.scope_unassigned").getString());
             String detail = presentationComponent(entry).map(Component::getString).orElse("");
             detail = detail.isBlank() ? squad : detail + " · " + squad;
-            graphics.text(font, Component.literal(trimToWidth(detail, leftWidth() - 46)),
-                    x + 34, rowY + 17, MUTED);
+            graphics.text(font, Component.literal(trimToWidth(detail, leftWidth() - 50)),
+                    x + 44, rowY + 17, MUTED);
         }
         int pages = Math.max(1, (all.size() + perPage() - 1) / perPage());
         graphics.text(font, Component.literal((page + 1) + " / " + pages), x + 84,
