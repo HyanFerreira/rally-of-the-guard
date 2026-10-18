@@ -141,13 +141,14 @@ public class GuardCommandScreen extends Screen {
             addRenderableWidget(Button.builder(Component.empty(), button -> {
                 selectedGuard = entry.guardId();
                 rebuildButtons();
-            }).bounds(x + 24, rowY, leftW - 34, ROW_HEIGHT - 2).build());
+            }).bounds(x + 24, rowY, leftW - 20, ROW_HEIGHT - 2).build());
         }
 
+        int pagerX = x + 14 + (leftW - 120) / 2;
         addRenderableWidget(Button.builder(Component.literal("<"), button -> changePage(-1))
-                .bounds(x + 24, y + panelHeight() - 28, 24, BUTTON_HEIGHT).build());
+                .bounds(pagerX, y + panelHeight() - 34, 24, BUTTON_HEIGHT).build());
         addRenderableWidget(Button.builder(Component.literal(">"), button -> changePage(1))
-                .bounds(x + 52, y + panelHeight() - 28, 24, BUTTON_HEIGHT).build());
+                .bounds(pagerX + 28, y + panelHeight() - 34, 24, BUTTON_HEIGHT).build());
 
         Optional<Entry> selected = selected();
         int threeW = (actionW - GAP * 2) / 3;
@@ -394,17 +395,16 @@ public class GuardCommandScreen extends Screen {
         graphics.outline(x, y, panelWidth(), panelHeight(), WHITE);
         graphics.centeredText(font, title, width / 2, y + 9, WHITE);
         int contentTop = y + 58;
-        int contentBottom = y + panelH - 6;
-        int rightBottom = y + panelH - (compact ? 2 : 6);
+        int contentBottom = y + panelH - 14;
+        int rightBottom = contentBottom;
         int rosterTop = y + 88;
         int rosterBottom = y + panelH - 44;
         int individualBottom = y + (compact ? 156 : 164);
         int scopeTop = y + (compact ? 156 : 174);
-        graphics.outline(x + 14, contentTop, leftW - 14, contentBottom - contentTop, SECTION);
-        graphics.outline(x + 24, rosterTop, leftW - 34, rosterBottom - rosterTop, SECTION);
+        graphics.outline(x + 14, contentTop, leftW, contentBottom - contentTop, SECTION);
+        graphics.outline(x + 24, rosterTop, leftW - 20, rosterBottom - rosterTop, SECTION);
         graphics.outline(rightX, contentTop, rightW, individualBottom - contentTop, SECTION);
         graphics.outline(rightX, scopeTop, rightW, rightBottom - scopeTop, SECTION);
-        graphics.fill(x + 34, y + 82, x + leftW - 20, y + 83, DIVIDER);
         graphics.fill(rightX + 10, y + 80, rightX + rightW - 10, y + 81, DIVIDER);
         graphics.fill(rightX + 10, y + (compact ? 174 : 198), rightX + rightW - 10,
                 y + (compact ? 175 : 199), DIVIDER);
@@ -416,7 +416,7 @@ public class GuardCommandScreen extends Screen {
         graphics.text(font, Component.translatable("gui.rallyguard.command.roster"), x + 24, y + 68, WHITE);
         if (all.isEmpty()) {
             graphics.centeredText(font, Component.translatable("gui.rallyguard.command.empty"),
-                    x + 24 + (leftWidth() - 34) / 2, y + 148, MUTED);
+                    x + 24 + (leftWidth() - 20) / 2, y + 148, MUTED);
         }
         int start = page * perPage();
         int end = Math.min(start + perPage(), all.size());
@@ -437,7 +437,9 @@ public class GuardCommandScreen extends Screen {
                     x + 34, rowY + 17, MUTED);
         }
         int pages = Math.max(1, (all.size() + perPage() - 1) / perPage());
-        graphics.text(font, Component.literal((page + 1) + " / " + pages), x + 84, y + panelHeight() - 22, MUTED);
+        int pagerX = x + 14 + (leftWidth() - 120) / 2;
+        graphics.text(font, Component.literal((page + 1) + " / " + pages), pagerX + 60,
+                y + panelHeight() - 28, MUTED);
     }
 
     private void drawContext(GuiGraphicsExtractor graphics) {
@@ -502,7 +504,7 @@ public class GuardCommandScreen extends Screen {
     }
 
     private int leftWidth() {
-        return Math.max(120, (panelWidth() * 43) / 100);
+        return (panelWidth() - 42) / 2;
     }
 
     private int panelX() {
