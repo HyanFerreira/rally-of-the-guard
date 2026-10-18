@@ -11,6 +11,8 @@ import java.util.List;
 
 public record GuardRouteUpdateC2SPayload(int entityId, int action, int waitSeconds, List<Point> points)
         implements CustomPacketPayload {
+    public static final int MAX_POINTS = 10;
+
     public record Point(int x, int y, int z, String label) {
         public Point {
             label = label == null ? "" : label;
@@ -46,6 +48,9 @@ public record GuardRouteUpdateC2SPayload(int entityId, int action, int waitSecon
                     int action = buf.readVarInt();
                     int waitSeconds = buf.readVarInt();
                     int size = buf.readVarInt();
+                    if (size < 0 || size > MAX_POINTS) {
+                        throw new IllegalArgumentException("Invalid guard route point count: " + size);
+                    }
                     List<Point> points = new ArrayList<>(size);
                     for (int i = 0; i < size; i++) {
                         points.add(new Point(buf.readInt(), buf.readInt(), buf.readInt(), buf.readUtf(32)));
