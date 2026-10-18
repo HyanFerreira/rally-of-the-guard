@@ -54,7 +54,10 @@ public final class RaidOpportunityDetector {
 
     private static void detectFor(ServerPlayer player, long tick) {
         ServerLevel level = player.level();
-        Raid raid = level.getRaids().getNearbyRaid(player.blockPosition(), (int) RaidOpportunityPolicy.MAX_DISTANCE);
+        Raid raid = level.getRaids().getNearbyRaid(
+                player.blockPosition(),
+                RaidOpportunityPolicy.lookupDistanceSquared()
+        );
         if (raid == null) return;
         OptionalInt raidId = level.getRaids().getId(raid);
         if (raidId.isEmpty()) return;

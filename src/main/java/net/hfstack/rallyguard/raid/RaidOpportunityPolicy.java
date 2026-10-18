@@ -6,6 +6,10 @@ public final class RaidOpportunityPolicy {
     private RaidOpportunityPolicy() {
     }
 
+    public static int lookupDistanceSquared() {
+        return (int) (MAX_DISTANCE * MAX_DISTANCE);
+    }
+
     public static boolean eligible(boolean raidActive, boolean spectator, double distanceSquared,
                                    int loadedOwnedGuards, boolean alreadySeen) {
         return raidActive

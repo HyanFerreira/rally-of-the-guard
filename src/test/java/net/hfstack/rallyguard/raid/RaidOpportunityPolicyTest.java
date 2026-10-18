@@ -2,6 +2,7 @@ package net.hfstack.rallyguard.raid;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -15,5 +16,10 @@ class RaidOpportunityPolicyTest {
         assertFalse(RaidOpportunityPolicy.eligible(true, false, inside + 1.0, 1, false));
         assertFalse(RaidOpportunityPolicy.eligible(true, false, inside, 0, false));
         assertFalse(RaidOpportunityPolicy.eligible(true, false, inside, 1, true));
+    }
+
+    @Test
+    void vanillaRaidLookupUsesTheSquaredConfiguredRadius() {
+        assertEquals(16_384, RaidOpportunityPolicy.lookupDistanceSquared());
     }
 }
