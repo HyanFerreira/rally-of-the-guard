@@ -88,6 +88,7 @@ public final class RallyGuardClientGameTests implements FabricClientGameTest {
         context.waitForScreen(SquadManagementScreen.class);
         assertScreen(context, SquadManagementScreen.class, 18, false);
         assertWidgetsInsideScreen(context);
+        assertWidgetLabelsFit(context);
         context.takeScreenshot("squad-direct-selection");
 
         context.setScreen(() -> new ScopedNamedRouteScreen(
@@ -96,6 +97,7 @@ public final class RallyGuardClientGameTests implements FabricClientGameTest {
         context.waitForScreen(ScopedNamedRouteScreen.class);
         assertScreen(context, ScopedNamedRouteScreen.class, 5, false);
         assertWidgetsInsideScreen(context);
+        assertWidgetLabelsFit(context);
         context.takeScreenshot("scoped-named-route-selection");
 
         context.runOnClient(client -> client.screen.onClose());
