@@ -215,10 +215,6 @@ public final class GuardCommandNetworking {
             case NetworkConstants.ACTION_TOGGLE_PATROL -> guard.isPatrolling()
                     ? COMMANDS.stopPatrol(player, guard)
                     : COMMANDS.patrol(player, guard, player.blockPosition());
-            case NetworkConstants.ACTION_ROUTE_PLACEHOLDER -> {
-                player.sendOverlayMessage(Component.translatable("gui.rallyguard.command.route_soon"));
-                yield null;
-            }
             default -> null;
         };
 

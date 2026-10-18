@@ -278,7 +278,6 @@
   "gui.rallyguard.command.summoned": "Guard summoned.",
   "gui.rallyguard.command.follow_on": "Guard is now following you.",
   "gui.rallyguard.command.wait_on": "Guard is waiting.",
-  "gui.rallyguard.command.route_soon": "Patrol routes are coming soon.",
   "gui.rallyguard.command.patrol_on": "Patrol started at your position.",
   "gui.rallyguard.command.patrol_off": "Patrol stopped.",
 

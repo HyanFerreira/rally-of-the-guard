@@ -278,7 +278,6 @@
   "gui.rallyguard.command.summoned": "Guarda convocado.",
   "gui.rallyguard.command.follow_on": "Guarda agora est\u00e1 seguindo voc\u00ea.",
   "gui.rallyguard.command.wait_on": "Guarda aguardando.",
-  "gui.rallyguard.command.route_soon": "Rotas de patrulha ser\u00e3o adicionadas em breve.",
   "gui.rallyguard.command.patrol_on": "Patrulha iniciada no local.",
   "gui.rallyguard.command.patrol_off": "Patrulha encerrada.",
 

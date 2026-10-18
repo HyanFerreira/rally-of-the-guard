@@ -126,6 +126,24 @@ class ResourceSchemaTest {
     }
 
     @Test
+    void licenseAndRouteResourcesMatchThePublishedImplementation() throws IOException {
+        JsonObject metadata = readJson(RESOURCES.resolve("fabric.mod.json"));
+        JsonObject english = readJson(RESOURCES.resolve("assets/rallyguard/lang/en_us.json"));
+        JsonObject portuguese = readJson(RESOURCES.resolve("assets/rallyguard/lang/pt_br.json"));
+        String license = Files.readString(Path.of("LICENSE"));
+        String networkConstants = Files.readString(Path.of(
+                "src", "main", "java", "net", "hfstack", "rallyguard", "network", "NetworkConstants.java"
+        ));
+
+        assertEquals("CC0-1.0", metadata.get("license").getAsString());
+        assertTrue(license.replace("\r\n", "\n")
+                .startsWith("Creative Commons Legal Code\n\nCC0 1.0 Universal"));
+        assertFalse(english.has("gui.rallyguard.command.route_soon"));
+        assertFalse(portuguese.has("gui.rallyguard.command.route_soon"));
+        assertFalse(networkConstants.contains("ACTION_ROUTE_PLACEHOLDER"));
+    }
+
+    @Test
     void combatProgressionEntityTagsArePackaged() throws IOException {
         Path tags = RESOURCES.resolve("data/rallyguard/tags/entity_type");
         JsonObject targets = readJson(tags.resolve("xp_targets.json"));
