@@ -1031,7 +1031,7 @@ permitirem.
 - [x] pacote de seleção e validação autoritativa no servidor;
 - [x] atualização ao vivo de um Rally ativo;
 - [x] traduções, acessibilidade e testes automatizados;
-- [ ] smoke test em jogo (roteiro documentado).
+- [x] smoke test em jogo aprovado em 18/10/2026 (roteiro consolidado).
 
 ---
 
@@ -1050,7 +1050,7 @@ O sistema de ordens poderá ser expandido para transformar o Rally em uma camada
 
 ## Move Here
 
-Implementação concluída; smoke test em jogo pendente.
+Implementação e smoke test em jogo aprovados em 18/10/2026.
 
 Permite mandar:
 
@@ -1071,7 +1071,7 @@ Move Squad Here
 
 ## Defend Area
 
-Implementação concluída; smoke test em jogo pendente.
+Implementação e smoke test em jogo aprovados em 18/10/2026.
 
 Exemplo:
 
@@ -1093,7 +1093,7 @@ fixa porque protege uma região limitada e pode ser substituída pelo Rally.
 
 # Combat Stances
 
-Implementação e testes automatizados concluídos; smoke test em jogo pendente.
+Implementação, testes automatizados e smoke test em jogo aprovados em 18/10/2026.
 
 O painel de combate aplica a postura a todos os guardas carregados do escopo
 atual. A escolha é persistida individualmente e continua ativa junto das ordens
@@ -1132,7 +1132,7 @@ na API 8 com `setCombatStance` e `SET_COMBAT_STANCE`.
 
 # Quick Command / Radial Menu
 
-Implementação e testes automatizados concluídos; smoke test em jogo pendente.
+Implementação, testes automatizados e smoke test em jogo aprovados em 18/10/2026.
 
 O Commander's Ledger continua sendo a interface completa.
 
@@ -1217,7 +1217,7 @@ As atribuições são persistentes e validadas pelo servidor. O posto não forç
 chunks nem teleporta guardas descarregados. Ao ser desativado, remove somente as
 ordens que ele próprio originou, preservando uma ordem manual posterior.
 
-Implementação e testes automatizados concluídos; smoke test em jogo pendente.
+Implementação, testes automatizados e smoke test em jogo aprovados em 18/10/2026.
 
 ---
 
@@ -1232,7 +1232,7 @@ preservados e só calcula distância na mesma dimensão. O ciclo de vida reconci
 load, unload, login, alterações de propriedade e mortes confirmadas sem forçar
 chunks. Comandos de operador permitem contar e atualizar os registros.
 
-Implementação e testes automatizados concluídos; smoke test em jogo pendente.
+Implementação, testes automatizados e smoke test em jogo aprovados em 18/10/2026.
 
 ---
 
@@ -1249,8 +1249,8 @@ suspensa quando o evento termina. O relatório por comandante registra apenas
 guardas mobilizados, contribuições observadas, perdas carregadas e MVP confirmado,
 indicando dados parciais quando houve unload ou expiração.
 
-Implementação e testes automatizados concluídos; smoke test em jogo ainda em
-andamento, sem aprovação geral da versão.
+Implementação, testes automatizados e smoke test em jogo aprovados em
+18/10/2026. As observações de UX e melhorias seguem em acompanhamento separado.
 
 ---
 
@@ -1506,16 +1506,16 @@ O objetivo final é que Rally of the Guard se torne o complemento natural para j
 - [x] **Squads & Officers**
 - [x] **Captain Promotion & Demotion**
 - [x] **Additional formations**
-- [ ] **Formation Selection Hub (1.4.0)** — implementação concluída; smoke test em jogo pendente
-- [ ] **Move Here (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
-- [ ] **Defend Area (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
-- [ ] **Combat Stances (1.4.0)** — implementação e testes automatizados concluídos; smoke test em jogo pendente
-- [ ] **Quick Command / Radial Menu (1.4.0)** — Follow, Wait, Dismiss, Attack, Move Here e Defend Area implementados e cobertos automaticamente; smoke test em jogo pendente
-- [ ] **GUI Usability Overhaul (1.4.0)** — Ledger contextual e responsivo com categoria, Dispensar, Shift reverso; Pelotões em duas colunas com seleção direta; Villager Names obrigatório; testes automatizados concluídos; smoke test em jogo pendente
-- [ ] **Named Routes (1.4.0)** — rotas individuais e atribuição coletiva por escopo implementadas e testadas automaticamente; smoke test em jogo pendente
-- [ ] **Rally Point / Command Post (1.4.0)** — block, ownership, persistent settings, territorial formations, two-column assignment GUI and automated tests complete; in-game smoke test pending
-- [ ] **Global Guard Registry (1.4.0)** — persistent last-known records, lifecycle reconciliation, paged Ledger view, diagnostics and automated tests complete; in-game smoke test pending
-- [ ] **Village Defense & Raids (1.4.0)** — vanilla raid detection, validated manual/automatic reactions, isolated reports and automated tests complete; smoke test in progress (alert, Ignore, Defend village, center adjustment and basic report verified)
+- [x] **Formation Selection Hub (1.4.0)** — implementação e smoke test em jogo aprovados em 18/10/2026
+- [x] **Move Here (1.4.0)** — implementação, testes automatizados e smoke test em jogo aprovados em 18/10/2026
+- [x] **Defend Area (1.4.0)** — implementação, testes automatizados e smoke test em jogo aprovados em 18/10/2026
+- [x] **Combat Stances (1.4.0)** — implementação, testes automatizados e smoke test em jogo aprovados em 18/10/2026
+- [x] **Quick Command / Radial Menu (1.4.0)** — implementação, testes automatizados e smoke test em jogo aprovados em 18/10/2026
+- [x] **GUI Usability Overhaul (1.4.0)** — GUI, testes automatizados e smoke test em jogo aprovados em 18/10/2026
+- [x] **Named Routes (1.4.0)** — implementação, testes automatizados e smoke test em jogo aprovados em 18/10/2026
+- [x] **Rally Point / Command Post (1.4.0)** — implementação, testes automatizados e smoke test em jogo aprovados em 18/10/2026
+- [x] **Global Guard Registry (1.4.0)** — implementação, testes automatizados e smoke test em jogo aprovados em 18/10/2026
+- [x] **Village Defense & Raids (1.4.0)** — implementação, testes automatizados e smoke test em jogo aprovados em 18/10/2026
 - [ ] Multiplayer shared command
 - [ ] Extended weapon compatibility
 - [ ] Additional loaders and Minecraft versions
