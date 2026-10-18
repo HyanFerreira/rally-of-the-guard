@@ -1,6 +1,7 @@
 package net.hfstack.rallyguard.gametest;
 
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
+import net.hfstack.rallyguard.event.RallyLifecycle;
 import net.hfstack.rallyguard.order.defend.DefendAreaState;
 import net.hfstack.rallyguard.order.defend.DefendAreas;
 import net.hfstack.rallyguard.order.move.MoveOrderSlotResolver;
@@ -21,8 +22,32 @@ import net.minecraft.world.level.block.Blocks;
 import dev.sterner.guardvillagers.common.entity.GuardEntity;
 
 import java.util.List;
+import java.util.UUID;
 
 public final class RallyGuardGameTests {
+    @GameTest
+    public void rallyCleanupReleasesOnlyTaggedParticipant(GameTestHelper helper) {
+        EntityType<?> guardType = BuiltInRegistries.ENTITY_TYPE.getValue(
+                Identifier.fromNamespaceAndPath("guardvillagers", "guard")
+        );
+        GuardEntity participant = spawnGuard(helper, guardType, new BlockPos(2, 1, 2));
+        GuardEntity independentFollower = spawnGuard(helper, guardType, new BlockPos(4, 1, 2));
+        UUID ownerId = UUID.randomUUID();
+        participant.setOwnerId(ownerId);
+        independentFollower.setOwnerId(ownerId);
+        participant.setFollowing(true);
+        independentFollower.setFollowing(true);
+        GuardOrders.setRallied(participant, true);
+
+        RallyLifecycle.stop(helper.getLevel().getServer(), ownerId);
+
+        helper.assertTrue(!participant.isFollowing(), "Rally participant kept following after cleanup");
+        helper.assertTrue(!GuardOrders.isRallied(participant), "Rally participant kept its Rally tag");
+        helper.assertTrue(independentFollower.isFollowing(), "Cleanup stopped an independent follower");
+        helper.assertTrue(!GuardOrders.isRallied(independentFollower), "Independent follower acquired a Rally tag");
+        helper.succeed();
+    }
+
     @GameTest
     public void moveAndDefendOrdersUseLiveEntityAttachments(GameTestHelper helper) {
         Entity entity = helper.spawn(EntityType.ARMOR_STAND, new BlockPos(2, 1, 2));
@@ -107,5 +132,11 @@ public final class RallyGuardGameTests {
         helper.assertTrue(!GuardOrders.isWaiting(guard), "Dismiss incorrectly replaced the route with Wait");
         helper.assertTrue(!GuardTaskSuspensions.hasSuspendedTask(guard), "Dismiss left a stale snapshot");
         helper.succeed();
+    }
+
+    private static GuardEntity spawnGuard(GameTestHelper helper, EntityType<?> guardType, BlockPos position) {
+        Entity spawned = helper.spawn(guardType, position);
+        if (spawned instanceof GuardEntity guard) return guard;
+        throw helper.assertionException("Guard Villagers entity type did not spawn a GuardEntity");
     }
 }

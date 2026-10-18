@@ -88,13 +88,17 @@ public final class RallyFormationTicker {
         ));
     }
 
-    public static void stopRally(ServerPlayer player) {
-        ANCHORS.remove(player.getUUID());
+    public static boolean hasSession(UUID commanderId) {
+        return ANCHORS.containsKey(commanderId);
+    }
+
+    public static void stopRally(UUID commanderId) {
+        ANCHORS.remove(commanderId);
     }
 
     private static void tickWorld(ServerLevel world) {
         for (ServerPlayer player : world.players()) {
-            if (!player.hasEffect(ModEffects.RALLY_COMMANDER)) continue;
+            if (!player.hasEffect(ModEffects.RALLY_COMMANDER) || !hasSession(player.getUUID())) continue;
             refreshRallyCommanderEffect(player);
             tickPlayerFormation(world, player);
         }

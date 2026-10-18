@@ -18,6 +18,7 @@ import net.hfstack.rallyguard.event.HiredGuardsNeutralityHandler;
 import net.hfstack.rallyguard.event.InteractGuardHandler;
 import net.hfstack.rallyguard.event.MoveOrderTicker;
 import net.hfstack.rallyguard.event.RallyFormationTicker;
+import net.hfstack.rallyguard.event.RallyLifecycle;
 import net.hfstack.rallyguard.event.RallyFriendlyFireHandler;
 import net.hfstack.rallyguard.item.ModItems;
 import net.hfstack.rallyguard.interaction.GuardInteractionLocks;
@@ -93,6 +94,7 @@ public class RallyOfTheGuard implements ModInitializer {
         MoveOrderTicker.register();
         DefendAreaTicker.register();
         RallyFormationTicker.register();
+        RallyLifecycle.register();
         GlobalGuardRegistryLifecycle.register();
         RaidOpportunityDetector.register();
         RaidReportTracker.register();

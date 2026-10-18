@@ -8,8 +8,7 @@ import net.hfstack.rallyguard.api.eligibility.GuardEligibilityDecision;
 import net.hfstack.rallyguard.api.eligibility.GuardEligibilityOperation;
 import net.hfstack.rallyguard.config.RallyConfig;
 import net.hfstack.rallyguard.contract.GuardOwnership;
-import net.hfstack.rallyguard.effect.ModEffects;
-import net.hfstack.rallyguard.event.RallyFormationTicker;
+import net.hfstack.rallyguard.event.RallyLifecycle;
 import net.hfstack.rallyguard.formation.RallyFormation;
 import net.hfstack.rallyguard.order.GuardOrders;
 import net.hfstack.rallyguard.order.GuardRoutes;
@@ -20,7 +19,6 @@ import net.hfstack.rallyguard.order.defend.DefendAreas;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -48,10 +46,6 @@ public class ScrollOfRallyingItem extends Item {
 
     private static boolean isActive(ItemStack stack) {
         return stack.getOrDefault(ModComponents.ACTIVE, false);
-    }
-
-    private static void setActive(ItemStack stack, boolean v) {
-        stack.set(ModComponents.ACTIVE, v);
     }
 
     private static RallyFormation selectedFormation(ItemStack stack) {
@@ -113,33 +107,17 @@ public class ScrollOfRallyingItem extends Item {
             return InteractionResult.SUCCESS_SERVER;
         }
 
-        boolean rallyOn = user.hasEffect(ModEffects.RALLY_COMMANDER);
+        boolean rallyOn = RallyLifecycle.isActive(sp.getUUID());
         EntityType<?> guardType = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.fromNamespaceAndPath("guardvillagers", "guard"));
         ServerLevel sw = sp.level();
 
         if (rallyOn) {
-            user.removeEffect(ModEffects.RALLY_COMMANDER);
-            RallyFormationTicker.stopRally(sp);
-            setActive(stack, false);
+            RallyLifecycle.stop(sw.getServer(), sp.getUUID());
             user.sendSystemMessage(Component.translatable("alert.rallyguard.scroll_of_rallying.strength_lost")
                     .withStyle(s -> s.withColor(0xFF0000)));
-
-            List<? extends Entity> myGuards = sw.getEntities(
-                    guardType,
-                    e -> GuardOwnership.isOwnedBy(e, user.getUUID())
-                            && e.distanceToSqr(user) <= RallyConfig.combatGuardSearchRadius() * RallyConfig.combatGuardSearchRadius()
-            );
-
-            for (Entity g : myGuards) {
-                setFollowing(g, false);
-                GuardOrders.setRallied(g, false);
-            }
         } else {
             RallyFormation formation = selectedFormation(stack);
-            user.addEffect(new MobEffectInstance(
-                    ModEffects.RALLY_COMMANDER, RallyConfig.rallyEffectTimerSeconds() * 20, 0, false, false, true));
-            RallyFormationTicker.startRally(sp, formation);
-            setActive(stack, true);
+            RallyLifecycle.start(sp, formation, stack);
             user.sendSystemMessage(Component.translatable("alert.rallyguard.scroll_of_rallying.strength_gained", RallyConfig.rallyRadius())
                     .withStyle(s -> s.withColor(0x00FF00)));
 
