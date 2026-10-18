@@ -138,24 +138,22 @@ public final class SquadManagementScreen extends Screen {
         remove.active = selected().isPresent() && selectedMember().isPresent();
         addRenderableWidget(remove);
 
-        int bottom = y + panelHeight() - 34;
-        int availablePagerX = x + 14 + (columnW - 120) / 2;
+        int bottom = y + panelHeight() - 42;
         addRenderableWidget(Button.builder(Component.literal("<"), button -> changeAvailablePage(-1))
-                .bounds(availablePagerX, bottom, 24, 20).build());
+                .bounds(x + 24, bottom, 24, 20).build());
         addRenderableWidget(Button.builder(Component.literal(">"), button -> changeAvailablePage(1))
-                .bounds(availablePagerX + 28, bottom, 24, 20).build());
-        int memberPagerX = rightX + (columnW - 300) / 2;
+                .bounds(x + 52, bottom, 24, 20).build());
         addRenderableWidget(Button.builder(Component.literal("<"), button -> changeMemberPage(-1))
-                .bounds(memberPagerX, bottom, 24, 20).build());
+                .bounds(rightX + 10, bottom, 24, 20).build());
         addRenderableWidget(Button.builder(Component.literal(">"), button -> changeMemberPage(1))
-                .bounds(memberPagerX + 28, bottom, 24, 20).build());
+                .bounds(rightX + 38, bottom, 24, 20).build());
 
-        int officerX = memberPagerX + 100;
-        int backX = memberPagerX + 220;
+        int officerX = rightX + 110;
+        int backX = x + panelW - 94;
         boolean compactControls = panelWidth() < 600;
-        int actionY = compactControls ? bottom - 24 : bottom;
+        int actionY = compactControls ? bottom - 30 : bottom;
         if (compactControls) {
-            officerX = memberPagerX;
+            officerX = rightX + 10;
         }
         Button officer = Button.builder(Component.translatable(
                         selectedMember().filter(this::isOfficer).isPresent()
@@ -394,7 +392,7 @@ public final class SquadManagementScreen extends Screen {
         int contentTop = headingY - 10;
         int contentBottom = y + panelHeight() - 14;
         boolean compactControls = panelWidth() < 600;
-        int footerTop = y + panelHeight() - (compactControls ? 60 : 36);
+        int footerTop = y + panelHeight() - 50;
         graphics.outline(x + 14, contentTop, columnW, contentBottom - contentTop, SECTION);
         graphics.outline(rightX, contentTop, columnW, contentBottom - contentTop, SECTION);
         graphics.text(font, Component.translatable("gui.rallyguard.squad.available"), x + 24, headingY, WHITE);
@@ -409,12 +407,10 @@ public final class SquadManagementScreen extends Screen {
         drawGuardRows(graphics, memberGuards(), memberPage, rightX, columnW, selectedMemberGuard, false);
         int pagesAvailable = pageCount(availableGuards().size());
         int pagesMembers = pageCount(memberGuards().size());
-        int availablePagerX = x + 14 + (columnW - 120) / 2;
-        int memberPagerX = rightX + (columnW - 300) / 2;
         graphics.text(font, Component.literal((availablePage + 1) + " / " + pagesAvailable),
-                availablePagerX + 60, y + panelHeight() - 28, MUTED);
+                x + 84, y + panelHeight() - 36, MUTED);
         graphics.text(font, Component.literal((memberPage + 1) + " / " + pagesMembers),
-                memberPagerX + 60, y + panelHeight() - 28, MUTED);
+                rightX + 70, y + panelHeight() - 36, MUTED);
     }
 
     private void drawGuardRows(GuiGraphicsExtractor graphics, List<GuardListS2CPayload.Entry> guards, int page,
