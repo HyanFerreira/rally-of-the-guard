@@ -175,9 +175,9 @@ class ResourceSchemaTest {
                 "docs", "testing", "26.1-1.4.0-smoke-test-observations.md"
         ));
 
-        assertTrue(properties.contains("minecraft_version=26.1"));
+        assertTrue(properties.contains("minecraft_version=26.1.2"));
         assertTrue(properties.contains("loader_version=0.18.4"));
-        assertTrue(properties.contains("fabric_version=0.144.3+26.1"));
+        assertTrue(properties.contains("fabric_version=0.155.0+26.1.2"));
         assertTrue(properties.contains("midnightlib_version=1.9.2+26.1-fabric"));
         assertTrue(workflow.contains("java-version: '25'"));
 

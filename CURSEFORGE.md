@@ -182,7 +182,7 @@ using Guard Villagers' native patrol behavior.
 
 ➡️ Requires **Fabric Loader 0.18.4+**
 
-➡️ Requires **Fabric API 0.144.3+26.1**
+➡️ Requires **Fabric API 0.155.0+26.1.2 or later**
 
 ➡️ Requires **Guard Villagers (Fabric/Quilt)**
 
