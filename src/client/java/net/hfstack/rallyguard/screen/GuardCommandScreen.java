@@ -30,8 +30,6 @@ public class GuardCommandScreen extends Screen {
     private static final int MAX_PANEL_WIDTH = 700;
     private static final int PANEL_HEIGHT = 300;
     private static final int SCREEN_PAD = 12;
-    private static final int ROW_TOP = 88;
-    private static final int ROW_HEIGHT = 32;
     private static final int BUTTON_HEIGHT = 20;
     private static final int GAP = GuiLayout.CONTROL_GAP;
 
@@ -116,6 +114,7 @@ public class GuardCommandScreen extends Screen {
         int rightW = x + panelWidth() - 14 - rightX;
         int actionX = rightX + 10;
         int actionW = rightW - 20;
+        ScreenLayout.HorizontalSpan rosterSpan = ScreenLayout.ledgerRosterSpan(x, leftW);
 
         if (snapshot.squadsEnabled()) {
             int topW = (panelWidth() - 28 - GAP * 2) / 3;
@@ -137,11 +136,11 @@ public class GuardCommandScreen extends Screen {
         int end = Math.min(start + perPage(), all.size());
         for (int i = start; i < end; i++) {
             Entry entry = all.get(i);
-            int rowY = y + ROW_TOP + (i - start) * ROW_HEIGHT;
+            ScreenLayout.VerticalSpan rowSpan = ScreenLayout.ledgerRosterRowVerticalSpan(y, i - start);
             addRenderableWidget(Button.builder(Component.empty(), button -> {
                 selectedGuard = entry.guardId();
                 rebuildButtons();
-            }).bounds(x + 34, rowY, leftW - 40, ROW_HEIGHT - 2).build());
+            }).bounds(rosterSpan.x(), rowSpan.y(), rosterSpan.width(), rowSpan.height()).build());
         }
 
         addRenderableWidget(Button.builder(Component.literal("<"), button -> changePage(-1))
@@ -396,12 +395,12 @@ public class GuardCommandScreen extends Screen {
         int contentTop = y + 58;
         int contentBottom = y + panelH - 14;
         int rightBottom = contentBottom;
-        int rosterTop = y + 88;
-        int rosterBottom = y + panelH - 52;
         int individualBottom = y + (compact ? 156 : 164);
         int scopeTop = y + (compact ? 156 : 174);
+        ScreenLayout.HorizontalSpan rosterCard = ScreenLayout.ledgerRosterCardSpan(x, leftW);
+        ScreenLayout.VerticalSpan rosterCardVertical = ScreenLayout.ledgerRosterCardVerticalSpan(y, panelH);
         graphics.outline(x + 14, contentTop, leftW, contentBottom - contentTop, SECTION);
-        graphics.outline(x + 24, rosterTop, leftW - 20, rosterBottom - rosterTop, SECTION);
+        graphics.outline(rosterCard.x(), rosterCardVertical.y(), rosterCard.width(), rosterCardVertical.height(), SECTION);
         graphics.outline(rightX, contentTop, rightW, individualBottom - contentTop, SECTION);
         graphics.outline(rightX, scopeTop, rightW, rightBottom - scopeTop, SECTION);
         graphics.fill(rightX + 10, y + 80, rightX + rightW - 10, y + 81, DIVIDER);
@@ -412,28 +411,29 @@ public class GuardCommandScreen extends Screen {
     private void drawRoster(GuiGraphicsExtractor graphics) {
         int x = panelX();
         int y = panelY();
+        ScreenLayout.HorizontalSpan rosterSpan = ScreenLayout.ledgerRosterSpan(x, leftWidth());
         graphics.text(font, Component.translatable("gui.rallyguard.command.roster"), x + 24, y + 68, WHITE);
         if (all.isEmpty()) {
             graphics.centeredText(font, Component.translatable("gui.rallyguard.command.empty"),
-                    x + 24 + (leftWidth() - 20) / 2, y + 148, MUTED);
+                    rosterSpan.x() + rosterSpan.width() / 2, y + 148, MUTED);
         }
         int start = page * perPage();
         int end = Math.min(start + perPage(), all.size());
         SquadScreenModel model = new SquadScreenModel(snapshot, scope);
         for (int i = start; i < end; i++) {
             Entry entry = all.get(i);
-            int rowY = y + ROW_TOP + (i - start) * ROW_HEIGHT;
+            int rowY = ScreenLayout.ledgerRosterRowVerticalSpan(y, i - start).y();
             int color = entry.guardId().equals(selectedGuard) ? GOLD : WHITE;
             String captain = entry.captain()
                     ? " · " + Component.translatable("gui.rallyguard.muster.captain").getString() : "";
-            graphics.text(font, Component.literal(trimToWidth(entry.name() + captain, leftWidth() - 50)),
-                    x + 44, rowY + 5, color);
+            graphics.text(font, Component.literal(trimToWidth(entry.name() + captain, rosterSpan.width() - 20)),
+                    rosterSpan.x() + 10, rowY + 5, color);
             String squad = model.squadName(entry.squadId())
                     .orElseGet(() -> Component.translatable("gui.rallyguard.squad.scope_unassigned").getString());
             String detail = presentationComponent(entry).map(Component::getString).orElse("");
             detail = detail.isBlank() ? squad : detail + " · " + squad;
-            graphics.text(font, Component.literal(trimToWidth(detail, leftWidth() - 50)),
-                    x + 44, rowY + 17, MUTED);
+            graphics.text(font, Component.literal(trimToWidth(detail, rosterSpan.width() - 20)),
+                    rosterSpan.x() + 10, rowY + 17, MUTED);
         }
         int pages = Math.max(1, (all.size() + perPage() - 1) / perPage());
         graphics.text(font, Component.literal((page + 1) + " / " + pages), x + 84,
@@ -502,7 +502,7 @@ public class GuardCommandScreen extends Screen {
     }
 
     private int leftWidth() {
-        return (panelWidth() - 42) / 2;
+        return ScreenLayout.ledgerRosterWidth(panelWidth());
     }
 
     private int panelX() {
