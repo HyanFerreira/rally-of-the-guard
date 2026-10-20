@@ -75,6 +75,23 @@ public final class RallyGuardClientGameTests implements FabricClientGameTest {
 
     private static void ledgerAndSquadScreensExposeTheNewWorkflows(ClientGameTestContext context) {
         GuardListS2CPayload snapshot = commandSnapshot();
+        context.getInput().resizeWindow(1440, 900);
+        context.waitTicks(2);
+        context.setScreen(() -> new GuardCommandScreen(snapshot));
+        context.waitForScreen(GuardCommandScreen.class);
+        assertScreen(context, GuardCommandScreen.class, 20, false);
+        assertWidgetsInsideScreen(context);
+        assertWidgetLabelsFit(context);
+        context.takeScreenshot("command-ledger-responsive-1440x900");
+
+        context.setScreen(() -> new GuardCommandScreen(new GuardListS2CPayload(
+                true, snapshot.squads(), snapshot.namedRoutes(), List.of())));
+        context.waitForScreen(GuardCommandScreen.class);
+        assertScreen(context, GuardCommandScreen.class, 18, false);
+        assertWidgetsInsideScreen(context);
+        assertWidgetLabelsFit(context);
+        context.takeScreenshot("command-ledger-empty-1440x900");
+
         context.getInput().resizeWindow(854, 480);
         context.waitTicks(2);
         context.setScreen(() -> new GuardCommandScreen(snapshot));

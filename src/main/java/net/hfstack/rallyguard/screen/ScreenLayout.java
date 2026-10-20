@@ -15,6 +15,123 @@ public final class ScreenLayout {
         return rowTop + (rowHeight - lineHeight) / 2;
     }
 
+    public static int centeredBlockY(int areaTop, int areaBottom, int blockHeight) {
+        int availableHeight = Math.max(0, areaBottom - areaTop);
+        return areaTop + Math.max(0, (availableHeight - Math.max(0, blockHeight)) / 2);
+    }
+
+    public static List<Integer> centeredTextLineYs(
+            int areaTop,
+            int areaBottom,
+            int lineHeight,
+            int lineGap,
+            int lineCount
+    ) {
+        if (lineCount <= 0) return List.of();
+        int safeLineHeight = Math.max(0, lineHeight);
+        int safeLineGap = Math.max(0, lineGap);
+        int blockHeight = safeLineHeight * lineCount + safeLineGap * (lineCount - 1);
+        int firstY = centeredBlockY(areaTop, areaBottom, blockHeight);
+        List<Integer> lines = new ArrayList<>(lineCount);
+        for (int index = 0; index < lineCount; index++) {
+            lines.add(firstY + index * (safeLineHeight + safeLineGap));
+        }
+        return List.copyOf(lines);
+    }
+
+    public static TextLines ledgerGuardDetailsText(
+            int dividerY,
+            int buttonsY,
+            int lineHeight,
+            int lineGap
+    ) {
+        int safeLineHeight = Math.max(0, lineHeight);
+        int safeLineGap = Math.max(0, lineGap);
+        int firstY = centeredBlockY(
+                dividerY + 1,
+                buttonsY,
+                safeLineHeight * 2 + safeLineGap
+        );
+        return new TextLines(firstY, firstY + safeLineHeight + safeLineGap);
+    }
+
+    public static TopBar ledgerTopBar(
+            int panelY,
+            int panelHeight,
+            int titleHeight,
+            int buttonHeight,
+            int spacing
+    ) {
+        int safePanelHeight = Math.max(0, panelHeight);
+        int safeTitleHeight = Math.max(0, titleHeight);
+        int safeButtonHeight = Math.max(0, buttonHeight);
+        int safeSpacing = Math.max(0, spacing);
+        int titleY = panelY + safeSpacing;
+        int buttonsY = titleY + safeTitleHeight + safeSpacing;
+        return new TopBar(
+                titleY,
+                buttonsY,
+                buttonsY + safeButtonHeight + safeSpacing,
+                panelY + Math.max(0, safePanelHeight - safeSpacing)
+        );
+    }
+
+    public static LedgerVerticalLayout ledgerVerticalLayout(
+            int panelHeight,
+            int contentBottom,
+            int lineHeight,
+            int buttonHeight,
+            int controlGap,
+            int sectionGap,
+            int contentPadding
+    ) {
+        int safeButtonHeight = Math.max(0, buttonHeight);
+        int safeControlGap = Math.max(0, controlGap);
+        int safeSectionGap = Math.max(0, sectionGap);
+        int safeContentPadding = Math.max(0, contentPadding);
+        int twoButtonRowsHeight = safeButtonHeight * 2 + safeControlGap;
+
+        if (panelHeight >= 306) {
+            int scopeTop = contentBottom - 111;
+            int individualBottom = scopeTop - safeSectionGap;
+            int individualButtons = individualBottom - safeContentPadding - twoButtonRowsHeight;
+            int scopeButtons = ledgerSectionContentY(
+                    ledgerSectionHeader(scopeTop, lineHeight, false), safeContentPadding);
+            return new LedgerVerticalLayout(
+                    individualBottom, scopeTop, individualButtons, scopeButtons,
+                    false, false, 3
+            );
+        }
+
+        if (panelHeight >= 270) {
+            int headerHeight = ledgerSectionHeader(0, lineHeight, false).dividerY();
+            int scopeHeight = headerHeight + safeContentPadding
+                    + twoButtonRowsHeight + safeContentPadding;
+            int scopeTop = contentBottom - scopeHeight;
+            int individualBottom = scopeTop - safeSectionGap;
+            int individualButtons = individualBottom - safeContentPadding - twoButtonRowsHeight;
+            int scopeButtons = ledgerSectionContentY(
+                    ledgerSectionHeader(scopeTop, lineHeight, false), safeContentPadding);
+            return new LedgerVerticalLayout(
+                    individualBottom, scopeTop, individualButtons, scopeButtons,
+                    false, true, 2
+            );
+        }
+
+        int tightPadding = Math.max(2, safeContentPadding / 5);
+        int headerHeight = ledgerSectionHeader(0, lineHeight, true).dividerY();
+        int scopeHeight = headerHeight + tightPadding + twoButtonRowsHeight + tightPadding;
+        int scopeTop = contentBottom - scopeHeight;
+        int individualBottom = scopeTop - safeControlGap;
+        int individualButtons = individualBottom - tightPadding - twoButtonRowsHeight;
+        int scopeButtons = ledgerSectionContentY(
+                ledgerSectionHeader(scopeTop, lineHeight, true), tightPadding);
+        return new LedgerVerticalLayout(
+                individualBottom, scopeTop, individualButtons, scopeButtons,
+                true, true, 2
+        );
+    }
+
     public static int boundedPanelWidth(
             int screenWidth,
             int preferredWidth,
@@ -30,24 +147,64 @@ public final class ScreenLayout {
         return Math.max(120, Math.max(0, panelWidth) * 43 / 100);
     }
 
-    public static HorizontalSpan ledgerRosterCardSpan(int panelX, int rosterWidth) {
-        return new HorizontalSpan(panelX + 24, Math.max(0, rosterWidth - 20));
+    public static HorizontalSpan ledgerRosterCardSpan(int panelX, int rosterWidth, int panelPadding) {
+        return new HorizontalSpan(panelX + Math.max(0, panelPadding) + 10, Math.max(0, rosterWidth - 20));
     }
 
-    public static HorizontalSpan ledgerRosterSpan(int panelX, int rosterWidth) {
-        return new HorizontalSpan(panelX + 34, Math.max(0, rosterWidth - 40));
+    public static HorizontalSpan ledgerRosterSpan(int panelX, int rosterWidth, int panelPadding) {
+        return new HorizontalSpan(panelX + Math.max(0, panelPadding) + 20, Math.max(0, rosterWidth - 40));
     }
 
-    public static VerticalSpan ledgerRosterCardVerticalSpan(int panelY, int panelHeight) {
-        return new VerticalSpan(panelY + 88, Math.max(0, panelHeight - 142));
+    public static VerticalSpan ledgerRosterCardVerticalSpan(
+            int lineHeight,
+            int contentTop,
+            int contentBottom,
+            boolean compact,
+            int contentPadding,
+            int buttonHeight
+    ) {
+        int safePadding = Math.max(0, contentPadding);
+        int cardTop = ledgerSectionHeader(contentTop, lineHeight, compact).dividerY();
+        int cardBottom = ledgerPagerVerticalSpan(contentBottom, buttonHeight, safePadding).y() - safePadding;
+        return new VerticalSpan(cardTop, Math.max(0, cardBottom - cardTop));
     }
 
-    public static VerticalSpan ledgerRosterRowVerticalSpan(int panelY, int rowIndex) {
-        return new VerticalSpan(panelY + 98 + Math.max(0, rowIndex) * 30, 28);
+    public static VerticalSpan ledgerRosterRowVerticalSpan(
+            int lineHeight,
+            int contentTop,
+            boolean compact,
+            int contentPadding,
+            int rowIndex
+    ) {
+        int cardTop = ledgerSectionHeader(contentTop, lineHeight, compact).dividerY();
+        return new VerticalSpan(
+                cardTop + Math.max(0, contentPadding) + Math.max(0, rowIndex) * 30,
+                28
+        );
     }
 
-    public static VerticalSpan ledgerPagerVerticalSpan(int panelY, int panelHeight) {
-        return new VerticalSpan(panelY + Math.max(0, panelHeight - 44), 20);
+    public static int ledgerRosterPageSize(int cardHeight) {
+        return Math.max(1, (Math.max(0, cardHeight) - 18) / 30);
+    }
+
+    public static SectionHeader ledgerSectionHeader(int cardTop, int lineHeight, boolean compact) {
+        int safeLineHeight = Math.max(0, lineHeight);
+        int titleInset = compact ? 2 : 8;
+        int dividerGap = compact ? 1 : 5;
+        int titleY = cardTop + titleInset;
+        return new SectionHeader(titleY, titleY + safeLineHeight + dividerGap);
+    }
+
+    public static int ledgerSectionContentY(SectionHeader header, int contentPadding) {
+        return header.dividerY() + Math.max(0, contentPadding);
+    }
+
+    public static VerticalSpan ledgerPagerVerticalSpan(int contentBottom, int buttonHeight, int contentPadding) {
+        int safeButtonHeight = Math.max(0, buttonHeight);
+        return new VerticalSpan(
+                contentBottom - Math.max(0, contentPadding) - safeButtonHeight,
+                safeButtonHeight
+        );
     }
 
     public static List<HorizontalSpan> evenlySpacedHorizontalSpans(int x, int width, int count, int gap) {
@@ -103,5 +260,25 @@ public final class ScreenLayout {
     }
 
     public record VerticalSpan(int y, int height) {
+    }
+
+    public record SectionHeader(int titleY, int dividerY) {
+    }
+
+    public record TopBar(int titleY, int buttonsY, int contentY, int contentBottomY) {
+    }
+
+    public record TextLines(int firstY, int secondY) {
+    }
+
+    public record LedgerVerticalLayout(
+            int individualBottomY,
+            int scopeTopY,
+            int individualButtonsY,
+            int scopeButtonsY,
+            boolean compactHeader,
+            boolean compactLabels,
+            int scopeRows
+    ) {
     }
 }

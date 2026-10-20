@@ -227,7 +227,7 @@
   "commands.rallyguard.xp.query.success": "%s — nível %s, progresso %s XP, total %s XP.",
 
   "gui.rallyguard.command.title": "Painel de Comando",
-  "gui.rallyguard.command.empty": "Nenhum guarda dispon\u00edvel neste mundo.",
+  "gui.rallyguard.command.empty": "Nenhum guarda\ndispon\u00edvel neste mundo.",
   "gui.rallyguard.command.roster": "Lista de Guardas",
   "gui.rallyguard.command.individual_orders": "Ordens Individuais",
   "gui.rallyguard.command.select_guard": "Selecione um guarda na lista.",

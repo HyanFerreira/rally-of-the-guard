@@ -227,7 +227,7 @@
   "commands.rallyguard.xp.query.success": "%s — level %s, progress %s XP, total %s XP.",
 
   "gui.rallyguard.command.title": "Command Panel",
-  "gui.rallyguard.command.empty": "No hired guards loaded in this world.",
+  "gui.rallyguard.command.empty": "No guards\navailable in this world.",
   "gui.rallyguard.command.roster": "Guard Roster",
   "gui.rallyguard.command.individual_orders": "Individual Orders",
   "gui.rallyguard.command.select_guard": "Select a guard from the roster.",

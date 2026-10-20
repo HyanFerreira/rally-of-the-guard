@@ -15,6 +15,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,9 +29,9 @@ public class GuardCommandScreen extends Screen {
     private static final int SECTION = 0xFF777777;
     private static final int DIVIDER = 0x88777777;
     private static final int MAX_PANEL_WIDTH = 700;
-    private static final int PANEL_HEIGHT = 300;
+    private static final int PANEL_HEIGHT = 306;
     private static final int SCREEN_PAD = 12;
-    private static final int PANEL_PADDING = GuiLayout.PANEL_PADDING;
+    private static final int PANEL_PADDING = 12;
     private static final int CONTENT_PADDING = GuiLayout.CONTENT_PADDING;
     private static final int SECTION_GAP = GuiLayout.SECTION_GAP;
     private static final int BUTTON_HEIGHT = GuiLayout.BUTTON_HEIGHT;
@@ -112,6 +113,10 @@ public class GuardCommandScreen extends Screen {
         clearWidgets();
         int x = panelX();
         int y = panelY();
+        ScreenLayout.TopBar topBar =
+                ScreenLayout.ledgerTopBar(
+                        y, panelHeight(), font.lineHeight - 1, BUTTON_HEIGHT, PANEL_PADDING);
+        ScreenLayout.LedgerVerticalLayout verticalLayout = verticalLayout(topBar);
         int leftW = leftWidth();
         List<ScreenLayout.HorizontalSpan> columns = ScreenLayout.twoColumnSpans(
                 x, panelWidth(), leftW, PANEL_PADDING, SECTION_GAP);
@@ -120,37 +125,40 @@ public class GuardCommandScreen extends Screen {
         int rightW = rightColumn.width();
         int actionX = rightX + CONTENT_PADDING;
         int actionW = rightW - CONTENT_PADDING * 2;
-        ScreenLayout.HorizontalSpan rosterSpan = ScreenLayout.ledgerRosterSpan(x, leftW);
+        ScreenLayout.HorizontalSpan rosterSpan = ScreenLayout.ledgerRosterSpan(x, leftW, PANEL_PADDING);
 
         if (snapshot.squadsEnabled()) {
             List<ScreenLayout.HorizontalSpan> topSpans = ScreenLayout.evenlySpacedHorizontalSpans(
                     x + PANEL_PADDING, panelWidth() - PANEL_PADDING * 2, 3, GAP);
             addRenderableWidget(Button.builder(scopeLabel(), button -> cycleScope(shiftDown() ? -1 : 1))
-                    .bounds(topSpans.get(0).x(), y + 30, topSpans.get(0).width(), BUTTON_HEIGHT).build());
+                    .bounds(topSpans.get(0).x(), topBar.buttonsY(), topSpans.get(0).width(), BUTTON_HEIGHT).build());
             addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.registry.button"),
                             button -> GlobalGuardRegistryScreen.open(this))
-                    .bounds(topSpans.get(1).x(), y + 30, topSpans.get(1).width(), BUTTON_HEIGHT).build());
+                    .bounds(topSpans.get(1).x(), topBar.buttonsY(), topSpans.get(1).width(), BUTTON_HEIGHT).build());
             addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.squad.manage"),
                             button -> Minecraft.getInstance().setScreen(new SquadManagementScreen(snapshot, scope)))
-                    .bounds(topSpans.get(2).x(), y + 30, topSpans.get(2).width(), BUTTON_HEIGHT).build());
+                    .bounds(topSpans.get(2).x(), topBar.buttonsY(), topSpans.get(2).width(), BUTTON_HEIGHT).build());
         } else {
             addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.registry.button"),
                             button -> GlobalGuardRegistryScreen.open(this))
-                    .bounds(x + panelWidth() - PANEL_PADDING - 110, y + 30, 110, BUTTON_HEIGHT).build());
+                    .bounds(x + panelWidth() - PANEL_PADDING - 110, topBar.buttonsY(), 110, BUTTON_HEIGHT).build());
         }
 
         int start = page * perPage();
         int end = Math.min(start + perPage(), all.size());
         for (int i = start; i < end; i++) {
             Entry entry = all.get(i);
-            ScreenLayout.VerticalSpan rowSpan = ScreenLayout.ledgerRosterRowVerticalSpan(y, i - start);
+            ScreenLayout.VerticalSpan rowSpan = ScreenLayout.ledgerRosterRowVerticalSpan(
+                    font.lineHeight, topBar.contentY(), verticalLayout.compactHeader(),
+                    CONTENT_PADDING, i - start);
             addRenderableWidget(Button.builder(Component.empty(), button -> {
                 selectedGuard = entry.guardId();
                 rebuildButtons();
             }).bounds(rosterSpan.x(), rowSpan.y(), rosterSpan.width(), rowSpan.height()).build());
         }
 
-        ScreenLayout.VerticalSpan pagerSpan = ScreenLayout.ledgerPagerVerticalSpan(y, panelHeight());
+        ScreenLayout.VerticalSpan pagerSpan = ScreenLayout.ledgerPagerVerticalSpan(
+                topBar.contentBottomY(), BUTTON_HEIGHT, CONTENT_PADDING);
         int pagerX = x + PANEL_PADDING + CONTENT_PADDING;
         addRenderableWidget(Button.builder(Component.literal("<"), button -> changePage(-1))
                 .bounds(pagerX, pagerSpan.y(), GuiLayout.COMPACT_BUTTON_WIDTH, pagerSpan.height()).build());
@@ -163,12 +171,7 @@ public class GuardCommandScreen extends Screen {
                 ScreenLayout.evenlySpacedHorizontalSpans(actionX, actionW, 3, GAP);
         List<ScreenLayout.HorizontalSpan> twoSpans =
                 ScreenLayout.evenlySpacedHorizontalSpans(actionX, actionW, 2, GAP);
-        boolean compact = panelHeight() < PANEL_HEIGHT;
-        int contentBottom = y + panelHeight() - PANEL_PADDING;
-        int individualBottom = y + (compact ? 156 : 164);
-        int individualY = compact
-                ? y + 108
-                : individualBottom - CONTENT_PADDING - BUTTON_HEIGHT * 2 - GAP;
+        int individualY = verticalLayout.individualButtonsY();
         addIndividualButton(threeSpans.get(0).x(), individualY, threeSpans.get(0).width(),
                 "gui.rallyguard.command.summon", NetworkConstants.ACTION_SUMMON);
         addIndividualButton(threeSpans.get(1).x(), individualY, threeSpans.get(1).width(),
@@ -197,26 +200,29 @@ public class GuardCommandScreen extends Screen {
         route.active = selected.isPresent();
         addRenderableWidget(route);
 
-        int scopeY = compact
-                ? y + 170
-                : contentBottom - CONTENT_PADDING - BUTTON_HEIGHT * 3 - GAP * 2;
+        int scopeTop = verticalLayout.scopeTopY();
+        int scopeY = verticalLayout.scopeButtonsY();
         List<ScreenLayout.HorizontalSpan> fourSpans =
                 ScreenLayout.evenlySpacedHorizontalSpans(actionX, actionW, 4, GAP);
         addScopeButton(fourSpans.get(0).x(), scopeY, fourSpans.get(0).width(),
-                compact ? "gui.rallyguard.command.summon_compact" : "gui.rallyguard.command.summon",
+                verticalLayout.compactLabels()
+                        ? "gui.rallyguard.command.summon_compact" : "gui.rallyguard.command.summon",
                 NetworkConstants.ACTION_SUMMON);
         addScopeButton(fourSpans.get(1).x(), scopeY, fourSpans.get(1).width(),
-                compact ? "gui.rallyguard.command.follow_compact" : "gui.rallyguard.command.follow",
+                verticalLayout.compactLabels()
+                        ? "gui.rallyguard.command.follow_compact" : "gui.rallyguard.command.follow",
                 NetworkConstants.ACTION_FOLLOW);
         addScopeButton(fourSpans.get(2).x(), scopeY, fourSpans.get(2).width(),
-                compact ? "gui.rallyguard.command.wait_compact" : "gui.rallyguard.command.wait",
+                verticalLayout.compactLabels()
+                        ? "gui.rallyguard.command.wait_compact" : "gui.rallyguard.command.wait",
                 NetworkConstants.ACTION_WAIT);
         addScopeButton(fourSpans.get(3).x(), scopeY, fourSpans.get(3).width(),
-                compact ? "gui.rallyguard.command.dismiss_compact" : "gui.rallyguard.command.dismiss",
+                verticalLayout.compactLabels()
+                        ? "gui.rallyguard.command.dismiss_compact" : "gui.rallyguard.command.dismiss",
                 NetworkConstants.ACTION_DISMISS);
 
         int tacticalY = scopeY + BUTTON_HEIGHT + GAP;
-        if (compact) {
+        if (verticalLayout.scopeRows() == 2) {
             addRenderableWidget(Button.builder(Component.translatable("gui.rallyguard.combat.button_compact"),
                             button -> Minecraft.getInstance().setScreen(new GuardCombatScreen(this, scope)))
                     .bounds(fourSpans.get(0).x(), tacticalY, fourSpans.get(0).width(), BUTTON_HEIGHT).build());
@@ -423,64 +429,78 @@ public class GuardCommandScreen extends Screen {
         ScreenLayout.HorizontalSpan rightColumn = columns.get(1);
         int rightX = rightColumn.x();
         int rightW = rightColumn.width();
-        boolean compact = panelH < PANEL_HEIGHT;
+        ScreenLayout.TopBar topBar =
+                ScreenLayout.ledgerTopBar(
+                        y, panelH, font.lineHeight - 1, BUTTON_HEIGHT, PANEL_PADDING);
+        ScreenLayout.LedgerVerticalLayout verticalLayout = verticalLayout(topBar);
         graphics.fill(x, y, x + panelWidth(), y + panelH, 0xF0101010);
         graphics.outline(x, y, panelWidth(), panelHeight(), WHITE);
-        graphics.centeredText(font, title, width / 2,
-                ScreenLayout.centeredLineY(y, 30, font.lineHeight), WHITE);
-        int contentTop = y + 58;
-        int contentBottom = y + panelH - PANEL_PADDING;
-        int rightBottom = contentBottom;
-        int individualBottom = y + (compact ? 156 : 164);
-        int scopeTop = compact ? individualBottom : individualBottom + SECTION_GAP;
-        int individualY = compact
-                ? y + 108
-                : individualBottom - CONTENT_PADDING - BUTTON_HEIGHT * 2 - GAP;
-        int scopeY = compact
-                ? y + 170
-                : rightBottom - CONTENT_PADDING - BUTTON_HEIGHT * 3 - GAP * 2;
-        int individualDividerY;
-        int scopeDividerY;
-        if (compact) {
-            individualDividerY = y + 80;
-            scopeDividerY = y + 168;
-        } else {
-            List<Integer> individualGaps = ScreenLayout.evenlyDistributedSizes(
-                    individualY - contentTop - font.lineHeight * 3 - 1, 5);
-            int individualHeaderY = contentTop + individualGaps.get(0);
-            individualDividerY = individualHeaderY + font.lineHeight + individualGaps.get(1);
-            List<Integer> scopeGaps = ScreenLayout.evenlyDistributedSizes(
-                    scopeY - scopeTop - font.lineHeight - 1, 3);
-            scopeDividerY = scopeTop + scopeGaps.get(0) + font.lineHeight + scopeGaps.get(1);
-        }
-        ScreenLayout.HorizontalSpan rosterCard = ScreenLayout.ledgerRosterCardSpan(x, leftW);
-        ScreenLayout.VerticalSpan rosterCardVertical = ScreenLayout.ledgerRosterCardVerticalSpan(y, panelH);
+        graphics.centeredText(font, title, width / 2, topBar.titleY(), WHITE);
+        int contentTop = topBar.contentY();
+        int contentBottom = topBar.contentBottomY();
+        int individualBottom = verticalLayout.individualBottomY();
+        int scopeTop = verticalLayout.scopeTopY();
+        ScreenLayout.SectionHeader individualHeader =
+                ScreenLayout.ledgerSectionHeader(
+                        contentTop, font.lineHeight, verticalLayout.compactHeader());
+        ScreenLayout.SectionHeader scopeHeader =
+                ScreenLayout.ledgerSectionHeader(
+                        scopeTop, font.lineHeight, verticalLayout.compactHeader());
+        ScreenLayout.HorizontalSpan rosterCard =
+                ScreenLayout.ledgerRosterCardSpan(x, leftW, PANEL_PADDING);
+        ScreenLayout.VerticalSpan rosterCardVertical =
+                ScreenLayout.ledgerRosterCardVerticalSpan(
+                        font.lineHeight, contentTop, contentBottom, verticalLayout.compactHeader(),
+                        CONTENT_PADDING, BUTTON_HEIGHT);
         graphics.outline(x + PANEL_PADDING, contentTop, leftW, contentBottom - contentTop, SECTION);
         graphics.outline(rosterCard.x(), rosterCardVertical.y(), rosterCard.width(), rosterCardVertical.height(), SECTION);
         graphics.outline(rightX, contentTop, rightW, individualBottom - contentTop, SECTION);
-        graphics.outline(rightX, scopeTop, rightW, rightBottom - scopeTop, SECTION);
-        graphics.fill(rightX + CONTENT_PADDING, individualDividerY,
-                rightX + rightW - CONTENT_PADDING, individualDividerY + 1, DIVIDER);
-        graphics.fill(rightX + CONTENT_PADDING, scopeDividerY,
-                rightX + rightW - CONTENT_PADDING, scopeDividerY + 1, DIVIDER);
+        graphics.outline(rightX, scopeTop, rightW, contentBottom - scopeTop, SECTION);
+        graphics.fill(rightX + CONTENT_PADDING, individualHeader.dividerY(),
+                rightX + rightW - CONTENT_PADDING, individualHeader.dividerY() + 1, DIVIDER);
+        graphics.fill(rightX + CONTENT_PADDING, scopeHeader.dividerY(),
+                rightX + rightW - CONTENT_PADDING, scopeHeader.dividerY() + 1, DIVIDER);
     }
 
     private void drawRoster(GuiGraphicsExtractor graphics) {
         int x = panelX();
         int y = panelY();
-        ScreenLayout.HorizontalSpan rosterSpan = ScreenLayout.ledgerRosterSpan(x, leftWidth());
+        ScreenLayout.TopBar topBar =
+                ScreenLayout.ledgerTopBar(
+                        y, panelHeight(), font.lineHeight - 1, BUTTON_HEIGHT, PANEL_PADDING);
+        ScreenLayout.LedgerVerticalLayout verticalLayout = verticalLayout(topBar);
+        int contentTop = topBar.contentY();
+        ScreenLayout.SectionHeader header =
+                ScreenLayout.ledgerSectionHeader(
+                        contentTop, font.lineHeight, verticalLayout.compactHeader());
+        ScreenLayout.HorizontalSpan rosterSpan =
+                ScreenLayout.ledgerRosterSpan(x, leftWidth(), PANEL_PADDING);
         graphics.text(font, Component.translatable("gui.rallyguard.command.roster"),
-                x + PANEL_PADDING + CONTENT_PADDING, y + 68, WHITE);
+                x + PANEL_PADDING + CONTENT_PADDING, header.titleY(), WHITE);
         if (all.isEmpty()) {
-            graphics.centeredText(font, Component.translatable("gui.rallyguard.command.empty"),
-                    rosterSpan.x() + rosterSpan.width() / 2, y + 148, MUTED);
+            ScreenLayout.VerticalSpan rosterCard = ScreenLayout.ledgerRosterCardVerticalSpan(
+                    font.lineHeight, contentTop, topBar.contentBottomY(),
+                    verticalLayout.compactHeader(), CONTENT_PADDING, BUTTON_HEIGHT);
+            List<FormattedCharSequence> emptyLines = font.split(
+                    Component.translatable("gui.rallyguard.command.empty"),
+                    Math.max(0, rosterSpan.width() - CONTENT_PADDING * 2));
+            List<Integer> emptyLineYs = ScreenLayout.centeredTextLineYs(
+                    rosterCard.y() + 1, rosterCard.y() + rosterCard.height(),
+                    font.lineHeight, 2, emptyLines.size());
+            int emptyCenterX = rosterSpan.x() + rosterSpan.width() / 2;
+            for (int index = 0; index < emptyLines.size(); index++) {
+                FormattedCharSequence line = emptyLines.get(index);
+                graphics.text(font, line, emptyCenterX - font.width(line) / 2, emptyLineYs.get(index), MUTED);
+            }
         }
         int start = page * perPage();
         int end = Math.min(start + perPage(), all.size());
         SquadScreenModel model = new SquadScreenModel(snapshot, scope);
         for (int i = start; i < end; i++) {
             Entry entry = all.get(i);
-            int rowY = ScreenLayout.ledgerRosterRowVerticalSpan(y, i - start).y();
+            int rowY = ScreenLayout.ledgerRosterRowVerticalSpan(
+                    font.lineHeight, contentTop, verticalLayout.compactHeader(),
+                    CONTENT_PADDING, i - start).y();
             int color = entry.guardId().equals(selectedGuard) ? GOLD : WHITE;
             String captain = entry.captain()
                     ? " · " + Component.translatable("gui.rallyguard.muster.captain").getString() : "";
@@ -496,7 +516,8 @@ public class GuardCommandScreen extends Screen {
                     rosterSpan.x() + CONTENT_PADDING, rowY + 16, MUTED);
         }
         int pages = Math.max(1, (all.size() + perPage() - 1) / perPage());
-        ScreenLayout.VerticalSpan pagerSpan = ScreenLayout.ledgerPagerVerticalSpan(y, panelHeight());
+        ScreenLayout.VerticalSpan pagerSpan = ScreenLayout.ledgerPagerVerticalSpan(
+                topBar.contentBottomY(), BUTTON_HEIGHT, CONTENT_PADDING);
         int pagerX = x + PANEL_PADDING + CONTENT_PADDING;
         graphics.text(font, Component.literal((page + 1) + " / " + pages),
                 pagerX + (GuiLayout.COMPACT_BUTTON_WIDTH + GAP) * 2 + CONTENT_PADDING,
@@ -511,33 +532,28 @@ public class GuardCommandScreen extends Screen {
         int rightX = rightColumn.x();
         int rightW = rightColumn.width();
         Optional<Entry> selected = selected();
-        boolean compact = panelHeight() < PANEL_HEIGHT;
-        int contentTop = y + 58;
-        int individualBottom = y + (compact ? 156 : 164);
-        int individualY = compact
-                ? y + 108
-                : individualBottom - CONTENT_PADDING - BUTTON_HEIGHT * 2 - GAP;
-        int scopeTop = compact ? individualBottom : individualBottom + SECTION_GAP;
-        int individualHeaderY;
-        int individualNameY;
-        int individualStatusY;
-        if (compact) {
-            individualHeaderY = y + 66;
-            individualNameY = y + 84;
-            individualStatusY = individualNameY + 14;
-        } else {
-            List<Integer> individualGaps = ScreenLayout.evenlyDistributedSizes(
-                    individualY - contentTop - font.lineHeight * 3 - 1, 5);
-            individualHeaderY = contentTop + individualGaps.get(0);
-            int individualDividerY = individualHeaderY + font.lineHeight + individualGaps.get(1);
-            individualNameY = individualDividerY + 1 + individualGaps.get(2);
-            individualStatusY = individualNameY + font.lineHeight + individualGaps.get(3);
-        }
+        ScreenLayout.TopBar topBar =
+                ScreenLayout.ledgerTopBar(
+                        y, panelHeight(), font.lineHeight - 1, BUTTON_HEIGHT, PANEL_PADDING);
+        ScreenLayout.LedgerVerticalLayout verticalLayout = verticalLayout(topBar);
+        int contentTop = topBar.contentY();
+        int scopeTop = verticalLayout.scopeTopY();
+        ScreenLayout.SectionHeader individualHeader =
+                ScreenLayout.ledgerSectionHeader(
+                        contentTop, font.lineHeight, verticalLayout.compactHeader());
+        int individualButtonY = verticalLayout.individualButtonsY();
+        int textAreaTop = individualHeader.dividerY() + 1;
+        ScreenLayout.TextLines guardDetails = ScreenLayout.ledgerGuardDetailsText(
+                individualHeader.dividerY(), individualButtonY, font.lineHeight, 2);
+        int individualNameY = guardDetails.firstY();
+        int individualStatusY = guardDetails.secondY();
+        int selectGuardY = ScreenLayout.centeredBlockY(
+                textAreaTop, individualButtonY, font.lineHeight);
         graphics.text(font, Component.translatable("gui.rallyguard.command.individual_orders"),
-                rightX + CONTENT_PADDING, individualHeaderY, WHITE);
+                rightX + CONTENT_PADDING, individualHeader.titleY(), WHITE);
         if (selected.isEmpty()) {
             graphics.centeredText(font, Component.translatable("gui.rallyguard.command.select_guard"),
-                    rightX + rightW / 2, y + (compact ? 94 : 96), MUTED);
+                    rightX + rightW / 2, selectGuardY, MUTED);
         } else {
             Entry entry = selected.get();
             graphics.text(font, Component.literal(trimToWidth(entry.name(), rightW - CONTENT_PADDING * 2)),
@@ -550,8 +566,11 @@ public class GuardCommandScreen extends Screen {
                             rightW - CONTENT_PADDING * 2)),
                     rightX + CONTENT_PADDING, individualStatusY, MUTED);
         }
+        ScreenLayout.SectionHeader scopeHeader =
+                ScreenLayout.ledgerSectionHeader(
+                        scopeTop, font.lineHeight, verticalLayout.compactHeader());
         graphics.text(font, Component.translatable("gui.rallyguard.command.scope_orders", scopeLabel()),
-                rightX + CONTENT_PADDING, compact ? y + 158 : scopeTop + 8, WHITE);
+                rightX + CONTENT_PADDING, scopeHeader.titleY(), WHITE);
     }
 
     private static Component statusComponent(int status) {
@@ -606,9 +625,21 @@ public class GuardCommandScreen extends Screen {
         return Math.min(PANEL_HEIGHT, Math.max(220, height - SCREEN_PAD));
     }
 
+    private ScreenLayout.LedgerVerticalLayout verticalLayout(ScreenLayout.TopBar topBar) {
+        return ScreenLayout.ledgerVerticalLayout(
+                panelHeight(), topBar.contentBottomY(),
+                font.lineHeight, BUTTON_HEIGHT, GAP, SECTION_GAP, CONTENT_PADDING
+        );
+    }
+
     private int perPage() {
-        if (panelHeight() < 250) return 2;
-        return panelHeight() < PANEL_HEIGHT ? 3 : 5;
+        ScreenLayout.TopBar topBar = ScreenLayout.ledgerTopBar(
+                panelY(), panelHeight(), font.lineHeight - 1, BUTTON_HEIGHT, PANEL_PADDING);
+        ScreenLayout.LedgerVerticalLayout verticalLayout = verticalLayout(topBar);
+        ScreenLayout.VerticalSpan rosterCard = ScreenLayout.ledgerRosterCardVerticalSpan(
+                font.lineHeight, topBar.contentY(), topBar.contentBottomY(),
+                verticalLayout.compactHeader(), CONTENT_PADDING, BUTTON_HEIGHT);
+        return Math.min(5, ScreenLayout.ledgerRosterPageSize(rosterCard.height()));
     }
 
     @Override
